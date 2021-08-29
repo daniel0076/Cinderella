@@ -101,8 +101,7 @@ Cinderella 能夠依照使用者提供的關鍵字在對帳單項目中比對，
 Cinderella 的 [`configs/mappings`](https://github.com/daniel0076/Cinderella/tree/main/Cinderella/configs/mappings) 資料夾下存放了自訂的關鍵字和對應的類別
 
 + 通用歸類 ([`general.json`](https://github.com/daniel0076/Cinderella/tree/main/Cinderella/configs/mappings/general.json))：收錄了常用的歸類，可照需求自行修改
-+ 特用於某金融機構歸類：除了 `general.json`，其它按照 **Cinderella 識別字** 命名的檔案提供了針對不同金融機構的歸類關鍵字
-
++ 特用歸類：其它按照 **Cinderella 識別字** 命名的檔案，提供了針對不同金融機構的歸類關鍵字，只用該金融機構對帳單。
 
 **Cinderella 將優先使用特用的歸類項目**
 
