@@ -16,7 +16,7 @@ Cinderella
 | -----------     | ----------- | ----------- | ----------- | ----------- |
 | 財政部電子發票    | ✅ (csv)  |➖         | `receipt`         | 每週/月寄的匯整通知  |
 | 中華郵政         | ✅ (csv)  |❌         | `post`            | 網銀下載           |   
-| 台新銀行(Richart)| ✅ (excel)|✅ (excel) | `taishin`         | Richart APP 中寄送，需分開帳戶和信用戶的 worksheet 到二個檔案 |
+| 台新銀行(Richart)| ✅ (excel)|✅ (excel) | `taishin`         | Richart APP 申請，需分開 worksheet 到不同檔案 |
 | 永豐銀行         | ✅ (csv)* |✅ (csv)   | `sinopac`         | 信用卡可於網銀下載   |
 | 中國信託         | 🚀        |🚀         |                   |                   |
 | 玉山銀行         | 🚀        |🚀         |                   |                   |
