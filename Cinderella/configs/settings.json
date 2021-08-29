@@ -1,0 +1,9 @@
+{
+    "default_accounts": {
+        "expenses": "Expenses:Other",
+        "income": "Income:Other",
+        "liabilities": "Liabilities:Other",
+        "assets": "Assets:Other",
+        "wallet": "Assets:Cash:Wallet"
+    }
+}
