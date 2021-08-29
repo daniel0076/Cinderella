@@ -33,7 +33,7 @@ Cinderella
 
 ### 系統需求
 
-+ `Python`  > 3.9
++ `Python`  >= 3.9
 + 目前只在 `macOS Big Sur` 上測試
 
 ### 安裝
