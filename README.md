@@ -40,19 +40,18 @@ Cinderella
 
 + 下載專案
 ```
-> git clone https://github.com/daniel0076/Cinderella
-> cd Cinderella
+git clone https://github.com/daniel0076/Cinderella
 ```
 
 + 安裝 Python packages (推薦使用 [pipenv](https://pipenv.pypa.io/en/latest/))
-
++ 在專案目錄下
 ```
-> pipenv install
-> pipenv shell
+pipenv install
+pipenv shell
 ```
 或 (使用 [virtualenv](https://virtualenv.pypa.io/en/latest/) 等)
 ```
-> pip install -r requirements.txt
+pip install -r requirements.txt
 ```
 
 ### 準備對帳單
@@ -82,17 +81,15 @@ statements
 ### 執行
 
 ```
-> cd Cinderella
-> python3 cinderella/main.py PATH_TO_STATEMENTS PATH_TO_BEANCOUNT
-> fava main.bean  # 啟動 GUI，在 localhost:5000
+python3 cinderella/main.py PATH_TO_STATEMENTS PATH_TO_BEANCOUNT
+fava main.bean  # 啟動 GUI，在 localhost:5000
 ```
 + 範例
 
 
 ```
-> cd Cinderella
-> python3 cinderella/main.py ./statements ./beans
-> fava main.bean  # 啟動 GUI，在 localhost:5000
+python3 cinderella/main.py ./statements ./beans
+fava main.bean  # 啟動 GUI，在 localhost:5000
 ```
 
 ### 自訂消費項目分類(歸戶)
