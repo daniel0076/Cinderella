@@ -1,6 +1,6 @@
 Cinderella
 ===
-自動化帳單分析，利用 BeanCount 實現全自動記帳
+自動化帳單分析，搭配 BeanCount 實現全自動記帳
 
 ## Introduction
 
