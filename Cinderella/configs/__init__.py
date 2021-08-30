@@ -2,6 +2,9 @@ import os
 import json
 from os.path import dirname, realpath
 from pathlib import Path
+import logging
+
+LOGGER = logging.getLogger("Configs")
 
 
 class Singleton(type):
@@ -19,6 +22,17 @@ class Configs(metaclass=Singleton):
         config_path = Path(self.current_dir, "settings.json")
         with open(config_path) as f:
             self.settings = json.load(f)
+
+    def _check_mappings(self):
+        mapping_path = Path(self.current_dir, "mappings")
+        sample_mapping_path = Path(self.current_dir, "mappings.sample")
+        if not os.path.exists(mapping_path):
+            try:
+                os.rename(sample_mapping_path, mapping_path)
+                LOGGER.info("configs/mappings not found, create with mappings.sample")
+            except:
+                LOGGER.error("configs/mappings not found, check the configs/mappings directory")
+                raise RuntimeError
 
     def get_settings(self):
         return self.settings
