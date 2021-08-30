@@ -4,7 +4,6 @@ import pandas as pd
 import logging
 
 LOGGER = logging.getLogger("StatementLoader")
-logging.basicConfig(level=logging.INFO)
 
 
 class StatementParser(ABC):

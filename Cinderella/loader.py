@@ -25,18 +25,31 @@ class StatementLoader:
                 found = parser
         return found
 
-    def load(self) -> Iterator[Directives]:
+    def _find_category(self, path: str) -> Union[str, None]:
         for category in self.categories:
-            for (dirpath, _, filenames) in walk(Path(self.root, category)):
-                for filename in filenames:
-                    filepath = str(Path(dirpath, filename))
-                    parser = self._find_parser(filepath)
-                    if not parser:
-                        LOGGER.warn("No parser found for file %s", filepath)
-                        continue
-                    LOGGER.info("File: %s, Identifier: %s", filepath, parser.identifier)
-                    df = parser.read_statement(filepath)
-                    directives = parser.parse(category, df)
+            if category in path:
+                return category
+        return None
 
-                    yield directives
+    def load(self) -> Iterator[Directives]:
+        for (dirpath, _, filenames) in walk(self.root):
+            for filename in filenames:
+                if filename.startswith("."):
+                    continue
+                filepath = str(Path(dirpath, filename))
+                parser = self._find_parser(filepath)
+                category = self._find_category(filepath)
+
+                if not parser or not category:
+                    LOGGER.warn("Load fail: %s, Category: %s, Parser: %s",
+                                filepath,
+                                "Unknown" if not category else category,
+                                getattr(parser, "identifier", "Unknown"))
+                    continue
+
+                LOGGER.info("File: %s, Category: %s, Parser: %s", filepath, category, parser.identifier)
+                df = parser.read_statement(filepath)
+                directives = parser.parse(category, df)
+
+                yield directives
 

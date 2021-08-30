@@ -15,7 +15,7 @@ class Taishin(StatementParser):
             "bank": "Assets:Bank:Taishin",
         }
 
-    def _parse_card_statement(self, records: list) -> Directives:
+    def _parse_card_statement(self, records: pd.DataFrame) -> Directives:
         directives = Directives("card", self.identifier)
         for _, record in records.iterrows():
             date = datetime.strptime(record[0], '%Y/%m/%d')
