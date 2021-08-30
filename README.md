@@ -83,14 +83,14 @@ statements
 ### 執行
 
 ```
-python3 cinderella/main.py PATH_TO_STATEMENTS PATH_TO_BEANCOUNT
+python3 Cinderella/main.py PATH_TO_STATEMENTS PATH_TO_BEANCOUNT
 fava main.bean  # 啟動 GUI，在 localhost:5000
 ```
 + 範例
 
 
 ```
-python3 cinderella/main.py ./statements ./beans
+python3 Cinderella/main.py ./statements ./beans
 fava main.bean  # 啟動 GUI，在 localhost:5000
 ```
 
