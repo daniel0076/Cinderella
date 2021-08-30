@@ -72,17 +72,17 @@ pip install -r requirements.txt
 
 1. 建立 **對帳單資料夾** (例 `statements`，可用任意名稱)，並把對帳單檔案放入資料夾
 2. 依對帳單的金融機構，將 **帳單識別字** 及 **Cinderella 識別字** 加入對帳單的資料夾名或檔名，二個識別字需在資料夾或檔名(檔案路徑)中。例如
-    + 台新銀行的帳戶對帳單 (以下都是合法的)：
+    + 台新銀行的帳戶對帳單 (以下都是合法的) ✅：
         + `statements/taishin/bank-202101.csv` 
         + `statements/bank/taishin-202101.csv`
         + `statements/taishin-bank-2021.csv`
         + `statements/taishin/bank/2021.csv`
-    + 永豐銀行的信用卡對帳單 (以下都是合法的)：
+    + 永豐銀行的信用卡對帳單 (以下都是合法的) ✅：
         + `statements/sinopac/card-2021.csv`
         + `statements/card/sinopac-2021.csv`
         + `statements/sinopac-card-2021.csv`
         + `statements/card/sinopac/2021.csv`
-    + 以下是不合法的：
+    + 以下是不合法的 ❌ ：
         + `statements/card/2021.csv`：缺少 **Cinderella 識別字**
         + `statements/sinopac/2021.csv`：缺少 **帳單識別字**
     
