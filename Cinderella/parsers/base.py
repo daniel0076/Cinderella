@@ -1,6 +1,10 @@
-import csv
 from datatypes import Directives
 from abc import ABC, abstractmethod
+import pandas as pd
+import logging
+
+LOGGER = logging.getLogger("StatementLoader")
+logging.basicConfig(level=logging.INFO)
 
 
 class StatementParser(ABC):
@@ -15,36 +19,29 @@ class StatementParser(ABC):
         }
         self.default_source_accounts = {}
 
-    def parse(self, category: str, records: list[str]) -> Directives:
-        records_decoded = self._decode_statement(records)
-        return self.parser[category](records_decoded)
+    def parse(self, category: str, df: pd.DataFrame) -> Directives:
+        return self.parser[category](df)
 
-    def _decode_statement(self, raw_records: list[str]) -> list[str]:
-        return raw_records
+    def read_statement(self, filepath: str) -> pd.DataFrame:
+        if filepath.endswith("xls") or filepath.endswith("xlsx"):
+            return pd.read_excel(filepath)
+        elif filepath.endswith("csv"):
+            return pd.read_csv(filepath)
 
     @abstractmethod
-    def _parse_card_statement(self, records: list) -> Directives:
+    def _parse_card_statement(self, df: pd.DataFrame) -> Directives:
         raise NotImplemented
 
     @abstractmethod
-    def _parse_bank_statement(self, records: list) -> Directives:
+    def _parse_bank_statement(self, df: pd.DataFrame) -> Directives:
         raise NotImplemented
 
     @abstractmethod
-    def _parse_stock_statement(self, records: list) -> Directives:
+    def _parse_stock_statement(self, df: pd.DataFrame) -> Directives:
         raise NotImplemented
 
-    def _parse_receipt(self, records: list) -> Directives:
+    def _parse_receipt(self, df: pd.DataFrame) -> Directives:
         raise NotImplemented
 
     def _parse_price(self, raw_str: str) -> tuple:
         raise NotImplemented
-
-    def _read_csv(self, raw_records: list[str], delimiter: str=",", quotechar: str='"', **kwargs) -> list[str]:
-        records = []
-        reader = csv.reader(raw_records, delimiter=delimiter, quotechar=quotechar, **kwargs)
-        for row in reader:
-            records.append(row)
-
-        return records
-

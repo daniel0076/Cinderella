@@ -2,10 +2,9 @@ import argparse
 import os
 import logging
 from collections import defaultdict
-from typing import Union
 from pathlib import Path
 
-from datatypes import Statement, Directives
+from datatypes import Directives
 from parsers import get_parsers
 from configs import Configs
 from classifier import AccountClassifier
@@ -19,36 +18,38 @@ CURRENT_DIR = os.getcwd()
 
 class Cinderella:
     def __init__(self, statement_path: str, output_path: str):
-        self.parsers = []
+        self.output_path = output_path
+
+        self.parsers = self._setup_parsers()
         self.configs = Configs()
         self.bean_api = BeanCountAPI()
         self.classifier = AccountClassifier()
-        self.loader = StatementLoader(statement_path)
-        self.output_path = output_path
+        self.statement_loader = StatementLoader(statement_path, self.parsers)
+        self._setup_accounts(self.parsers, self.configs, self.output_path, self.bean_api)
 
-        self.setup()
-
-    def setup(self):
-        # for gen account beans
+    def _setup_accounts(self, parsers: list, configs: Configs,
+                        output_path: str, bean_api: BeanCountAPI):
         accounts = []
 
+        for parser in parsers:
+            accounts += parser.default_source_accounts.values()
+            accounts += configs.get_map(parser.identifier).keys()
+
+        accounts += configs.get_default_accounts().values()
+        accounts += configs.get_general_map().keys()
+
+        account_bean_path = str(Path(output_path, "account.bean"))
+        bean_api.write_account_bean(accounts, account_bean_path)
+
+    def _setup_parsers(self) -> list:
+        parsers = []
         for parser_cls in get_parsers():
-            obj = parser_cls()
-            self.parsers.append({"identifier": parser_cls.identifier, "object": obj})
-
-            accounts += obj.default_source_accounts.values()
-            accounts += self.configs.get_map(parser_cls.identifier).keys()
-
-        accounts += self.configs.get_default_accounts().values()
-        accounts += self.configs.get_general_map().keys()
-
-        account_bean_path = str(Path(self.output_path, "account.bean"))
-        self.bean_api.write_account_bean(accounts, account_bean_path)
+            parsers.append(parser_cls())
+        return parsers
 
     def count_beans(self):
-        directives_groups = defaultdict(list)
-        for statement in self.loader.load_statements():
-            directives = self._parse_statement(statement)
+        directives_groups = defaultdict(list[Directives])
+        for directives in self.statement_loader.load():
             if directives:
                 self.classifier.classify_account_by_keyword(directives)
                 directives_groups[directives.category] += directives
@@ -56,21 +57,6 @@ class Cinderella:
         records = self._union_directives(directives_groups)
         path = str(Path(self.output_path, "result.bean"))
         self.bean_api.write_bean(records, path)
-
-    def _parse_statement(self, statement: Statement) -> Union[None, Directives]:
-        # find suitable parser by filename identifier
-        parser = None
-        for parser_it in self.parsers:
-            if parser_it["identifier"] in statement.filename:
-                parser = parser_it["object"]
-
-        if not parser:
-            LOGGER.error("No parser found for statement file: %s", statement.filename)
-            return None
-
-        directives = parser.parse(statement.category, statement.records)
-
-        return directives
 
     def _union_directives(self, directives_groups: dict, update_account: bool=True) -> list:
         primary_record = "receipt"

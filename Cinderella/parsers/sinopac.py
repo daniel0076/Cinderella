@@ -15,12 +15,16 @@ class Sinopac(StatementParser):
             "bank": "Assets:Bank:Sinopac"
         }
 
-    def _decode_statement(self, raw_records: list[str]) -> list[str]:
-        return self._read_csv(raw_records)
+    def read_statement(self, filepath: str) -> pd.DataFrame:
+        try:
+            df = pd.read_csv(filepath, encoding="big5", skiprows=2, thousands=".")
+        except UnicodeDecodeError:
+            df = pd.read_csv(filepath, thousands=".")
+        return df
 
     def _parse_card_statement(self, records: list) -> Directives:
         directives = Directives("card", self.identifier)
-        for record in records:
+        for _, record in records.iterrows():
             date = datetime.strptime(record[0].lstrip().replace("\ufeff", ""), '%Y/%m/%d')
             title = record[3]
             amount = Decimal(record[4].replace(",", ""))
@@ -36,8 +40,8 @@ class Sinopac(StatementParser):
 
     def _parse_bank_statement(self, records: list) -> Directives:
         directives = Directives("bank", self.identifier)
-        for record in records:
-            date = datetime.strptime(record[1].lstrip().replace("\ufeff",""), '%Y/%m/%d')
+        for _, record in records.iterrows():
+            date = datetime.strptime(record[1].lstrip(), '%Y/%m/%d')
             title = record[2]
             if record[3] == " ":
                 amount = Decimal(record[4])

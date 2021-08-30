@@ -1,12 +1,12 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
+from pandas import DataFrame
 
-@dataclass
-class Statement:
-    category: str
-    filename: str
-    records: list[list]
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from parsers.base import StatementParser
+
 
 @dataclass
 class Operation:
@@ -47,4 +47,3 @@ class Directives(list):
         self.category = category
         self.source = source
         super().__init__()
-

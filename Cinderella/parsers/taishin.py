@@ -1,3 +1,4 @@
+import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
@@ -16,7 +17,7 @@ class Taishin(StatementParser):
 
     def _parse_card_statement(self, records: list) -> Directives:
         directives = Directives("card", self.identifier)
-        for record in records:
+        for _, record in records.iterrows():
             date = datetime.strptime(record[0], '%Y/%m/%d')
             item = record[4]
             amount, currency = self._parse_price(record[3])
@@ -31,17 +32,17 @@ class Taishin(StatementParser):
 
         return directives
 
-    def _parse_bank_statement(self, records: list) -> Directives:
+    def _parse_bank_statement(self, records: pd.DataFrame) -> Directives:
         directives = Directives("bank", self.identifier)
-        for record in records:
-            date = datetime.strptime(record[0], '%Y/%m/%d')
-            item = record[6]
-            amount, currency = self._parse_price(record[3])
+        for _, record in records.iterrows():
+            date = datetime.strptime(str(record["交易日期"]), '%Y/%m/%d')
+            item = str(record["備註"])
+            amount, currency = self._parse_price(str(record["金額"]))
             directive = Directive(date, item, amount, currency)
             directive.operations.append(
                 Operation(self.default_source_accounts["bank"], amount, currency)
             )
-            directive.items.append(Item(record[4], amount))
+            directive.items.append(Item(str(record["摘要"]), amount))
 
             directives.append(directive)
 
