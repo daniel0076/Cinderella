@@ -17,15 +17,16 @@ class Sinopac(StatementParser):
 
     def read_statement(self, filepath: str) -> pd.DataFrame:
         try:
-            df = pd.read_csv(filepath, encoding="big5", skiprows=2, thousands=".")
+            df = pd.read_csv(filepath, encoding="big5", skiprows=2)
         except UnicodeDecodeError:
-            df = pd.read_csv(filepath, thousands=".")
+            df = pd.read_csv(filepath)
+        df = df.replace({"\t":""}, regex= True)
         return df
 
     def _parse_card_statement(self, records: list) -> Directives:
         directives = Directives("card", self.identifier)
         for _, record in records.iterrows():
-            date = datetime.strptime(record[0].lstrip().replace("\ufeff", ""), '%Y/%m/%d')
+            date = datetime.strptime(record[0], '%Y/%m/%d')
             title = record[3]
             amount = Decimal(record[4].replace(",", ""))
             currency = "TWD"
@@ -55,7 +56,9 @@ class Sinopac(StatementParser):
             directive.operations.append(
                 Operation(self.default_source_accounts["bank"], amount, currency)
             )
-            directive.items.append(Item(str(record[7])))
+            # can be exchange rate
+            rate = Decimal(str(record[6])) if not pd.isnull(record[6]) else Decimal(0)
+            directive.items.append(Item(str(record[7]), rate))
 
             directives.append(directive)
 

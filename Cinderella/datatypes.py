@@ -25,6 +25,7 @@ class Directive:
     title: str
     amount: Decimal = Decimal(0)
     currency: str = ""
+    exchange: bool = False
     operations: list[Operation] = field(default_factory=list)
     items: list[Item] = field(default_factory=list)
 
