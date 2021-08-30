@@ -1,5 +1,8 @@
 from datatypes import Directive, Directives, Operation
 from configs import Configs
+import logging
+
+LOGGER = logging.getLogger("AccountClassifier")
 
 class AccountClassifier:
     def __init__(self):
@@ -24,12 +27,15 @@ class AccountClassifier:
 
     def _find_by_title_and_items(self, directive: Directive, keyword_map) -> bool:
         for account, keywords in keyword_map.items():
+            if not isinstance(keywords, list):
+                LOGGER.error("Malformed keyword map, values should be a list %s", keywords)
+                continue
             for keyword in keywords:
                 if keyword in directive.title:
                     directive.operations.append(Operation(account))
                     return True
                 for item in directive.items:
-                    if keyword in item.title:  # item[0] == name
+                    if keyword in item.title:
                         directive.operations.append(Operation(account))
                         return True
 
