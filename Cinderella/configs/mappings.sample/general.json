@@ -1,0 +1,28 @@
+{
+    "Expenses:Living:Service": ["APPLE.COM", "Apple"],
+    "Expenses:Living:Furnishings": ["IKEA", "宜家", "NITORI", "宜得利", "傢俱", "特力屋"],
+    "Expenses:Living:Sport": ["運動", "迪卡儂"],
+    "Expenses:Living:Cosmec": ["屈臣氏", "康是美"],
+    "Expenses:Food:Regular": ["優食", "ＵｂｅｒＥａｔｓ", "ｆｏｏｄｐａｎｄａ", "食品", "餐飲"],
+    "Expenses:Food:Drink": [
+        "星巴克", "５０嵐", "烏弄", "可不可", "ＭＡＣＵ", "茶湯會", "麻古", "春陽",
+        "紅茶", "珍珠", "粉圓", "迷客夏"
+    ],
+    "Expenses:Food:Grocery": ["全聯", "寶雅", "小北"],
+    "Expenses:Food:Snack": ["義美"],
+    "Expenses:Transportation:Gas": ["中油", "加油"],
+    "Expenses:Transportation:Parking": ["嘟嘟房", "車旅"],
+    "Expenses:Transportation:HSR": ["高鐵"],
+    "Expenses:Transportation:MRT": ["捷運"],
+    "Expenses:Transportation:Train": ["鐵路"],
+    "Expenses:Transportation:SharedTrans": ["威摩", "睿能"],
+    "Expenses:Fees:Service": ["服務費", "手續費"],
+    "Expenses:Merchant:Apple": ["美商蘋果"],
+    "Expenses:Merchant:Amazon": ["AMZN"],
+    "Expenses:Merchant:CVS": ["全家", "萊爾富"],
+    "Expenses:Merchant:Shopee": ["蝦皮", "SHOPEE"],
+    "Expenses:Merchant:Steam": ["STEAM"],
+    "Expenses:Insurance": ["保費", "保險"],
+    "Income:Rebate": ["回饋", "加碼", "指定", "精選", "綁定"],
+    "Income:Transfer": ["轉入", "存入"]
+}
