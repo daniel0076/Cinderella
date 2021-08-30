@@ -59,3 +59,8 @@ class TaiwanPost(StatementParser):
 
         return directives
 
+    def _parse_card_statement(self, records: list) -> Directives:
+        raise NotImplemented
+
+    def _parse_stock_statement(self, records: list) -> Directives:
+        raise NotImplemented

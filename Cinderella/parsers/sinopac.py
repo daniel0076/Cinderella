@@ -57,3 +57,6 @@ class Sinopac(StatementParser):
 
         return directives
 
+    def _parse_stock_statement(self, records: list) -> Directives:
+        raise NotImplemented
+

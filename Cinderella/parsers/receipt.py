@@ -42,3 +42,12 @@ class TaiwanReceipt(StatementParser):
                 directives[-1].items.append(Item(item_title, item_price))
 
         return directives
+
+    def _parse_card_statement(self, records: list) -> Directives:
+        raise NotImplemented
+
+    def _parse_stock_statement(self, records: list) -> Directives:
+        raise NotImplemented
+
+    def _parse_bank_statement(self, records: list) -> Directives:
+        raise NotImplemented

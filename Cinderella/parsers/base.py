@@ -1,7 +1,9 @@
 import csv
 from datatypes import Directives
+from abc import ABC, abstractmethod
 
-class StatementParser:
+
+class StatementParser(ABC):
     identifier = ""
 
     def __init__(self):
@@ -20,12 +22,15 @@ class StatementParser:
     def _decode_statement(self, raw_records: list[str]) -> list[str]:
         return raw_records
 
+    @abstractmethod
     def _parse_card_statement(self, records: list) -> Directives:
         raise NotImplemented
 
+    @abstractmethod
     def _parse_bank_statement(self, records: list) -> Directives:
         raise NotImplemented
 
+    @abstractmethod
     def _parse_stock_statement(self, records: list) -> Directives:
         raise NotImplemented
 
