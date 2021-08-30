@@ -6,7 +6,7 @@ from .base import StatementParser
 
 
 class Taishin(StatementParser):
-    name = "taishin"
+    identifier = "taishin"
     def __init__(self, config: dict = {}):
         super().__init__()
         self.default_source_accounts = {
@@ -15,7 +15,7 @@ class Taishin(StatementParser):
         }
 
     def _parse_card_statement(self, records: list) -> Directives:
-        directives = Directives("card", self.name)
+        directives = Directives("card", self.identifier)
         for record in records:
             date = datetime.strptime(record[0], '%Y/%m/%d')
             item = record[4]
@@ -32,7 +32,7 @@ class Taishin(StatementParser):
         return directives
 
     def _parse_bank_statement(self, records: list) -> Directives:
-        directives = Directives("bank", self.name)
+        directives = Directives("bank", self.identifier)
         for record in records:
             date = datetime.strptime(record[0], '%Y/%m/%d')
             item = record[6]

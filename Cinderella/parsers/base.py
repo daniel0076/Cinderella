@@ -2,7 +2,7 @@ import csv
 from datatypes import Directives
 
 class StatementParser:
-    name = ""
+    identifier = ""
 
     def __init__(self):
         self.parser = {

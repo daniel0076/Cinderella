@@ -7,7 +7,7 @@ from datatypes import Operation, Directive, Directives, Item
 
 
 class TaiwanReceipt(StatementParser):
-    name = "receipt"
+    identifier = "receipt"
     def __init__(self):
         super().__init__()
         self.default_source_accouonts = {
@@ -19,7 +19,7 @@ class TaiwanReceipt(StatementParser):
         return records[1:]
 
     def _parse_receipt(self, records: list) -> Directives:
-        directives = Directives("receipt", self.name)
+        directives = Directives("receipt", self.identifier)
 
         for record in records:
             if record[0] == "M":
@@ -37,8 +37,8 @@ class TaiwanReceipt(StatementParser):
 
             elif record[0] == "D":
                 # last one is the latest one
-                item_name = record[3]
+                item_title = record[3]
                 item_price = record[2]
-                directives[-1].items.append(Item(item_name, item_price))
+                directives[-1].items.append(Item(item_title, item_price))
 
         return directives

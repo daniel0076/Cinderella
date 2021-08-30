@@ -6,8 +6,8 @@ from .base import StatementParser
 
 
 class TaiwanPost(StatementParser):
-    name = "post"
-    def __init__(self, config: dict = {}):
+    identifier = "post"
+    def __init__(self):
         super().__init__()
         self.default_source_accounts = {
             "bank": "Assets:Bank:Post"
@@ -25,7 +25,7 @@ class TaiwanPost(StatementParser):
         return clean_records
 
     def _parse_bank_statement(self, records: list) -> Directives:
-        directives = Directives("bank", self.name)
+        directives = Directives("bank", self.identifier)
         prev_directive = Directive(datetime.now(), "init")
         for record in records:
             date_tw = record[0]

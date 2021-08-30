@@ -34,10 +34,10 @@ class Cinderella:
 
         for parser_cls in get_parsers():
             obj = parser_cls()
-            self.parsers.append({"name": parser_cls.name, "object": obj})
+            self.parsers.append({"identifier": parser_cls.identifier, "object": obj})
 
             accounts += obj.default_source_accounts.values()
-            accounts += self.configs.get_map(parser_cls.name).keys()
+            accounts += self.configs.get_map(parser_cls.identifier).keys()
 
         accounts += self.configs.get_default_accounts().values()
         accounts += self.configs.get_general_map().keys()
@@ -58,10 +58,10 @@ class Cinderella:
         self.bean_api.write_bean(records, path)
 
     def _parse_statement(self, statement: Statement) -> Union[None, Directives]:
-        # find suitable parser by filename hint
+        # find suitable parser by filename identifier
         parser = None
         for parser_it in self.parsers:
-            if parser_it["name"] in statement.filename:
+            if parser_it["identifier"] in statement.filename:
                 parser = parser_it["object"]
 
         if not parser:
