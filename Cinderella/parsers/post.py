@@ -14,7 +14,7 @@ class TaiwanPost(StatementParser):
             "bank": "Assets:Bank:Post"
         }
 
-    def read_statement(self, filepath: str) -> pd.DataFrame:
+    def _read_statement(self, filepath: str) -> pd.DataFrame:
         df = pd.read_csv(filepath, skipfooter=2, skiprows=1, thousands=",", engine="python")
         df = df.replace({"=":"", '"':''}, regex= True)
         return df

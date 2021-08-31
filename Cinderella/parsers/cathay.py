@@ -15,7 +15,7 @@ class Cathay(StatementParser):
             "bank": "Assets:Bank:Cathay",
         }
 
-    def read_statement(self, filepath: str) -> pd.DataFrame:
+    def _read_statement(self, filepath: str) -> pd.DataFrame:
         if "bank" in filepath:
             df = pd.read_csv(filepath, encoding="big5", skiprows=1, encoding_errors="replace")
         elif "card" in filepath:

@@ -1,5 +1,3 @@
-import pandas as pd
-
 import logging
 from typing import Iterator, Union
 from os import walk
@@ -48,8 +46,7 @@ class StatementLoader:
                     continue
 
                 LOGGER.info("File: %s, Category: %s, Parser: %s", filepath, category, parser.identifier)
-                df = parser.read_statement(filepath)
-                directives = parser.parse(category, df)
+                directives = parser.parse(category, filepath)
 
                 yield directives
 

@@ -14,7 +14,7 @@ class ESun(StatementParser):
             "bank": "Assets:Bank:ESun",
         }
 
-    def read_statement(self, filepath: str) -> pd.DataFrame:
+    def _read_statement(self, filepath: str) -> pd.DataFrame:
         df = pd.read_excel(filepath, skiprows=9, skipfooter=3, thousands=",")
         return df
 

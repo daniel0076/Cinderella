@@ -1,4 +1,4 @@
-import csv
+import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
@@ -14,9 +14,8 @@ class TaiwanReceipt(StatementParser):
             "receipt": "Assets:Cash:Wallet"
         }
 
-    def _decode_statement(self, raw_records: list[str]) -> list[str]:
-        records = self._read_csv(raw_records, delimiter="|")
-        return records[1:]
+    def parse(self, category: str, df: pd.DataFrame) -> Directives:
+        return self._parse_receipt(df)
 
     def _parse_receipt(self, records: list) -> Directives:
         directives = Directives("receipt", self.identifier)

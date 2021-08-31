@@ -15,7 +15,7 @@ class Sinopac(StatementParser):
             "bank": "Assets:Bank:Sinopac"
         }
 
-    def read_statement(self, filepath: str) -> pd.DataFrame:
+    def _read_statement(self, filepath: str) -> pd.DataFrame:
         try:
             df = pd.read_csv(filepath, encoding="big5", skiprows=2)
         except UnicodeDecodeError:
