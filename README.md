@@ -23,9 +23,9 @@ Cinderella
 | 中華郵政         | ✅ (csv)  |❌         | `post`            | 網銀下載           |   
 | 台新銀行(Richart)| ✅ (excel)|✅ (excel) | `taishin`         | 網銀/APP下載 |
 | 永豐銀行         | ✅ (csv)* |✅ (csv)   | `sinopac`         | 網銀下載   |
+| 玉山銀行         | ✅ (excel)|🚀         | `esun`            |手動 xls->xlsx|
+| 國泰世華         | ✅ (csv)  |✅ (csv)   | `cathay`          | 網銀下載           |
 | 中國信託         | 🚀        |🚀         |                   |                   |
-| 玉山銀行         | 🚀        |🚀         |                   |                   |
-| 國泰世華         | 🚀        |🚀         |                   |                   |
 
 > 🚀: 已規劃支援
 
