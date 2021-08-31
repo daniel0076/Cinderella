@@ -55,29 +55,9 @@ class Cinderella:
                 self.classifier.classify_account_by_keyword(directives)
                 directives_groups[directives.category] += directives
 
-        records = self._union_directives(directives_groups)
+        records = self.classifier.union_directives(directives_groups)
         path = str(Path(self.output_path, "result.bean"))
         self.bean_api.write_bean(records, path)
-
-    def _union_directives(self, directives_groups: dict, update_account: bool=True) -> list:
-        primary_record = "receipt"
-        record_union = []
-        record_union += directives_groups.pop(primary_record, [])
-
-        # build map for faster match
-        price_date_match = {}
-        for record in record_union:
-            price_date_match[(record.date, record.amount)] = record
-
-        for category, directives in directives_groups.items():
-            for directive in directives:
-                key = (directive.date, directive.amount)
-                if key in price_date_match:  # the primary record exists
-                    if update_account:
-                        price_date_match[key].operations = directive.operations
-                else:
-                    record_union.append(directive)
-        return record_union
 
 if __name__ == '__main__':
 

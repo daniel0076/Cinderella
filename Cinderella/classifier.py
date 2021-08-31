@@ -1,4 +1,4 @@
-from datatypes import Directive, Directives, Operation
+from datatypes import Directive, Directives, Operation, Item
 from configs import Configs
 import logging
 
@@ -38,7 +38,28 @@ class AccountClassifier:
                     if keyword in item.title:
                         directive.operations.append(Operation(account))
                         return True
-
         return False
+
+    def union_directives(self, directives_groups: dict) -> list:
+        primary_record = "receipt"
+        record_union = []
+        record_union += directives_groups.pop(primary_record, [])
+
+        # build map for faster match
+        price_date_match = {}
+        for record in record_union:
+            price_date_match[(record.date, record.amount)] = record
+
+        for category, directives in directives_groups.items():
+            for directive in directives:
+                key = (directive.date, directive.amount)
+                prime_directive = price_date_match.get(key)
+                if prime_directive:  # the primary record exists
+                    prime_directive.operations = directive.operations
+                    prime_directive.items.append(Item(f"Payment: {directive.title}", directive.amount))
+                else:
+                    record_union.append(directive)
+        return record_union
+
 
 
