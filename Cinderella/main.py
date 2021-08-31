@@ -12,6 +12,7 @@ from beanlayer import BeanCountAPI
 from loader import StatementLoader
 
 LOGGER = logging.getLogger("Cinderella")
+logging.basicConfig(level=logging.INFO)
 PROJECT_ROOT = os.path.dirname(__file__)
 CURRENT_DIR = os.getcwd()
 

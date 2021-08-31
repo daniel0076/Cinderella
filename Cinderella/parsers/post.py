@@ -19,7 +19,7 @@ class TaiwanPost(StatementParser):
         df = df.replace({"=":"", '"':''}, regex= True)
         return df
 
-    def _parse_bank_statement(self, records: list) -> Directives:
+    def _parse_bank_statement(self, records: pd.DataFrame) -> Directives:
         directives = Directives("bank", self.identifier)
         prev_directive = Directive(datetime.now(), "init")
         for _, record in records.iterrows():
