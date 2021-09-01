@@ -1,5 +1,6 @@
 from datatypes import Directive, Directives, Operation, Item
 from configs import Configs
+from collections import defaultdict
 import logging
 
 LOGGER = logging.getLogger("AccountClassifier")
@@ -40,26 +41,29 @@ class AccountClassifier:
                         return True
         return False
 
-    def union_directives(self, directives_groups: dict) -> list:
-        primary_record = "receipt"
-        record_union = []
-        record_union += directives_groups.pop(primary_record, [])
+    def dedup_receipt_and_payment(self, category_map: dict[str, list[Directives]]) -> dict[str, list[Directives]]:
+        primary_directives_list = category_map.pop("receipt", {})
 
         # build map for faster match
         price_date_match = {}
-        for record in record_union:
-            price_date_match[(record.date, record.amount)] = record
-
-        for category, directives in directives_groups.items():
+        for directives in primary_directives_list:
             for directive in directives:
-                key = (directive.date, directive.amount)
-                prime_directive = price_date_match.get(key)
-                if prime_directive:  # the primary record exists
-                    prime_directive.operations = directive.operations
-                    prime_directive.items.append(Item(f"Payment: {directive.title}", directive.amount))
-                else:
-                    record_union.append(directive)
-        return record_union
+                price_date_match[(directive.date, directive.amount)] = directive
 
+        new_category_map = defaultdict(list[Directives])
+        for other_directives_list in category_map.values():
+            for other_directives in other_directives_list:
+                unique = Directives(other_directives.category, other_directives.source)
+                for directive in other_directives:
+                    key = (directive.date, directive.amount)
+                    prime_directive = price_date_match.get(key)
+                    if prime_directive:  # the primary record exists
+                        prime_directive.operations = directive.operations
+                        prime_directive.items.append(Item(f"Payment: {directive.title}", directive.amount))
+                    else:
+                        unique.append(directive)
+                new_category_map[unique.category].append(unique)
 
+        new_category_map["receipt"] += primary_directives_list
 
+        return new_category_map

@@ -1,8 +1,8 @@
 import argparse
 import os
 import logging
-from collections import defaultdict
 from pathlib import Path
+from collections import defaultdict
 
 from datatypes import Directives
 from parsers import get_parsers
@@ -49,15 +49,20 @@ class Cinderella:
         return parsers
 
     def count_beans(self):
-        directives_groups = defaultdict(list[Directives])
+        category_map = defaultdict(list[Directives])
         for directives in self.statement_loader.load():
-            if directives:
-                self.classifier.classify_account_by_keyword(directives)
-                directives_groups[directives.category] += directives
+            if not directives:
+                continue
+            category_map[directives.category].append(directives)
 
-        records = self.classifier.union_directives(directives_groups)
+        category_map = self.classifier.dedup_receipt_and_payment(category_map)
+
         path = str(Path(self.output_path, "result.bean"))
-        self.bean_api.write_bean(records, path)
+        Path(path).unlink(missing_ok=True)  # remove file or link
+        for directives_list in category_map.values():
+            for directives in directives_list:
+                self.classifier.classify_account_by_keyword(directives)
+                self.bean_api.write_bean(directives, path)
 
 if __name__ == '__main__':
 
