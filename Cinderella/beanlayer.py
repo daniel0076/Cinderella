@@ -1,6 +1,6 @@
 from configs import Configs
-from datatypes import Directive
-from pathlib import Path
+from datatypes import Directives
+
 
 class BeanCountAPI:
 
@@ -16,7 +16,7 @@ class BeanCountAPI:
                 line = f"2020-01-01 open {account}\n"
                 f.write(line)
 
-    def write_bean(self, directives: list[Directive], path: str):
-        with open(path, "w") as f:
+    def write_bean(self, directives: Directives, path: str):
+        with open(path, "a") as f:
             for directive in directives:
                 f.write(directive.to_bean())
