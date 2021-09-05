@@ -2,13 +2,14 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
-from datatypes import Operation, Directive, Directives, Item
 from .base import StatementParser
+from datatypes import Transactions
 
 
 class Cathay(StatementParser):
     identifier = "cathay"
-    def __init__(self, config: dict = {}):
+
+    def __init__(self):
         super().__init__()
         self.default_source_accounts = {
             "card": "Liabilities:CreditCard:Cathay",
@@ -17,7 +18,9 @@ class Cathay(StatementParser):
 
     def _read_statement(self, filepath: str) -> pd.DataFrame:
         if "bank" in filepath:
-            df = pd.read_csv(filepath, encoding="big5", skiprows=1, encoding_errors="replace")
+            df = pd.read_csv(
+                filepath, encoding="big5", skiprows=1, encoding_errors="replace"
+            )
         elif "card" in filepath:
             # 國泰帳單沒有提供年份，需由帳單第一行標題取得。可能有跨年份的問題
             with open(filepath, "r", encoding="big5") as f:
@@ -25,52 +28,66 @@ class Cathay(StatementParser):
             self.statement_year = int(title[0:3]) + 1911
             self.statement_month = str(title.split("年")[1][0:2])
 
-            df = pd.read_csv(filepath, encoding="big5", skiprows=20, encoding_errors="replace")
+            df = pd.read_csv(
+                filepath, encoding="big5", skiprows=20, encoding_errors="replace"
+            )
 
         df = df.applymap(str)
         return df
 
-    def _parse_card_statement(self, records: pd.DataFrame) -> Directives:
-        directives = Directives("card", self.identifier)
+    def _parse_card_statement(self, records: pd.DataFrame) -> Transactions:
+        transactions = Transactions("card", self.identifier)
+
         for _, record in records.iterrows():
             indicator = record["卡號末四碼"]
             if pd.isna(indicator) or not indicator.strip().isdigit():
                 continue
+
             item_month, item_day = record[0].split("/", maxsplit=1)
-            # 同上，國泰帳單，可能有跨年份的問題，一月帳單可能有去年12月的帳
+            # 處理可能有跨年份的問題，1月帳單可能有去年12月的帳
             if self.statement_month == "01" and item_month == "12":
-                date = datetime(year=self.statement_year-1, month=int(item_month), day=int(item_day))
+                date = datetime(
+                    year=self.statement_year - 1,
+                    month=int(item_month),
+                    day=int(item_day),
+                )
             else:
-                date = datetime(year=self.statement_year, month=int(item_month), day=int(item_day))
+                date = datetime(
+                    year=self.statement_year, month=int(item_month), day=int(item_day)
+                )
 
-            item = record["交易說明"]
+            title = record["交易說明"]
             currency = "TWD"
-            amount = Decimal(record["臺幣金額"])
+            price = Decimal(record["臺幣金額"])
+            account = self.default_source_accounts["card"]
 
-            directive = Directive(date, item, amount, currency)
-            directive.operations.append(
-                Operation(self.default_source_accounts["card"], -amount, currency)
+            transaction = self.beancount_api.make_transaction(
+                date, title, account, -price, currency
             )
+            transactions.append(transaction)
 
             if record["外幣金額"].strip():
-                directive.items.append(Item(str(record["幣別"]), Decimal(record["外幣金額"])))
+                self.beancount_api.add_transaction_comment(
+                    transaction, f"{record['幣別']}-{record['外幣金額']}"
+                )
 
-            directives.append(directive)
+        return transactions
 
-        return directives
-
-    def _parse_bank_statement(self, records: pd.DataFrame) -> Directives:
-        directives = Directives("bank", self.identifier)
+    def _parse_bank_statement(self, records: pd.DataFrame) -> Transactions:
+        category = "bank"
+        transactions = Transactions(category, self.identifier)
         for _, record in records.iterrows():
-            date = datetime.strptime(str(record[0]), '%Y%m%d')
+            date = datetime.strptime(str(record[0]), "%Y%m%d")
 
-            if record[2].strip():
-                amount = pd.to_numeric(record[2])
-                amount *= -1
-            elif record[3].strip():
-                amount = pd.to_numeric(record[3])
+            if record[2].strip():  # 轉出
+                price = Decimal(record[2])
+                price *= -1
+            elif record[3].strip():  # 轉入
+                price = Decimal(record[3])
             else:
-                raise RuntimeError(f"Can not parse Taiwan Post bank statement {record}")
+                raise RuntimeError(
+                    f"Can not parse {self.identifier} {category} statement {record}"
+                )
 
             extra = None
             if record["備註"].strip():
@@ -83,27 +100,25 @@ class Cathay(StatementParser):
                 title = record["說明"]
 
             currency = "TWD"
-            directive = Directive(date, title, amount, currency)
-            directive.operations.append(
-                Operation(self.default_source_accounts["bank"], amount, currency)
+            account = self.default_source_accounts[category]
+
+            transaction = self.beancount_api.make_transaction(
+                date, title, account, price, currency
             )
-            directive.items.append(Item(str(record["說明"]), amount))
+            transactions.append(transaction)
+
+            self.beancount_api.add_transaction_comment(transaction, f"{record['說明']}")
             if extra:
-                directive.items.append(Item(str(extra)))
+                self.beancount_api.add_transaction_comment(transaction, extra)
 
-            directives.append(directive)
-
-        return directives
+        return transactions
 
     def _parse_price(self, raw_str: str) -> tuple:
-        premise, amount_str = raw_str.split("$", maxsplit=1)
-        amount = Decimal(amount_str.replace(",", ""))
+        premise, price_str = raw_str.split("$", maxsplit=1)
+        price = Decimal(price_str.replace(",", ""))
 
         # used as expense, convert to positive
         if premise.startswith("-"):
-            amount *= -1
+            price *= -1
 
-        return (amount, "TWD")
-
-    def _parse_stock_statement(self, records: list) -> Directives:
-        raise NotImplemented
+        return (price, "TWD")

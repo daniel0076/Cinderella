@@ -5,13 +5,18 @@ from importlib import import_module
 
 from .base import StatementParser
 
+
 def get_parsers() -> list[type[StatementParser]]:
 
     # Auto import source modules in source/
     EXCLUDED_FILES = [basename(__file__), "base.py"]
 
     path = dirname(realpath(__file__))
-    files_only = [file for file in os.listdir(path) if file not in EXCLUDED_FILES and isfile(join(path, file))]
+    files_only = [
+        file
+        for file in os.listdir(path)
+        if file not in EXCLUDED_FILES and isfile(join(path, file))
+    ]
     module_names = [filename.split(".")[0] for filename in files_only]
 
     parsers = []

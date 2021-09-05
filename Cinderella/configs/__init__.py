@@ -9,6 +9,7 @@ LOGGER = logging.getLogger("Configs")
 
 class Singleton(type):
     _instances = {}
+
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
             cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
@@ -30,8 +31,10 @@ class Configs(metaclass=Singleton):
             try:
                 os.rename(sample_mapping_path, mapping_path)
                 LOGGER.info("configs/mappings not found, create with mappings.sample")
-            except:
-                LOGGER.error("configs/mappings not found, check the configs/mappings directory")
+            except (OSError, IsADirectoryError, NotADirectoryError):
+                LOGGER.error(
+                    "Failed to create mappings, check the configs/mappings directory"
+                )
                 raise RuntimeError
 
     def get_settings(self):

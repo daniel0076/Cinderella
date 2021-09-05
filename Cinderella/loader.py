@@ -4,13 +4,12 @@ from os import walk
 from pathlib import Path
 
 from parsers.base import StatementParser
-from datatypes import Directives
+from datatypes import Transactions
 
 LOGGER = logging.getLogger("StatementLoader")
 
 
 class StatementLoader:
-
     def __init__(self, root: str, parsers: list):
         self.root = root
         self.categories = ["bank", "card", "receipt", "stock"]
@@ -29,7 +28,7 @@ class StatementLoader:
                 return category
         return None
 
-    def load(self) -> Iterator[Directives]:
+    def load(self) -> Iterator[Transactions]:
         for (dirpath, _, filenames) in walk(self.root):
             for filename in filenames:
                 if filename.startswith("."):
@@ -39,14 +38,20 @@ class StatementLoader:
                 category = self._find_category(filepath)
 
                 if not parser or not category:
-                    LOGGER.warn("Load fail: %s, Category: %s, Parser: %s",
-                                filepath,
-                                "Unknown" if not category else category,
-                                getattr(parser, "identifier", "Unknown"))
+                    LOGGER.warn(
+                        "Load fail: %s, Category: %s, Parser: %s",
+                        filepath,
+                        "Unknown" if not category else category,
+                        getattr(parser, "identifier", "Unknown"),
+                    )
                     continue
 
-                LOGGER.info("File: %s, Category: %s, Parser: %s", filepath, category, parser.identifier)
+                LOGGER.info(
+                    "File: %s, Category: %s, Parser: %s",
+                    filepath,
+                    category,
+                    parser.identifier,
+                )
                 directives = parser.parse(category, filepath)
 
                 yield directives
-
