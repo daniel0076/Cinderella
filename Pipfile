@@ -11,6 +11,9 @@ xlrd = "*"
 openpyxl = "*"
 
 [dev-packages]
+flake8 = "*"
+pytest = "*"
+black = "*"
 
 [requires]
 python_version = "3.9"
