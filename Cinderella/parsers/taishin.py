@@ -2,12 +2,13 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
-from datatypes import Operation, Directive, Directives, Item
+from datatypes import Transactions
 from .base import StatementParser
 
 
 class Taishin(StatementParser):
     identifier = "taishin"
+
     def __init__(self, config: dict = {}):
         super().__init__()
         self.default_source_accounts = {
@@ -15,38 +16,37 @@ class Taishin(StatementParser):
             "bank": "Assets:Bank:Taishin",
         }
 
-    def _parse_card_statement(self, records: pd.DataFrame) -> Directives:
-        directives = Directives("card", self.identifier)
-        for _, record in records.iterrows():
-            date = datetime.strptime(record[0], '%Y/%m/%d')
-            item = record[4]
-            amount, currency = self._parse_price(record[3])
-            # statement use negative number as expense, turn to positive in our structure
-            amount *= Decimal(-1.0)
+    def _parse_card_statement(self, records: pd.DataFrame) -> Transactions:
+        category = "card"
+        transactions = Transactions(category, self.identifier)
 
-            directive = Directive(date, item, amount, currency)
-            directive.operations.append(
-                Operation(self.default_source_accounts["card"], -amount, currency)
+        for _, record in records.iterrows():
+            date = datetime.strptime(str(record[0]), "%Y/%m/%d")
+            title = str(record[4])
+            amount, currency = self._parse_price(str(record[3]))
+
+            account = self.default_source_accounts[category]
+            transaction = self.beancount_api.make_transaction(
+                date, title, account, amount, currency
             )
-            directives.append(directive)
+            transactions.append(transaction)
+        return transactions
 
-        return directives
-
-    def _parse_bank_statement(self, records: pd.DataFrame) -> Directives:
-        directives = Directives("bank", self.identifier)
+    def _parse_bank_statement(self, records: pd.DataFrame) -> Transactions:
+        transactions = Transactions("bank", self.identifier)
         for _, record in records.iterrows():
-            date = datetime.strptime(str(record["交易日期"]), '%Y/%m/%d')
-            item = str(record["備註"])
+            date = datetime.strptime(str(record["交易日期"]), "%Y/%m/%d")
+            title = str(record["備註"])
             amount, currency = self._parse_price(str(record["金額"]))
-            directive = Directive(date, item, amount, currency)
-            directive.operations.append(
-                Operation(self.default_source_accounts["bank"], amount, currency)
+            account = self.default_source_accounts["bank"]
+
+            transaction = self.beancount_api.make_transaction(
+                date, title, account, amount, currency
             )
-            directive.items.append(Item(str(record["摘要"]), amount))
+            self.beancount_api.add_transaction_comment(transaction, str(record["摘要"]))
 
-            directives.append(directive)
-
-        return directives
+            transactions.append(transaction)
+        return transactions
 
     def _parse_price(self, raw_str: str) -> tuple:
         premise, amount_str = raw_str.split("$", maxsplit=1)
@@ -57,6 +57,3 @@ class Taishin(StatementParser):
             amount *= -1
 
         return (amount, "TWD")
-
-    def _parse_stock_statement(self, records: list) -> Directives:
-        raise NotImplemented

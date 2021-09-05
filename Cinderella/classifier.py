@@ -1,69 +1,56 @@
-from datatypes import Directive, Directives, Operation, Item
-from configs import Configs
-from collections import defaultdict
+from datatypes import Transactions
 import logging
+
+from beanlayer import BeanCountAPI
+
+from configs import Configs
 
 LOGGER = logging.getLogger("AccountClassifier")
 
+
 class AccountClassifier:
     def __init__(self):
+        self.beancount_api = BeanCountAPI()
         self.configs = Configs()
         # setup default accounts
         settings = self.configs.get_settings()
-        default_account = settings.get('default_accounts', {})
-        self.default_expense_account = default_account.get('expenses', "Expenses:Other")
-        self.default_income_account = default_account.get('income', "Income:Other")
+        default_account = settings.get("default_accounts", {})
+        self.default_expense_account = default_account.get("expenses", "Expenses:Other")
+        self.default_income_account = default_account.get("income", "Income:Other")
 
         # load mappings
         self.general_map = self.configs.get_general_map()
 
-    def classify_account_by_keyword(self, directives: Directives) -> None:
-        specific_map = self.configs.get_map(directives.source)
-        for directive in directives:
-            found = self._find_by_title_and_items(directive, specific_map)
-            if not found:
-                found = self._find_by_title_and_items(directive, self.general_map)
-            if not found:
-                directive.operations.append(Operation(self.default_expense_account))
+    def classify_account(self, transactions: Transactions) -> None:
+        specific_map = self.configs.get_map(transactions.source)
+        pattern_maps = [self.general_map, specific_map]  # latter has higher priority
 
-    def _find_by_title_and_items(self, directive: Directive, keyword_map) -> bool:
-        for account, keywords in keyword_map.items():
-            if not isinstance(keywords, list):
-                LOGGER.error("Malformed keyword map, values should be a list %s", keywords)
-                continue
-            for keyword in keywords:
-                if keyword in directive.title:
-                    directive.operations.append(Operation(account))
-                    return True
-                for item in directive.items:
-                    if keyword in item.title:
-                        directive.operations.append(Operation(account))
-                        return True
-        return False
+        for transaction in transactions:
+            account = self._match_patterns(
+                transaction, pattern_maps, self.default_expense_account
+            )
+            self.beancount_api.create_and_add_transaction_posting(transaction, account)
 
-    def dedup_receipt_and_payment(self, category_map: dict[str, list[Directives]]) -> dict[str, list[Directives]]:
-        primary_directives_list = category_map.pop("receipt", {})
+    def dedup_receipt_and_payment(
+        self, category_map: dict[str, list[Transactions]]
+    ) -> None:
+        primary_group = "receipt"
+        primary_transactions_list = category_map.pop(primary_group, [])
 
-        # build map for faster match
-        price_date_match = {}
-        for directives in primary_directives_list:
-            for directive in directives:
-                price_date_match[(directive.date, directive.amount)] = directive
+        for other_transactions_list in category_map.values():
+            for other_transactions in other_transactions_list:
+                for primary_transactions in primary_transactions_list:
+                    self.beancount_api.merge_duplicated_transactions(
+                        other_transactions, primary_transactions
+                    )
+        category_map[primary_group] = primary_transactions_list
 
-        new_category_map = defaultdict(list[Directives])
-        for other_directives_list in category_map.values():
-            for other_directives in other_directives_list:
-                unique = Directives(other_directives.category, other_directives.source)
-                for directive in other_directives:
-                    key = (directive.date, directive.amount)
-                    prime_directive = price_date_match.get(key)
-                    if prime_directive:  # the primary record exists
-                        prime_directive.operations = directive.operations
-                        prime_directive.items.append(Item(f"Payment: {directive.title}", directive.amount))
-                    else:
-                        unique.append(directive)
-                new_category_map[unique.category].append(unique)
-
-        new_category_map["receipt"] += primary_directives_list
-
-        return new_category_map
+    def _match_patterns(
+        self, transaction, pattern_maps: list, default_account: str
+    ) -> str:
+        for pattern_map in pattern_maps:
+            for account, keywords in pattern_map.items():
+                found = self.beancount_api.find_keywords(transaction, keywords)
+                if found:
+                    return account
+        return default_account

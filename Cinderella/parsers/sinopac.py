@@ -2,17 +2,18 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
-from datatypes import Operation, Directive, Directives, Item
+from datatypes import Transactions
 from .base import StatementParser
 
 
 class Sinopac(StatementParser):
     identifier = "sinopac"
+
     def __init__(self, config: dict = {}):
         super().__init__()
         self.default_source_accounts = {
             "card": "Liabilities:CreditCard:Sinopac",
-            "bank": "Assets:Bank:Sinopac"
+            "bank": "Assets:Bank:Sinopac",
         }
 
     def _read_statement(self, filepath: str) -> pd.DataFrame:
@@ -20,50 +21,57 @@ class Sinopac(StatementParser):
             df = pd.read_csv(filepath, encoding="big5", skiprows=2)
         except UnicodeDecodeError:
             df = pd.read_csv(filepath)
-        df = df.replace({"\t":""}, regex= True)
+        df = df.replace({"\t": ""}, regex=True)
+        df = df.applymap(str)
         return df
 
-    def _parse_card_statement(self, records: list) -> Directives:
-        directives = Directives("card", self.identifier)
+    def _parse_card_statement(self, records: list) -> Transactions:
+        category = "card"
+        transactions = Transactions(category, self.identifier)
+
         for _, record in records.iterrows():
-            date = datetime.strptime(record[0], '%Y/%m/%d')
+            date = datetime.strptime(record[0], "%Y/%m/%d")
             title = record[3]
-            amount = Decimal(record[4].replace(",", ""))
+            price = Decimal(record[4].replace(",", ""))
             currency = "TWD"
+            account = self.default_source_accounts[category]
 
-            directive = Directive(date, title, amount, currency)
-            directive.operations.append(
-                Operation(self.default_source_accounts["card"], -amount, currency)
+            transaction = self.beancount_api.make_transaction(
+                date, title, account, -price, currency
             )
-            directives.append(directive)
+            transactions.append(transaction)
 
-        return directives
+        return transactions
 
-    def _parse_bank_statement(self, records: list) -> Directives:
-        directives = Directives("bank", self.identifier)
+    def _parse_bank_statement(self, records: list) -> Transactions:
+        category = "bank"
+        transactions = Transactions(category, self.identifier)
+
         for _, record in records.iterrows():
-            date = datetime.strptime(record[1].lstrip(), '%Y/%m/%d')
+            date = datetime.strptime(record[1].lstrip(), "%Y/%m/%d")
             title = record[2]
             if record[3] == " ":
-                amount = Decimal(record[4])
+                price = Decimal(record[4])
             elif record[4] == " ":
-                amount = -Decimal(record[3])
+                price = -Decimal(record[3])
             else:
-                raise RuntimeError(f"Can not parse Sinopac bank statement {record}")
-            currency = "TWD"
+                raise RuntimeError(
+                    f"Can not parse {self.identifier} {category} statement {record}"
+                )
 
-            directive = Directive(date, title, amount, currency)
-            directive.operations.append(
-                Operation(self.default_source_accounts["bank"], amount, currency)
+            currency = "TWD"
+            account = self.default_source_accounts[category]
+
+            transaction = self.beancount_api.make_transaction(
+                date, title, account, -price, currency
             )
             # can be exchange rate
-            rate = Decimal(str(record[6])) if not pd.isnull(record[6]) else Decimal(0)
-            directive.items.append(Item(str(record[7]), rate))
+            rate = Decimal(str(record[6])) if not pd.isna(record[6]) else None
+            if rate:
+                self.beancount_api.add_transaction_comment(
+                    transaction, f"{record[7]} {rate}"
+                )
 
-            directives.append(directive)
+            transactions.append(transaction)
 
-        return directives
-
-    def _parse_stock_statement(self, records: list) -> Directives:
-        raise NotImplemented
-
+        return transactions

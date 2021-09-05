@@ -1,24 +1,22 @@
+import logging
 import pandas as pd
 from datetime import datetime
 from decimal import Decimal
-from typing import Union
 
 from .base import StatementParser
-from datatypes import Operation, Directive, Directives, Item
-import logging
+from datatypes import Transactions
 
-LOGGER = logging.getLogger("Receipt")
+LOGGER = logging.getLogger("ReceiptParser")
 
 
 class Receipt(StatementParser):
     identifier = "receipt"
+
     def __init__(self):
         super().__init__()
-        self.default_source_accouonts = {
-            "receipt": "Assets:Cash:Wallet"
-        }
+        self.default_source_accounts = {"receipt": "Assets:Cash:Wallet"}
 
-    def parse(self, _: str, filepath: str) -> Directives:
+    def parse(self, _: str, filepath: str) -> Transactions:
         if "invos" in filepath and "csv" in filepath:
             LOGGER.debug("Using Invos specification")
             df = pd.read_csv(filepath)
@@ -29,69 +27,80 @@ class Receipt(StatementParser):
             return self._parse_receipt(df)
 
         else:
-            raise NotImplemented
+            raise NotImplementedError
 
-    def _parse_receipt(self, records: pd.DataFrame) -> Directives:
-        directives = Directives("receipt", self.identifier)
+    def _parse_receipt(self, records: pd.DataFrame) -> Transactions:
+        transactions = Transactions("receipt", self.identifier)
+        prev_transaction = None
 
         for _, record in records.iterrows():
             if record[0] == "M":
-
-                date = datetime.strptime(record[3], '%Y%m%d')
-                title = record[5]
-                amount = Decimal(record[7])
+                date = datetime.strptime(str(record[3]), "%Y%m%d")
+                title = str(record[5])
+                amount = Decimal(str(record[7]))
                 currency = "TWD"
+                account = self.default_source_accounts["receipt"]
 
-                directive = Directive(date, title, amount, currency)
-                directive.operations.append(
-                    Operation(self.default_source_accouonts["receipt"], -amount, currency)
+                transaction = self.beancount_api.make_transaction(
+                    date, title, account, -amount, currency
                 )
-                directives.append(directive)
+                transactions.append(transaction)
+                prev_transaction = transaction
 
             elif record[0] == "D":
                 # continue on last one
-                item_title = record[3]
-                item_price = record[2]
-                directives[-1].items.append(Item(item_title, item_price))
+                item_title = str(record[3])
+                item_price = str(record[2])
+                if prev_transaction:
+                    self.beancount_api.add_transaction_comment(
+                        prev_transaction, f"{item_title} {item_price}"
+                    )
 
-        return directives
+        return transactions
 
-    def _parse_receipt_invos(self, records: pd.DataFrame) -> Directives:
-        directives = Directives("receipt", self.identifier)
-        prev_directive: Union[Directive, None] = None
+    def _parse_receipt_invos(self, records: pd.DataFrame) -> Transactions:
+        transactions = Transactions("receipt", self.identifier)
+        prev_title, prev_date = "", datetime.now()
+        prev_transaction = None
+
         for _, record in records.iterrows():
             date_tw = str(record[0])
             year = int(date_tw[0:-4]) + 1911
-            date_str = str(year) + str(date_tw[::-1][0:4][::-1])  # 年+月日共4位(先reverse，取4位再轉回來)
+            date_str = str(year) + str(
+                date_tw[::-1][0:4][::-1]
+            )  # 年+月日共4位(先reverse，取4位再轉回來)
 
             date = datetime.strptime(date_str, "%Y%m%d")
             title = str(record["店家名稱"])
             amount = Decimal(str(record["小計"]))
             currency = "TWD"
-            item_name = record["消費品項"]
+            item_name = str(record["消費品項"])
             item_price = Decimal(str(record["單價"]))
             item_count = Decimal(str(record["個數"]))
+            account = self.default_source_accounts["receipt"]
 
-            if prev_directive and prev_directive.title == title and prev_directive.date == date:
-                prev_directive.amount += amount
-                prev_directive.items.append(Item(f"{item_name}-{item_count} *", item_price))
-            else:
-                directive = Directive(date, title, amount, currency)
-                directive.operations.append(
-                    Operation(self.default_source_accouonts["receipt"], -amount, currency)
+            if prev_transaction and (prev_title, prev_date) == (title, date):
+                self.beancount_api.add_posting_amount(prev_transaction, -amount)
+                self.beancount_api.add_transaction_comment(
+                    prev_transaction, value=f"{item_name} {item_count}*{item_price}"
                 )
-                directive.items.append(Item(f"{item_name}-{item_count} *", item_price))
-                prev_directive = directive
 
-                directives.append(directive)
+            else:
+                transaction = self.beancount_api.make_transaction(
+                    date, title, account, -amount, currency
+                )
+                self.beancount_api.add_transaction_comment(
+                    transaction, value=f"{item_name}-{item_count}*{item_price}"
+                )
 
-        return directives
+                prev_title, prev_date = title, date
+                prev_transaction = transaction
+                transactions.append(transaction)
 
-    def _parse_card_statement(self, records: list) -> Directives:
-        raise NotImplemented
+        return transactions
 
-    def _parse_stock_statement(self, records: list) -> Directives:
-        raise NotImplemented
+    def _parse_card_statement(self, records: list) -> Transactions:
+        raise NotImplementedError
 
-    def _parse_bank_statement(self, records: list) -> Directives:
-        raise NotImplemented
+    def _parse_bank_statement(self, records: list) -> Transactions:
+        raise NotImplementedError
