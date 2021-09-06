@@ -6,8 +6,8 @@ from copy import deepcopy
 from beancount.core.amount import Amount, sub
 from beancount.core.data import Transaction, Posting
 
-from beanlayer import BeanCountAPI
-from datatypes import Transactions
+from cinderella.beanlayer import BeanCountAPI
+from cinderella.datatypes import Transactions
 
 SAMPLE_TRANS_NAME = "SAMPLE"
 ANOTHER_TRANS_NAME = "ANOTHER"
