@@ -28,7 +28,7 @@ class StatementLoader:
                 return category
         return None
 
-    def load(self) -> Iterator[Transactions]:
+    def _load_file(self) -> Iterator[Transactions]:
         for (dirpath, _, filenames) in walk(self.root):
             for filename in filenames:
                 if filename.startswith("."):
@@ -55,3 +55,22 @@ class StatementLoader:
                 directives = parser.parse(category, filepath)
 
                 yield directives
+
+    def load(self) -> dict[str, list[Transactions]]:
+        category_trans_map = dict()
+        for category in self.categories:
+            category_trans_map[category] = {}
+
+        for trans in self._load_file():
+            existing_trans = category_trans_map[trans.category].get(trans.source, None)
+            if not existing_trans:
+                category_trans_map[trans.category][trans.source] = trans
+            else:
+                existing_trans += trans
+
+        # flatten the dict
+        category_transactions = dict()
+        for category, trans_dict in category_trans_map.items():
+            category_transactions[category] = trans_dict.values()
+
+        return category_transactions

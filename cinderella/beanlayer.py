@@ -199,10 +199,8 @@ class BeanCountAPI:
         for new_entry in filter_txns(new_entries):
             key = (new_entry.date, str(new_entry.postings[0].units))
             existing_entry = date_amount_map.pop(key, None)
-            if (
-                existing_entry
-            ):  # update existing entry with new entry on the first posting
-                # backup comments
+            if existing_entry:
+                # update existing entry with new entry on the first posting
                 existing_posting_comments = deepcopy(existing_entry.postings[0].meta)
                 new_posting_comments = deepcopy(new_entry.postings[0].meta)
                 new_entry.postings[0].meta.clear()

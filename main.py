@@ -2,9 +2,7 @@ import argparse
 import os
 import logging
 from pathlib import Path
-from collections import defaultdict
 
-from cinderella.datatypes import Transactions
 from cinderella.parsers import get_parsers
 from cinderella.configs import Configs
 from cinderella.classifier import AccountClassifier
@@ -51,17 +49,13 @@ class Cinderella:
         return parsers
 
     def count_beans(self):
-        category_map = defaultdict(list[Transactions])
-        for transactions in self.statement_loader.load():
-            if not transactions:
-                continue
-            category_map[transactions.category].append(transactions)
 
-        self.classifier.dedup_receipt_and_payment(category_map)
+        category_transactions = self.statement_loader.load()
+        self.classifier.dedup_receipt_and_payment(category_transactions)
 
         path = str(Path(self.output_path, "result.bean"))
         Path(path).unlink(missing_ok=True)
-        for transactions_list in category_map.values():
+        for transactions_list in category_transactions.values():
             for transactions in transactions_list:
                 self.classifier.classify_account(transactions)
                 self.bean_api.print_beans(transactions, path)
