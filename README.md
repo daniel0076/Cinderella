@@ -1,6 +1,6 @@
 Cinderella
 ===
-[![lint and test](https://github.com/daniel0076/Cinderella/actions/workflows/main.yml/badge.svg)](https://github.com/daniel0076/Cinderella/actions/workflows/main.yml)
+[![lint and test](https://github.com/daniel0076/Cinderella/actions/workflows/main.yml/badge.svg?branch=main)](https://github.com/daniel0076/Cinderella/actions/workflows/main.yml)
 
 自動化帳單分析，搭配 BeanCount 實現全自動記帳
 
