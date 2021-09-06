@@ -2,8 +2,8 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
-from datatypes import Transactions
-from .base import StatementParser
+from cinderella.datatypes import Transactions
+from cinderella.parsers.base import StatementParser
 
 
 class TaiwanPost(StatementParser):

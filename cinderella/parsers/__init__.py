@@ -3,7 +3,7 @@ import inspect
 from os.path import isfile, join, basename, dirname, realpath
 from importlib import import_module
 
-from .base import StatementParser
+from cinderella.parsers.base import StatementParser
 
 
 def get_parsers() -> list[type[StatementParser]]:
@@ -21,7 +21,7 @@ def get_parsers() -> list[type[StatementParser]]:
 
     parsers = []
     for module_name in module_names:
-        module_fullname = f"parsers.{module_name}"
+        module_fullname = f"cinderella.parsers.{module_name}"
         module = import_module(module_fullname)
         module_classes = inspect.getmembers(module, inspect.isclass)
         for item in module_classes:

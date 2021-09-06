@@ -1,9 +1,8 @@
-from datatypes import Transactions
 import logging
 
-from beanlayer import BeanCountAPI
-
-from configs import Configs
+from cinderella.beanlayer import BeanCountAPI
+from cinderella.configs import Configs
+from cinderella.datatypes import Transactions
 
 LOGGER = logging.getLogger("AccountClassifier")
 

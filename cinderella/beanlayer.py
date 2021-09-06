@@ -11,8 +11,8 @@ from beancount.core.amount import Amount
 from beancount.core.position import Cost
 from beancount.core.position import CostSpec
 
-from .configs import Configs
-from .datatypes import Transactions
+from cinderella.configs import Configs
+from cinderella.datatypes import Transactions
 
 LOGGER = logging.getLogger("BeanCountAPI")
 
