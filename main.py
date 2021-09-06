@@ -4,12 +4,12 @@ import logging
 from pathlib import Path
 from collections import defaultdict
 
-from datatypes import Transactions
-from parsers import get_parsers
-from configs import Configs
-from classifier import AccountClassifier
-from beanlayer import BeanCountAPI
-from loader import StatementLoader
+from cinderella.datatypes import Transactions
+from cinderella.parsers import get_parsers
+from cinderella.configs import Configs
+from cinderella.classifier import AccountClassifier
+from cinderella.beanlayer import BeanCountAPI
+from cinderella.loader import StatementLoader
 
 LOGGER = logging.getLogger("Cinderella")
 PROJECT_ROOT = os.path.dirname(__file__)

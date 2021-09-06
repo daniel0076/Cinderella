@@ -1,3 +1,3 @@
 BASEDIR=$(dirname "$0")
 unset PYTHONPATH
-export PYTHONPATH=${PYTHONPATH}:`pwd`/$BASEDIR/Cinderella
+export PYTHONPATH=${PYTHONPATH}:`pwd`/$BASEDIR/cinderella

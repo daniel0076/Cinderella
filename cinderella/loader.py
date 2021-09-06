@@ -3,8 +3,8 @@ from typing import Iterator, Union
 from os import walk
 from pathlib import Path
 
-from parsers.base import StatementParser
-from datatypes import Transactions
+from cinderella.parsers.base import StatementParser
+from cinderella.datatypes import Transactions
 
 LOGGER = logging.getLogger("StatementLoader")
 

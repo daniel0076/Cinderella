@@ -2,8 +2,8 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
-from .base import StatementParser
-from datatypes import Transactions
+from cinderella.datatypes import Transactions
+from cinderella.parsers.base import StatementParser
 
 
 class Cathay(StatementParser):
