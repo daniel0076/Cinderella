@@ -25,13 +25,10 @@ jobs:
         pip install --upgrade pip
         pip install pipenv
         pipenv install --dev
-    - name: Enter virtual environment
-      run: |
-        pipenv shell
     - name: Lint with flake8 and black
       run: |
-        flake8 .
-        black --check
+        pipenv run flake8 .
+        pipenv run black --check
     - name: Test with pytest
       run: |
-        pytest -sv
+        pipenv run pytest -sv
