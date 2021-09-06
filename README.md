@@ -22,7 +22,7 @@ Cinderella
 | 金融機構         | 帳戶對帳單  | 信用卡     | **Cinderella 識別字**  | 備註 |
 | -----------     | ----------- | ----------- | ----------- | ----------- |
 | 財政部電子發票    | ✅ (csv)  |➖         | `receipt`         | 每週/月寄的匯整通知  |
-| 中華郵政         | ✅ (csv)  |❌         | `post`            | 網銀下載           |   
+| 中華郵政         | ✅ (csv)  |❌         | `post`            | 網銀下載           |
 | 台新銀行(Richart)| ✅ (excel)|✅ (excel) | `taishin`         | 網銀/APP下載 |
 | 永豐銀行         | ✅ (csv)* |✅ (csv)   | `sinopac`         | 網銀下載   |
 | 玉山銀行         | ✅ (excel)|🚀         | `esun`            |手動 xls->xlsx|
@@ -75,7 +75,7 @@ pip install -r requirements.txt
 1. 建立 **對帳單資料夾** (例 `statements`，可用任意名稱)，並把對帳單檔案放入資料夾
 2. 依對帳單的金融機構，將 **帳單識別字** 及 **Cinderella 識別字** 加入對帳單的資料夾名或檔名，二個識別字需在資料夾或檔名(檔案路徑)中。例如
     + 台新銀行的帳戶對帳單 (以下都是合法的) ✅：
-        + `statements/taishin/bank-202101.csv` 
+        + `statements/taishin/bank-202101.csv`
         + `statements/bank/taishin-202101.csv`
         + `statements/taishin-bank-2021.csv`
         + `statements/taishin/bank/2021.csv`
@@ -87,7 +87,7 @@ pip install -r requirements.txt
     + 以下是不合法的 ❌ ：
         + `statements/card/2021.csv`：缺少 **Cinderella 識別字**
         + `statements/sinopac/2021.csv`：缺少 **帳單識別字**
-    
+
 3. 範例對帳單資料夾
 ```
 statements
@@ -102,18 +102,18 @@ statements
 5. 建立 BeanCount 資料夾
  + 比如 `beans`
  + 修改 `main.bean` 去讀取不同資料夾中的 `bean` 檔案
-   
+
 ### 執行
 
 ```
-python3 Cinderella/main.py PATH_TO_STATEMENTS PATH_TO_BEANCOUNT
+python3 main.py PATH_TO_STATEMENTS PATH_TO_BEANCOUNT
 fava main.bean  # 啟動 GUI，在 localhost:5000
 ```
 + 範例
 
 
 ```
-python3 Cinderella/main.py ./statements ./beans
+python3 main.py ./statements ./beans
 fava main.bean  # 啟動 GUI，在 localhost:5000
 ```
 
