@@ -86,18 +86,8 @@ if __name__ == "__main__":
         nargs="?",
         help="Path to output bean files",
     )
-    parser.add_argument(
-        "-d",
-        "--debug",
-        help="Debug mode",
-        action="store_true"
-    )
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        help="Debug mode",
-        action="store_true"
-    )
+    parser.add_argument("-d", "--debug", help="Debug mode", action="store_true")
+    parser.add_argument("-v", "--verbose", help="Debug mode", action="store_true")
     args = parser.parse_args()
 
     statements_path = str(Path(CURRENT_DIR, args.statements_path[0]))
