@@ -2,6 +2,7 @@ import logging
 from typing import Iterator, Union
 from os import walk
 from pathlib import Path
+from collections import defaultdict
 
 from cinderella.parsers.base import StatementParser
 from cinderella.datatypes import Transactions
@@ -56,6 +57,16 @@ class StatementLoader:
 
                 yield directives
 
+    def _dedup_transaction(self, transactions: Transactions) -> Transactions:
+        bucket = set()
+        unique = Transactions(transactions.category, transactions.source)
+        for transaction in transactions:
+            key = (transaction.date, transaction.postings[0].units, transaction.narration)
+            if key not in bucket:
+                unique.append(transaction)
+                bucket.add(key)
+        return unique
+
     def load(self) -> dict[str, list[Transactions]]:
         category_trans_map = dict()
         for category in self.categories:
@@ -68,9 +79,10 @@ class StatementLoader:
             else:
                 existing_trans += trans
 
-        # flatten the dict
-        category_transactions = dict()
+        # flatten and dedup the dict
+        category_transactions = defaultdict(list)
         for category, trans_dict in category_trans_map.items():
-            category_transactions[category] = trans_dict.values()
+            for trans in trans_dict.values():
+                category_transactions[category].append(self._dedup_transaction(trans))
 
         return category_transactions
