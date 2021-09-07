@@ -51,7 +51,6 @@ class Cinderella:
     def count_beans(self):
 
         category_transactions = self.statement_loader.load()
-        self.classifier.dedup_receipt_and_payment(category_transactions)
 
         path = str(Path(self.output_path, "result.bean"))
         Path(path).unlink(missing_ok=True)

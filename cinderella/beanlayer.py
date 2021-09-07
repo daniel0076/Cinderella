@@ -184,40 +184,28 @@ class BeanCountAPI:
 
         return False
 
-    def merge_duplicated_transactions(
-        self, new_entries: Transactions, existing_entries: Transactions
-    ):
-        if not existing_entries:
-            return
+    def merge_transactions(
+        self, dest: Transaction, source: Transaction, keep_dest_accounts: bool
+    ) -> Transaction:
+        """
+        merge source first posting to dest
+        """
+        dest_posting_comments = deepcopy(dest.postings[0].meta)
+        source_posting_comments = deepcopy(source.postings[0].meta)
+        source.postings[0].meta.clear()
 
-        date_amount_map = {}
-        for entry in filter_txns(existing_entries):
-            key = (entry.date, str(entry.postings[0].units))
-            date_amount_map[key] = entry
+        # clear and use new_entry
+        if not keep_dest_accounts:
+            dest.postings.clear()
 
-        unique = Transactions(new_entries.category, new_entries.source)
-        for new_entry in filter_txns(new_entries):
-            key = (new_entry.date, str(new_entry.postings[0].units))
-            existing_entry = date_amount_map.pop(key, None)
-            if existing_entry:
-                # update existing entry with new entry on the first posting
-                existing_posting_comments = deepcopy(existing_entry.postings[0].meta)
-                new_posting_comments = deepcopy(new_entry.postings[0].meta)
-                new_entry.postings[0].meta.clear()
-                # clear and use new_entry
-                existing_entry.postings.clear()
-                existing_entry.postings.extend(new_entry.postings)
-                # restore and merge comments
-                for comment in existing_posting_comments.values():
-                    self.add_posting_comment(existing_entry, comment)
-                for comment in new_posting_comments.values():
-                    self.add_posting_comment(existing_entry, comment)
+        dest.postings.extend(source.postings)
 
-                for comment in new_entry.meta.values():
-                    self.add_transaction_comment(existing_entry, comment)
-            else:
-                unique.append(new_entry)
+        # restore and merge comments
+        for comment in dest_posting_comments.values():
+            self.add_posting_comment(dest, comment)
+        for comment in source_posting_comments.values():
+            self.add_posting_comment(dest, comment)
 
-        # modify in-place
-        new_entries.clear()
-        new_entries += unique
+        for comment in source.meta.values():
+            self.add_transaction_comment(dest, comment)
+        return dest

@@ -30,20 +30,6 @@ class AccountClassifier:
             )
             self.beancount_api.create_and_add_transaction_posting(transaction, account)
 
-    def dedup_receipt_and_payment(
-        self, category_map: dict[str, list[Transactions]]
-    ) -> None:
-        primary_group = "receipt"
-        primary_transactions_list = category_map.pop(primary_group, [])
-
-        for other_transactions_list in category_map.values():
-            for other_transactions in other_transactions_list:
-                for primary_transactions in primary_transactions_list:
-                    self.beancount_api.merge_duplicated_transactions(
-                        other_transactions, primary_transactions
-                    )
-        category_map[primary_group] = primary_transactions_list
-
     def _match_patterns(
         self, transaction, pattern_maps: list, default_account: str
     ) -> str:
