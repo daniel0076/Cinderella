@@ -144,19 +144,16 @@ class TestBeanLayer:
     def test_merge_duplicated_transactions(
         self, beancount_api, sample_transaction, sample_account
     ):
-        removed = Transactions("TestCategory", "TestSource")
-        appended = Transactions("TestCategory", "TestSource")
         removed_trans = deepcopy(sample_transaction)
         appended_trans = deepcopy(sample_transaction)
         beancount_api.add_transaction_comment(removed_trans, "removed")
         beancount_api.add_transaction_comment(appended_trans, "appended")
         beancount_api.add_posting_comment(removed_trans, "removed")
         beancount_api.add_posting_comment(appended_trans, "appended")
-        removed.append(removed_trans)
-        appended.append(appended_trans)
 
-        beancount_api.merge_duplicated_transactions(removed, appended)
-        assert removed == []
+        beancount_api.merge_transactions(
+            appended_trans, removed_trans, keep_dest_accounts=False
+        )
         assert appended_trans.meta == {";1": "appended", ";2": "removed"}
         assert appended_trans.postings[0].account == sample_account
         assert appended_trans.postings[0].meta == {";1": "appended", ";2": "removed"}
@@ -164,18 +161,15 @@ class TestBeanLayer:
     def test_merge_duplicated_transactions_different_round(
         self, beancount_api, sample_transaction, sample_account
     ):
-        removed = Transactions("TestCategory", "TestSource")
-        appended = Transactions("TestCategory", "TestSource")
         amount1 = beancount_api._make_amount(Decimal("100.0"), "TWD")
         removed_trans = deepcopy(sample_transaction)
         appended_trans = deepcopy(sample_transaction)
 
         removed_trans.postings[0] = removed_trans.postings[0]._replace(units=amount1)
 
-        removed.append(removed_trans)
-        appended.append(appended_trans)
-        beancount_api.merge_duplicated_transactions(removed, appended)
-        assert removed == []
+        beancount_api.merge_transactions(
+            appended_trans, removed_trans, keep_dest_accounts=False
+        )
         assert appended_trans.postings[0].account == sample_account
 
     def test_find_keyword(self, beancount_api, sample_transaction):

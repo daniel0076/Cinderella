@@ -6,6 +6,7 @@ from collections import defaultdict
 
 from cinderella.parsers.base import StatementParser
 from cinderella.datatypes import Transactions
+from cinderella.beanlayer import BeanCountAPI
 
 LOGGER = logging.getLogger("StatementLoader")
 
@@ -15,6 +16,7 @@ class StatementLoader:
         self.root = root
         self.categories = ["bank", "card", "receipt", "stock"]
         self.parsers = parsers
+        self.beancount_api = BeanCountAPI()
 
     def _find_parser(self, path: str) -> Union[StatementParser, None]:
         found = None
@@ -57,15 +59,63 @@ class StatementLoader:
 
                 yield directives
 
-    def _dedup_transaction(self, transactions: Transactions) -> Transactions:
+    def _dedup_transactions(self, transactions: Transactions):
         bucket = set()
-        unique = Transactions(transactions.category, transactions.source)
+        unique = []
         for transaction in transactions:
-            key = (transaction.date, transaction.postings[0].units, transaction.narration)
+            key = (
+                transaction.date,
+                str(transaction.postings[0]),
+                transaction.narration,
+            )
             if key not in bucket:
                 unique.append(transaction)
                 bucket.add(key)
-        return unique
+
+        transactions.clear()
+        transactions.extend(unique)
+
+    def _merge_similar_transactions(
+        self, lhs: Union[Transactions, list], rhs: Union[Transactions, list]
+    ) -> None:
+        """
+        merge similar transactions from rhs to lhs
+        two transactions are deemed similar if they have common date and amount
+        """
+        if isinstance(rhs, Transactions):
+            rhs = [rhs]
+        if isinstance(lhs, Transactions):
+            lhs = [lhs]
+
+        # build map for comparison
+        bucket: dict[tuple, list] = defaultdict(list)
+        counter: dict[tuple, int] = dict()
+        for trans_list in lhs:
+            for trans in trans_list:
+                key = (trans.date, str(trans.postings[0].units))
+                if key in bucket.keys():
+                    counter[key] += 1
+                    bucket[key].append(trans)
+                else:
+                    counter[key] = 1
+                    bucket[key].append(trans)
+
+        for trans_list in rhs:
+            unique = []
+            for trans in trans_list:
+                key = (trans.date, str(trans.postings[0].units))
+                count = counter.get(key, 0)
+                if count > 0:
+                    counter[key] -= 1
+                    index = counter[key]
+                    existing_trans = bucket[key][index]
+                    self.beancount_api.merge_transactions(
+                        existing_trans, trans, keep_dest_accounts=False
+                    )
+                else:
+                    unique.append(trans)
+            trans_list.clear()
+            trans_list.extend(unique)
 
     def load(self) -> dict[str, list[Transactions]]:
         category_trans_map = dict()
@@ -80,9 +130,17 @@ class StatementLoader:
                 existing_trans += trans
 
         # flatten and dedup the dict
-        category_transactions = defaultdict(list)
+        category_transactions: dict[str, list[Transactions]] = defaultdict(list)
         for category, trans_dict in category_trans_map.items():
             for trans in trans_dict.values():
-                category_transactions[category].append(self._dedup_transaction(trans))
+                self._dedup_transactions(trans)
+                category_transactions[category].append(trans)
+
+        # merge similar transactions, like a transaction may appear in creditcard and receipt
+        receipt_trans_list = category_transactions.pop("receipt", [])
+        for category, trans_list in category_transactions.items():
+            self._merge_similar_transactions(receipt_trans_list, trans_list)
+
+        category_transactions["receipt"] = receipt_trans_list
 
         return category_transactions
