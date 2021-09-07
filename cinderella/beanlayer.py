@@ -6,7 +6,7 @@ from decimal import Decimal
 from typing import Union, Any, Dict, Set, List
 
 from beancount.parser import printer
-from beancount.core.data import Transaction, Posting, filter_txns
+from beancount.core.data import Transaction, Posting
 from beancount.core.amount import Amount
 from beancount.core.position import Cost
 from beancount.core.position import CostSpec
