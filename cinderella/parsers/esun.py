@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
-from cinderella.datatypes import Transactions
+from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.parsers.base import StatementParser
 
 
@@ -12,7 +12,7 @@ class ESun(StatementParser):
     def __init__(self, config: dict = {}):
         super().__init__()
         self.default_source_accounts = {
-            "bank": "Assets:Bank:ESun",
+            StatementCategory.bank: "Assets:Bank:ESun",
         }
 
     def _read_statement(self, filepath: str) -> pd.DataFrame:
@@ -23,7 +23,7 @@ class ESun(StatementParser):
         raise NotImplementedError
 
     def _parse_bank_statement(self, records: pd.DataFrame) -> Transactions:
-        category = "bank"
+        category = StatementCategory.bank
         transactions = Transactions(category, self.identifier)
 
         for _, record in records.iterrows():
@@ -39,7 +39,7 @@ class ESun(StatementParser):
                 price = Decimal(str(record["存"]))
             else:
                 raise RuntimeError(
-                    f"Can not parse {self.identifier} {category} statement {record}"
+                    f"Can not parse {self.identifier} {category.name} statement {record}"
                 )
 
             title = str(record["摘要"])

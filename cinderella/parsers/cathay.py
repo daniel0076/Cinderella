@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
-from cinderella.datatypes import Transactions
+from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.parsers.base import StatementParser
 
 
@@ -12,16 +12,16 @@ class Cathay(StatementParser):
     def __init__(self):
         super().__init__()
         self.default_source_accounts = {
-            "card": "Liabilities:CreditCard:Cathay",
-            "bank": "Assets:Bank:Cathay",
+            StatementCategory.card: "Liabilities:CreditCard:Cathay",
+            StatementCategory.bank: "Assets:Bank:Cathay",
         }
 
     def _read_statement(self, filepath: str) -> pd.DataFrame:
-        if "bank" in filepath:
+        if StatementCategory.bank.name in filepath:
             df = pd.read_csv(
                 filepath, encoding="big5", skiprows=1, encoding_errors="replace"
             )
-        elif "card" in filepath:
+        elif StatementCategory.card.name in filepath:
             # 國泰帳單沒有提供年份，需由帳單第一行標題取得。可能有跨年份的問題
             with open(filepath, "r", encoding="big5") as f:
                 title = f.readline()
@@ -36,7 +36,8 @@ class Cathay(StatementParser):
         return df
 
     def _parse_card_statement(self, records: pd.DataFrame) -> Transactions:
-        transactions = Transactions("card", self.identifier)
+        category = StatementCategory.card
+        transactions = Transactions(category, self.identifier)
 
         for _, record in records.iterrows():
             indicator = record["卡號末四碼"]
@@ -59,7 +60,7 @@ class Cathay(StatementParser):
             title = record["交易說明"]
             currency = "TWD"
             price = Decimal(record["臺幣金額"])
-            account = self.default_source_accounts["card"]
+            account = self.default_source_accounts[category]
 
             transaction = self.beancount_api.make_transaction(
                 date, title, account, -price, currency
@@ -74,7 +75,7 @@ class Cathay(StatementParser):
         return transactions
 
     def _parse_bank_statement(self, records: pd.DataFrame) -> Transactions:
-        category = "bank"
+        category = StatementCategory.bank
         transactions = Transactions(category, self.identifier)
         for _, record in records.iterrows():
             date = datetime.strptime(str(record[0]), "%Y%m%d")
@@ -86,7 +87,7 @@ class Cathay(StatementParser):
                 price = Decimal(record[3])
             else:
                 raise RuntimeError(
-                    f"Can not parse {self.identifier} {category} statement {record}"
+                    f"Can not parse {self.identifier} {category.name} statement {record}"
                 )
 
             extra = None

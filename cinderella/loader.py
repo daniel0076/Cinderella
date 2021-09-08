@@ -5,7 +5,7 @@ from pathlib import Path
 from collections import defaultdict
 
 from cinderella.parsers.base import StatementParser
-from cinderella.datatypes import Transactions
+from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.beanlayer import BeanCountAPI
 
 LOGGER = logging.getLogger("StatementLoader")
@@ -14,7 +14,7 @@ LOGGER = logging.getLogger("StatementLoader")
 class StatementLoader:
     def __init__(self, root: str, parsers: list):
         self.root = root
-        self.categories = ["bank", "card", "receipt", "stock"]
+        self.categories = list(StatementCategory)
         self.parsers = parsers
         self.beancount_api = BeanCountAPI()
 
@@ -25,9 +25,9 @@ class StatementLoader:
                 found = parser
         return found
 
-    def _find_category(self, path: str) -> Union[str, None]:
+    def _find_category(self, path: str) -> Union[StatementCategory, None]:
         for category in self.categories:
-            if category in path:
+            if category.name in path:
                 return category
         return None
 
@@ -117,7 +117,7 @@ class StatementLoader:
             trans_list.clear()
             trans_list.extend(unique)
 
-    def load(self) -> dict[str, list[Transactions]]:
+    def load(self) -> dict[StatementCategory, list[Transactions]]:
         category_trans_map = dict()
         for category in self.categories:
             category_trans_map[category] = {}
@@ -130,17 +130,19 @@ class StatementLoader:
                 existing_trans += trans
 
         # flatten and dedup the dict
-        category_transactions: dict[str, list[Transactions]] = defaultdict(list)
+        category_transactions: dict[
+            StatementCategory, list[Transactions]
+        ] = defaultdict(list)
         for category, trans_dict in category_trans_map.items():
             for trans in trans_dict.values():
                 self._dedup_transactions(trans)
                 category_transactions[category].append(trans)
 
         # merge similar transactions, like a transaction may appear in creditcard and receipt
-        receipt_trans_list = category_transactions.pop("receipt", [])
+        receipt_trans_list = category_transactions.pop(StatementCategory.receipt, [])
         for category, trans_list in category_transactions.items():
             self._merge_similar_transactions(receipt_trans_list, trans_list)
 
-        category_transactions["receipt"] = receipt_trans_list
+        category_transactions[StatementCategory.receipt] = receipt_trans_list
 
         return category_transactions

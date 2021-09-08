@@ -5,6 +5,7 @@ from copy import deepcopy
 from decimal import Decimal
 from typing import Union, Any, Dict, Set, List
 
+from beancount.loader import load_file
 from beancount.parser import printer
 from beancount.core.data import Transaction, Posting
 from beancount.core.amount import Amount
@@ -79,6 +80,10 @@ class BeanCountAPI:
 
         transaction = Transaction(meta, date, flag, payee, title, tags, links, postings)
         return transaction
+
+    def _load_bean(self, path: str) -> list:
+        entries, _, _ = load_file(path)
+        return entries
 
     def make_transaction(
         self,
@@ -209,3 +214,8 @@ class BeanCountAPI:
         for comment in source.meta.values():
             self.add_transaction_comment(dest, comment)
         return dest
+
+
+if __name__ == "__main__":
+    bc = BeanCountAPI()
+    bc._load_bean("/Users/daniel/projects/Cinderella/beans/result.bean")

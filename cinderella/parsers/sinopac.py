@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
-from cinderella.datatypes import Transactions
+from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.parsers.base import StatementParser
 
 
@@ -12,8 +12,8 @@ class Sinopac(StatementParser):
     def __init__(self, config: dict = {}):
         super().__init__()
         self.default_source_accounts = {
-            "card": "Liabilities:CreditCard:Sinopac",
-            "bank": "Assets:Bank:Sinopac",
+            StatementCategory.card: "Liabilities:CreditCard:Sinopac",
+            StatementCategory.bank: "Assets:Bank:Sinopac",
         }
 
     def _read_statement(self, filepath: str) -> pd.DataFrame:
@@ -26,7 +26,7 @@ class Sinopac(StatementParser):
         return df
 
     def _parse_card_statement(self, records: list) -> Transactions:
-        category = "card"
+        category = StatementCategory.card
         transactions = Transactions(category, self.identifier)
 
         for _, record in records.iterrows():
@@ -44,7 +44,7 @@ class Sinopac(StatementParser):
         return transactions
 
     def _parse_bank_statement(self, records: list) -> Transactions:
-        category = "bank"
+        category = StatementCategory.bank
         transactions = Transactions(category, self.identifier)
 
         for _, record in records.iterrows():
@@ -56,7 +56,7 @@ class Sinopac(StatementParser):
                 price = -Decimal(record[3])
             else:
                 raise RuntimeError(
-                    f"Can not parse {self.identifier} {category} statement {record}"
+                    f"Can not parse {self.identifier} {category.name} statement {record}"
                 )
 
             currency = "TWD"

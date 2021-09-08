@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
-from cinderella.datatypes import Transactions
+from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.parsers.base import StatementParser
 
 
@@ -11,7 +11,7 @@ class TaiwanPost(StatementParser):
 
     def __init__(self):
         super().__init__()
-        self.default_source_accounts = {"bank": "Assets:Bank:Post"}
+        self.default_source_accounts = {StatementCategory.bank: "Assets:Bank:Post"}
 
     def _read_statement(self, filepath: str) -> pd.DataFrame:
         df = pd.read_csv(
@@ -21,7 +21,7 @@ class TaiwanPost(StatementParser):
         return df
 
     def _parse_bank_statement(self, records: pd.DataFrame) -> Transactions:
-        category = "bank"
+        category = StatementCategory.bank
         transactions = Transactions(category, self.identifier)
 
         prev_transaction = None
@@ -36,7 +36,7 @@ class TaiwanPost(StatementParser):
                 price = Decimal(record[4])
             else:
                 raise RuntimeError(
-                    f"Can not parse {self.identifier} {category} statement {record}"
+                    f"Can not parse {self.identifier} {category.name} statement {record}"
                 )
             currency = "TWD"
             account = self.default_source_accounts[category]
