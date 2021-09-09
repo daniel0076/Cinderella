@@ -63,7 +63,7 @@ class Sinopac(StatementParser):
             account = self.default_source_accounts[category]
 
             transaction = self.beancount_api.make_transaction(
-                date, title, account, -price, currency
+                date, title, account, price, currency
             )
             # can be exchange rate
             rate = Decimal(str(record[6])) if not pd.isna(record[6]) else None
