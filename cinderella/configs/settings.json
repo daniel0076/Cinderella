@@ -1,4 +1,6 @@
 {
+    "custom_bean_keyword": "custom",
+    "default_output": "beans",
     "default_accounts": {
         "expenses": "Expenses:Other",
         "income": "Income:Other",

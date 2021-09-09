@@ -7,7 +7,7 @@ from typing import Union, Any, Dict, Set, List
 
 from beancount.loader import load_file
 from beancount.parser import printer
-from beancount.core.data import Transaction, Posting
+from beancount.core.data import Transaction, Posting, filter_txns
 from beancount.core.amount import Amount
 from beancount.core.position import Cost
 from beancount.core.position import CostSpec
@@ -83,7 +83,7 @@ class BeanCountAPI:
 
     def _load_bean(self, path: str) -> list:
         entries, _, _ = load_file(path)
-        return entries
+        return [transaction for transaction in filter_txns(entries)]
 
     def make_transaction(
         self,

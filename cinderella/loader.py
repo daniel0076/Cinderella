@@ -1,22 +1,29 @@
 import logging
 from typing import Iterator, Union
-from os import walk
+from os import walk, getcwd
 from pathlib import Path
 from collections import defaultdict
 
 from cinderella.parsers.base import StatementParser
 from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.beanlayer import BeanCountAPI
+from cinderella.configs import Configs
 
 LOGGER = logging.getLogger("StatementLoader")
+CURRENT_DIR = getcwd()
 
 
 class StatementLoader:
     def __init__(self, root: str, parsers: list):
         self.root = root
-        self.categories = list(StatementCategory)
+        self.categories = [
+            category
+            for category in StatementCategory
+            if category != StatementCategory.custom
+        ]
         self.parsers = parsers
         self.beancount_api = BeanCountAPI()
+        self.bean_loader = BeanLoader()
 
     def _find_parser(self, path: str) -> Union[StatementParser, None]:
         found = None
@@ -55,25 +62,54 @@ class StatementLoader:
                     category,
                     parser.identifier,
                 )
-                directives = parser.parse(category, filepath)
+                transactions = parser.parse(category, filepath)
 
-                yield directives
+                yield transactions
 
-    def _dedup_transactions(self, transactions: Transactions):
+    def _dedup_transactions(
+        self,
+        lhs: Union[Transactions, list[Transactions]],
+        rhs: Union[Transactions, list[Transactions]] = None,
+    ):
+        if isinstance(rhs, Transactions):
+            rhs = [rhs]
+        if isinstance(lhs, Transactions):
+            lhs = [lhs]
+
         bucket = set()
-        unique = []
-        for transaction in transactions:
-            key = (
-                transaction.date,
-                str(transaction.postings[0]),
-                transaction.narration,
-            )
-            if key not in bucket:
-                unique.append(transaction)
-                bucket.add(key)
 
-        transactions.clear()
-        transactions.extend(unique)
+        for transactions in lhs:
+            unique = []
+            for transaction in transactions:
+                key = (
+                    transaction.date,
+                    str(transaction.postings[0].units),
+                    transaction.narration,
+                )
+                if key not in bucket:
+                    unique.append(transaction)
+                    bucket.add(key)
+
+            transactions.clear()
+            transactions.extend(unique)
+
+        if not rhs:
+            return
+
+        for transactions in rhs:
+            unique = []
+            for transaction in transactions:
+                key = (
+                    transaction.date,
+                    str(transaction.postings[0].units),
+                    transaction.narration,
+                )
+                if key not in bucket:
+                    unique.append(transaction)
+                    bucket.add(key)
+
+            transactions.clear()
+            transactions.extend(unique)
 
     def _merge_similar_transactions(
         self, lhs: Union[Transactions, list], rhs: Union[Transactions, list]
@@ -127,14 +163,13 @@ class StatementLoader:
             if not existing_trans:
                 category_trans_map[trans.category][trans.source] = trans
             else:
-                existing_trans += trans
+                existing_trans.extend(trans)
 
         # flatten and dedup the dict
-        category_transactions: dict[
-            StatementCategory, list[Transactions]
-        ] = defaultdict(list)
+        category_transactions = defaultdict(list)
         for category, trans_dict in category_trans_map.items():
             for trans in trans_dict.values():
+                assert isinstance(trans, Transactions)
                 self._dedup_transactions(trans)
                 category_transactions[category].append(trans)
 
@@ -142,7 +177,45 @@ class StatementLoader:
         receipt_trans_list = category_transactions.pop(StatementCategory.receipt, [])
         for category, trans_list in category_transactions.items():
             self._merge_similar_transactions(receipt_trans_list, trans_list)
-
         category_transactions[StatementCategory.receipt] = receipt_trans_list
 
+        # dedup transactions listed in custom bean files
+        custom_transactions = self.bean_loader.load_custom_bean()
+        autogen_transactions_list = []
+        for trans_list in category_transactions.values():
+            autogen_transactions_list.extend(trans_list)
+
+        self._dedup_transactions(custom_transactions, autogen_transactions_list)
+
         return category_transactions
+
+
+class BeanLoader:
+    def __init__(self):
+        self.configs = Configs()
+        self.beancount_api = BeanCountAPI()
+        self.default_path = str(Path(CURRENT_DIR, self.configs.default_output))
+
+    def load_custom_bean(self, root: str = None) -> Transactions:
+        if not root:
+            root = self.default_path
+
+        category = StatementCategory.custom
+        transactions = Transactions(category, category.name)
+
+        keyword = self.configs.custom_bean_keyword
+        for (dirpath, _, filenames) in walk(root):
+            for filename in filenames:
+                path = str(Path(dirpath, filename))
+                if keyword not in path or not filename.endswith("bean"):
+                    continue
+
+                entries = self._load_bean(path)
+                transactions.extend(entries)
+
+        return transactions
+
+    def _load_bean(self, path) -> list:
+        results = self.beancount_api._load_bean(path)
+
+        return results

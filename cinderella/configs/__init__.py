@@ -37,19 +37,26 @@ class Configs(metaclass=Singleton):
                 )
                 raise RuntimeError
 
-    def get_settings(self):
-        return self.settings
-
-    def get_default_accounts(self) -> dict:
+    @property
+    def default_accounts(self) -> dict:
         return self.settings["default_accounts"]
 
-    def get_general_map(self):
+    @property
+    def default_output(self) -> str:
+        return self.settings["default_output"]
+
+    @property
+    def custom_bean_keyword(self) -> str:
+        return self.settings["custom_bean_keyword"]
+
+    @property
+    def general_map(self) -> dict:
         map_path = Path(self.current_dir, "mappings/general.json")
         with open(map_path) as f:
             mappings = json.load(f)
         return mappings
 
-    def get_map(self, name: str):
+    def get_map(self, name: str) -> dict:
         path = Path(self.current_dir, f"mappings/{name}.json")
         with open(path) as f:
             mappings = json.load(f)

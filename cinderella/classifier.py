@@ -12,13 +12,13 @@ class AccountClassifier:
         self.beancount_api = BeanCountAPI()
         self.configs = Configs()
         # setup default accounts
-        settings = self.configs.get_settings()
-        default_account = settings.get("default_accounts", {})
+        self.configs = Configs()
+        default_account = self.configs.default_accounts
         self.default_expense_account = default_account.get("expenses", "Expenses:Other")
         self.default_income_account = default_account.get("income", "Income:Other")
 
         # load mappings
-        self.general_map = self.configs.get_general_map()
+        self.general_map = self.configs.general_map
 
     def classify_account(self, transactions: Transactions) -> None:
         specific_map = self.configs.get_map(transactions.source)

@@ -2,6 +2,7 @@ import argparse
 import os
 import logging
 from pathlib import Path
+from typing import Union
 
 from cinderella.parsers import get_parsers
 from cinderella.configs import Configs
@@ -15,14 +16,17 @@ CURRENT_DIR = os.getcwd()
 
 
 class Cinderella:
-    def __init__(self, statement_path: str, output_path: str):
-        self.output_path = output_path
+    def __init__(self, statement_path: str, output_path: Union[str, None]):
 
         self.parsers = self._setup_parsers()
         self.configs = Configs()
         self.bean_api = BeanCountAPI()
         self.classifier = AccountClassifier()
         self.statement_loader = StatementLoader(statement_path, self.parsers)
+        if not output_path:
+            output_path = str(Path(CURRENT_DIR, self.configs.default_output))
+        self.output_path = output_path
+
         self._setup_accounts(
             self.parsers, self.configs, self.output_path, self.bean_api
         )
@@ -36,8 +40,8 @@ class Cinderella:
             accounts += parser.default_source_accounts.values()
             accounts += configs.get_map(parser.identifier).keys()
 
-        accounts += configs.get_default_accounts().values()
-        accounts += configs.get_general_map().keys()
+        accounts += configs.default_accounts.values()
+        accounts += configs.general_map.keys()
 
         account_bean_path = str(Path(output_path, "account.bean"))
         bean_api.write_account_bean(accounts, account_bean_path)
@@ -84,9 +88,9 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     statements_path = str(Path(CURRENT_DIR, args.statements_path[0]))
-    if not args.output_path:
-        output_path = str(Path(CURRENT_DIR, "beans"))
-    else:
+
+    output_path = None
+    if args.output_path:
         output_path = str(Path(CURRENT_DIR, args.output_path))
 
     if args.debug:

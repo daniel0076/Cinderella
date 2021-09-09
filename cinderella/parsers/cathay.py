@@ -113,13 +113,3 @@ class Cathay(StatementParser):
                 self.beancount_api.add_transaction_comment(transaction, extra)
 
         return transactions
-
-    def _parse_price(self, raw_str: str) -> tuple:
-        premise, price_str = raw_str.split("$", maxsplit=1)
-        price = Decimal(price_str.replace(",", ""))
-
-        # used as expense, convert to positive
-        if premise.startswith("-"):
-            price *= -1
-
-        return (price, "TWD")
