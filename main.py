@@ -34,10 +34,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     statements_path = str(Path(CURRENT_DIR, args.statements_path[0]))
+    print(f"Reading statements from {statements_path}")
 
     output_path = None
     if args.output_path:
         output_path = str(Path(CURRENT_DIR, args.output_path))
+    print(f"Output bean files to {output_path}")
 
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
@@ -45,4 +47,6 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.INFO)
 
     cinderella = Cinderella(statements_path, output_path)
+    print(f"Processing transactions...", end="")
     cinderella.count_beans()
+    print(f"done")

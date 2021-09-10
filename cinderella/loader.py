@@ -38,7 +38,9 @@ class StatementLoader:
         return None
 
     def _load_file(self) -> Iterator[Transactions]:
+        LOGGER.debug(f"Loading statement files")
         for (dirpath, _, filenames) in walk(self.root):
+            LOGGER.debug(f"Current directory: {dirpath}")
             for filename in filenames:
                 if filename.startswith("."):
                     continue
@@ -55,12 +57,7 @@ class StatementLoader:
                     )
                     continue
 
-                LOGGER.info(
-                    "File: %s, Category: %s, Parser: %s",
-                    filepath,
-                    category,
-                    parser.identifier,
-                )
+                LOGGER.debug(f"File: {filename}, Category: {category}, Parser: {parser.identifier}")
                 transactions = parser.parse(category, filepath)
 
                 yield transactions
@@ -100,11 +97,14 @@ class BeanLoader:
         transactions = Transactions(category, category.name)
 
         keyword = self.configs.custom_bean_keyword
+        LOGGER.debug(f"===Loading custom bean files===")
         for (dirpath, _, filenames) in walk(root):
+            LOGGER.debug(f"Current directory {dirpath}")
             for filename in filenames:
                 path = str(Path(dirpath, filename))
                 if keyword not in path or not filename.endswith("bean"):
                     continue
+                LOGGER.debug(f"Bean file: {filename}")
 
                 entries = self._load_bean(path)
                 transactions.extend(entries)
