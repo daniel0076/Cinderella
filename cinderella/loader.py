@@ -23,7 +23,6 @@ class StatementLoader:
         ]
         self.parsers = parsers
         self.beancount_api = BeanCountAPI()
-        self.bean_loader = BeanLoader()
 
     def _find_parser(self, path: str) -> Union[StatementParser, None]:
         found = None
@@ -66,93 +65,6 @@ class StatementLoader:
 
                 yield transactions
 
-    def _dedup_transactions(
-        self,
-        lhs: Union[Transactions, list[Transactions]],
-        rhs: Union[Transactions, list[Transactions]] = None,
-    ):
-        if isinstance(rhs, Transactions):
-            rhs = [rhs]
-        if isinstance(lhs, Transactions):
-            lhs = [lhs]
-
-        bucket = set()
-
-        for transactions in lhs:
-            unique = []
-            for transaction in transactions:
-                key = (
-                    transaction.date,
-                    str(transaction.postings[0].units),
-                    transaction.narration,
-                )
-                if key not in bucket:
-                    unique.append(transaction)
-                    bucket.add(key)
-
-            transactions.clear()
-            transactions.extend(unique)
-
-        if not rhs:
-            return
-
-        for transactions in rhs:
-            unique = []
-            for transaction in transactions:
-                key = (
-                    transaction.date,
-                    str(transaction.postings[0].units),
-                    transaction.narration,
-                )
-                if key not in bucket:
-                    unique.append(transaction)
-                    bucket.add(key)
-
-            transactions.clear()
-            transactions.extend(unique)
-
-    def _merge_similar_transactions(
-        self, lhs: Union[Transactions, list], rhs: Union[Transactions, list]
-    ) -> None:
-        """
-        merge similar transactions from rhs to lhs
-        two transactions are deemed similar if they have common date and amount
-        """
-        if isinstance(rhs, Transactions):
-            rhs = [rhs]
-        if isinstance(lhs, Transactions):
-            lhs = [lhs]
-
-        # build map for comparison
-        bucket: dict[tuple, list] = defaultdict(list)
-        counter: dict[tuple, int] = dict()
-        for trans_list in lhs:
-            for trans in trans_list:
-                key = (trans.date, str(trans.postings[0].units))
-                if key in bucket.keys():
-                    counter[key] += 1
-                    bucket[key].append(trans)
-                else:
-                    counter[key] = 1
-                    bucket[key].append(trans)
-
-        for trans_list in rhs:
-            unique = []
-            for trans in trans_list:
-                key = (trans.date, str(trans.postings[0].units))
-                count = counter.get(key, 0)
-                if count > 0:
-                    counter[key] -= 1
-                    index = counter[key]
-                    existing_trans = bucket[key][index]
-                    self.beancount_api.merge_transactions(
-                        existing_trans, trans, keep_dest_accounts=False
-                    )
-                else:
-                    unique.append(trans)
-            trans_list.clear()
-            trans_list.extend(unique)
-
     def load(self) -> dict[StatementCategory, list[Transactions]]:
         category_trans_map = dict()
         for category in self.categories:
@@ -165,27 +77,11 @@ class StatementLoader:
             else:
                 existing_trans.extend(trans)
 
-        # flatten and dedup the dict
+        # flatten the dict
         category_transactions = defaultdict(list)
         for category, trans_dict in category_trans_map.items():
             for trans in trans_dict.values():
-                assert isinstance(trans, Transactions)
-                self._dedup_transactions(trans)
                 category_transactions[category].append(trans)
-
-        # merge similar transactions, like a transaction may appear in creditcard and receipt
-        receipt_trans_list = category_transactions.pop(StatementCategory.receipt, [])
-        for category, trans_list in category_transactions.items():
-            self._merge_similar_transactions(receipt_trans_list, trans_list)
-        category_transactions[StatementCategory.receipt] = receipt_trans_list
-
-        # dedup transactions listed in custom bean files
-        custom_transactions = self.bean_loader.load_custom_bean()
-        autogen_transactions_list = []
-        for trans_list in category_transactions.values():
-            autogen_transactions_list.extend(trans_list)
-
-        self._dedup_transactions(custom_transactions, autogen_transactions_list)
 
         return category_transactions
 
