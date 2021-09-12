@@ -47,6 +47,6 @@ if __name__ == "__main__":
         logging.basicConfig(level=logging.INFO)
 
     cinderella = Cinderella(statements_path, output_path)
-    print(f"Processing transactions...", end="")
+    print("Processing transactions...", end="")
     cinderella.count_beans()
-    print(f"done")
+    print("done")

@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 from typing import Union
 
-from cinderella.datatypes import Transactions, StatementCategory
+from cinderella.datatypes import StatementCategory
 from cinderella.parsers import get_parsers
 from cinderella.configs import Configs
 from cinderella.classifier import AccountClassifier
@@ -63,10 +63,13 @@ class Cinderella:
             self.processor.dedup_transactions(transactions)
 
         # merge similar transactions, like a transaction may appear in creditcard and receipt
-        receipt_transactions_list = category_transactions.pop(StatementCategory.receipt, [])
+        receipt_transactions_list = category_transactions.pop(
+            StatementCategory.receipt, []
+        )
         for transactions_list in category_transactions.values():
-            self.processor.merge_similar_transactions(receipt_transactions_list,
-                                                      transactions_list)
+            self.processor.merge_similar_transactions(
+                receipt_transactions_list, transactions_list
+            )
         category_transactions[StatementCategory.receipt] = receipt_transactions_list
 
         # dedup transactions listed in custom bean files
@@ -75,7 +78,9 @@ class Cinderella:
         for trans_list in category_transactions.values():
             autogen_transactions_list.extend(trans_list)
 
-        self.processor.dedup_transactions(custom_transactions, autogen_transactions_list)
+        self.processor.dedup_transactions(
+            custom_transactions, autogen_transactions_list
+        )
 
         # classify
         for transactions_list in category_transactions.values():

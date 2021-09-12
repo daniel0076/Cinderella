@@ -6,7 +6,6 @@ from cinderella.beanlayer import BeanCountAPI
 
 
 class TransactionProcessor:
-
     def __init__(self):
         self.beancount_api = BeanCountAPI()
 
@@ -15,6 +14,16 @@ class TransactionProcessor:
         lhs: Union[Transactions, list[Transactions]],
         rhs: Union[Transactions, list[Transactions]] = None,
     ):
+        """
+        Remove duplicated Transaction in one or two groups of Transaction.
+
+            Parameters:
+                lhs: Transactions or list of Transactions to be deduped
+                rhs: Optional, another list of Transactions
+
+            Returns:
+                None, modified in-place
+        """
         if isinstance(rhs, Transactions):
             rhs = [rhs]
         if isinstance(lhs, Transactions):
@@ -56,8 +65,9 @@ class TransactionProcessor:
             transactions.extend(unique)
 
     def merge_similar_transactions(
-        self, lhs: Union[Transactions, list[Transactions]],
-        rhs: Union[Transactions, list[Transactions]]
+        self,
+        lhs: Union[Transactions, list[Transactions]],
+        rhs: Union[Transactions, list[Transactions]],
     ) -> None:
         """
         merge similar transactions from rhs to lhs
