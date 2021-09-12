@@ -24,32 +24,19 @@ class TransactionProcessor:
             Returns:
                 None, modified in-place
         """
-        if isinstance(rhs, Transactions):
-            rhs = [rhs]
+        transactions_list = []
         if isinstance(lhs, Transactions):
-            lhs = [lhs]
+            transactions_list.append(lhs)
+        elif isinstance(lhs, list):
+            transactions_list.extend(lhs)
+
+        if isinstance(rhs, Transactions):
+            transactions_list.append(rhs)
+        elif isinstance(rhs, list):
+            transactions_list.extend(rhs)
 
         bucket = set()
-
-        for transactions in lhs:
-            unique = []
-            for transaction in transactions:
-                key = (
-                    transaction.date,
-                    str(transaction.postings[0].units),
-                    transaction.narration,
-                )
-                if key not in bucket:
-                    unique.append(transaction)
-                    bucket.add(key)
-
-            transactions.clear()
-            transactions.extend(unique)
-
-        if not rhs:
-            return
-
-        for transactions in rhs:
+        for transactions in transactions_list:
             unique = []
             for transaction in transactions:
                 key = (
