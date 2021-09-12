@@ -9,7 +9,7 @@ class StatementCategory(Enum):
 
 
 class Transactions(list):
-    def __init__(self, category, source):
+    def __init__(self, category=StatementCategory.custom, source=""):
         self.category: StatementCategory = category
         self.source = source
         super().__init__()

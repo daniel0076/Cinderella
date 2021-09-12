@@ -8,61 +8,10 @@ from beancount.core.data import Transaction, Posting
 
 from cinderella.beanlayer import BeanCountAPI
 
-SAMPLE_TRANS_NAME = "SAMPLE"
-ANOTHER_TRANS_NAME = "ANOTHER"
-
 
 @pytest.fixture
 def beancount_api():
     yield BeanCountAPI()
-
-
-@pytest.fixture
-def sample_account():
-    yield "Income:Sample"
-
-
-@pytest.fixture
-def another_account():
-    yield "Income:Another"
-
-
-@pytest.fixture
-def sample_amount():
-    yield Amount(Decimal("100.00"), "TWD")
-
-
-@pytest.fixture
-def another_amount():
-    yield Amount(Decimal("101.00"), "TWD")
-
-
-@pytest.fixture
-def sample_posting(sample_account, sample_amount):
-    yield Posting(sample_account, sample_amount, None, None, None, {})
-
-
-@pytest.fixture
-def another_posting(another_account, another_amount):
-    yield Posting(another_account, another_amount, None, None, None, {})
-
-
-@pytest.fixture
-def sample_transaction(sample_posting):
-    date = datetime.now().date()
-    meta = {}
-    yield Transaction(
-        meta, date, None, None, SAMPLE_TRANS_NAME, set(), set(), [sample_posting]
-    )
-
-
-@pytest.fixture
-def another_transaction(another_posting):
-    date = datetime.now().date()
-    meta = {}
-    yield Transaction(
-        meta, date, None, None, ANOTHER_TRANS_NAME, set(), set(), [another_posting]
-    )
 
 
 class TestBeanLayer:
@@ -76,8 +25,10 @@ class TestBeanLayer:
         posting = beancount_api._make_posting(account, sample_amount)
         assert posting == Posting(account, sample_amount, None, None, None, {})
 
-    def test_private_make_transaction(self, beancount_api, sample_posting):
-        title = SAMPLE_TRANS_NAME
+    def test_private_make_transaction(
+        self, beancount_api, sample_posting, sample_transaction_narration
+    ):
+        title = sample_transaction_narration
         meta = {}
         date = datetime.now().date()
         trans = beancount_api._make_transaction(date, title, [sample_posting])
@@ -99,7 +50,7 @@ class TestBeanLayer:
         beancount_api.add_posting_comment(sample_transaction, "test")
         assert sample_transaction.postings[0].meta == {";1": "test", ";2": "test"}
 
-    def test_add__posting_comment_different_transactions(
+    def test_add_posting_comment_different_transactions(
         self, beancount_api, sample_transaction, another_transaction
     ):
         beancount_api.add_posting_comment(sample_transaction, "sample")
@@ -171,11 +122,17 @@ class TestBeanLayer:
         )
         assert appended_trans.postings[0].account == sample_account
 
-    def test_find_keyword(self, beancount_api, sample_transaction):
-        assert beancount_api.find_keyword(sample_transaction, SAMPLE_TRANS_NAME)
-        assert beancount_api.find_keyword(sample_transaction, SAMPLE_TRANS_NAME[1:3])
+    def test_find_keyword(
+        self, beancount_api, sample_transaction, sample_transaction_narration
+    ):
+        assert beancount_api.find_keyword(
+            sample_transaction, sample_transaction_narration
+        )
+        assert beancount_api.find_keyword(
+            sample_transaction, sample_transaction_narration[1:3]
+        )
         # test regex support
         assert beancount_api.find_keyword(sample_transaction, ".*")
         assert not beancount_api.find_keyword(
-            sample_transaction, f"[^{SAMPLE_TRANS_NAME}]"
+            sample_transaction, f"[^{sample_transaction_narration}]"
         )

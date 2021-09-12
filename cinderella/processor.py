@@ -19,7 +19,7 @@ class TransactionProcessor:
 
             Parameters:
                 lhs: Transactions or list of Transactions to be deduped
-                rhs: Optional, another list of Transactions
+                rhs: Optional, another list of Transactions. When provided, dedup against lhs.
 
             Returns:
                 None, modified in-place
