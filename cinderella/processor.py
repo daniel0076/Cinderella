@@ -2,8 +2,6 @@ from typing import Union
 from collections import defaultdict
 from datetime import timedelta
 
-from beancount.core.amount import Amount
-
 from cinderella.datatypes import Transactions
 from cinderella.beanlayer import BeanCountAPI
 
@@ -17,7 +15,6 @@ class TransactionProcessor:
         lhs: Union[Transactions, list[Transactions]],
         rhs: Union[Transactions, list[Transactions]] = None,
         lookback_days: int = 0,
-        match_negative: bool = False,
     ):
         """
         Remove duplicated Transaction in one or two groups of Transaction.
@@ -49,14 +46,7 @@ class TransactionProcessor:
                 duplicated = False
                 for i in lookback_days_perm:
                     d = timedelta(days=i)
-                    if match_negative:
-                        key = (
-                            t.date + d,
-                            str(Amount.__neg__(t.postings[0].units)),
-                            t.narration,
-                        )
-                    else:
-                        key = (t.date + d, str(t.postings[0].units), t.narration)
+                    key = (t.date + d, str(t.postings[0].units), t.narration)
 
                     if key in bucket:
                         duplicated = True

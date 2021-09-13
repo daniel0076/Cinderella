@@ -32,11 +32,6 @@ def sample_amount():
 
 
 @pytest.fixture
-def sample_amount_negative():
-    yield Amount(Decimal("-100.00"), "TWD")
-
-
-@pytest.fixture
 def another_amount():
     yield Amount(Decimal("101.00"), "TWD")
 
@@ -44,11 +39,6 @@ def another_amount():
 @pytest.fixture
 def sample_posting(sample_account, sample_amount):
     yield Posting(sample_account, sample_amount, None, None, None, {})
-
-
-@pytest.fixture
-def sample_posting_negative(sample_account, sample_amount_negative):
-    yield Posting(sample_account, sample_amount_negative, None, None, None, {})
 
 
 @pytest.fixture
@@ -101,20 +91,4 @@ def sample_transaction_past(sample_posting, sample_transaction_narration):
         set(),
         set(),
         [sample_posting],
-    )
-
-
-@pytest.fixture
-def sample_transaction_negative(sample_transaction_narration, sample_posting_negative):
-    date = datetime.now().date()
-    meta = {}
-    yield Transaction(  # type: ignore
-        meta,
-        date,
-        None,
-        None,
-        sample_transaction_narration,
-        set(),
-        set(),
-        [sample_posting_negative],
     )
