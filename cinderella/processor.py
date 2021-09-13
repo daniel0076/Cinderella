@@ -50,7 +50,11 @@ class TransactionProcessor:
                 for i in lookback_days_perm:
                     d = timedelta(days=i)
                     if match_negative:
-                        key = (t.date + d, str(Amount.__neg__(t.postings[0].units)), t.narration)
+                        key = (
+                            t.date + d,
+                            str(Amount.__neg__(t.postings[0].units)),
+                            t.narration,
+                        )
                     else:
                         key = (t.date + d, str(t.postings[0].units), t.narration)
 

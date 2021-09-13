@@ -1,5 +1,4 @@
 import pytest
-from datetime import timedelta
 from copy import deepcopy
 
 from cinderella.processor import TransactionProcessor
@@ -65,7 +64,9 @@ class TestTransactionProcessor:
         assert len(trans1) == 1
         assert len(trans2) == 0
 
-    def test_dedup_negative(self, transaction_processor, sample_transaction, sample_transaction_negative):
+    def test_dedup_negative(
+        self, transaction_processor, sample_transaction, sample_transaction_negative
+    ):
         trans1 = Transactions()
         trans2 = Transactions()
         trans1.append(sample_transaction)

@@ -30,9 +30,11 @@ def another_account():
 def sample_amount():
     yield Amount(Decimal("100.00"), "TWD")
 
+
 @pytest.fixture
 def sample_amount_negative():
     yield Amount(Decimal("-100.00"), "TWD")
+
 
 @pytest.fixture
 def another_amount():
@@ -42,6 +44,7 @@ def another_amount():
 @pytest.fixture
 def sample_posting(sample_account, sample_amount):
     yield Posting(sample_account, sample_amount, None, None, None, {})
+
 
 @pytest.fixture
 def sample_posting_negative(sample_account, sample_amount_negative):
@@ -99,6 +102,7 @@ def sample_transaction_past(sample_posting, sample_transaction_narration):
         set(),
         [sample_posting],
     )
+
 
 @pytest.fixture
 def sample_transaction_negative(sample_transaction_narration, sample_posting_negative):
