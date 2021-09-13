@@ -50,6 +50,10 @@ class Configs(metaclass=Singleton):
         return self.settings["custom_bean_keyword"]
 
     @property
+    def ignored_bean_keyword(self) -> str:
+        return self.settings["ignored_bean_keyword"]
+
+    @property
     def general_map(self) -> dict:
         map_path = Path(self.current_dir, "mappings/general.json")
         with open(map_path) as f:

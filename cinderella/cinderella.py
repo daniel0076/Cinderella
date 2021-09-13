@@ -72,14 +72,22 @@ class Cinderella:
             )
         category_transactions[StatementCategory.receipt] = receipt_transactions_list
 
-        # dedup transactions listed in custom bean files
-        custom_transactions = self.bean_loader.load_custom_bean()
+        # collect autogen list of transactions
         autogen_transactions_list = []
         for trans_list in category_transactions.values():
             autogen_transactions_list.extend(trans_list)
 
+        # dedup transactions listed in custom bean files
+        custom_transactions = self.bean_loader.load_custom_bean()
         self.processor.dedup_transactions(
             custom_transactions, autogen_transactions_list
+        )
+
+        # TODO: merge the two dedup
+        # remove transactions listed in custom bean files
+        ignored_transactions = self.bean_loader.load_ignored_bean()
+        self.processor.dedup_transactions(
+            ignored_transactions, autogen_transactions_list
         )
 
         # classify

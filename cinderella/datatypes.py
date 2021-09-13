@@ -2,6 +2,7 @@ from enum import Enum, auto
 
 
 class StatementCategory(Enum):
+    ignored = auto()
     custom = auto()
     bank = auto()
     card = auto()

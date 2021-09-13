@@ -113,6 +113,29 @@ class BeanLoader:
 
         return transactions
 
+    # TODO: merge load_XXX_bean
+    def load_ignored_bean(self, root: str = None) -> Transactions:
+        if not root:
+            root = self.default_path
+
+        category = StatementCategory.ignored
+        transactions = Transactions(category, category.name)
+
+        keyword = self.configs.ignored_bean_keyword
+        LOGGER.debug("===Loading ignored bean files===")
+        for (dirpath, _, filenames) in walk(root):
+            LOGGER.debug(f"Current directory {dirpath}")
+            for filename in filenames:
+                path = str(Path(dirpath, filename))
+                if keyword not in path or not filename.endswith("bean"):
+                    continue
+                LOGGER.debug(f"Bean file: {filename}")
+
+                entries = self._load_bean(path)
+                transactions.extend(entries)
+
+        return transactions
+
     def _load_bean(self, path) -> list:
         results = self.beancount_api._load_bean(path)
 

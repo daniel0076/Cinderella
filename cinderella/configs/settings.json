@@ -1,4 +1,5 @@
 {
+    "ignored_bean_keyword": "ignored",
     "custom_bean_keyword": "custom",
     "default_output": "beans",
     "default_accounts": {
