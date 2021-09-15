@@ -28,7 +28,10 @@ class AccountClassifier:
             account = self._match_patterns(
                 transaction, pattern_maps, self.default_expense_account
             )
-            self.beancount_api.create_and_add_transaction_posting(transaction, account)
+            amount = transaction.postings[0].units
+            self.beancount_api.create_and_add_transaction_posting(
+                transaction, account, -amount.number, amount.currency
+            )
 
     def _match_patterns(
         self, transaction, pattern_maps: list, default_account: str

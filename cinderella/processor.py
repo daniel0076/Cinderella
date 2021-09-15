@@ -10,14 +10,14 @@ class TransactionProcessor:
     def __init__(self):
         self.beancount_api = BeanCountAPI()
 
-    def dedup_transactions(
+    def dedup_bank_transfer(
         self,
-        lhs: Union[Transactions, list[Transactions]],
-        rhs: Union[Transactions, list[Transactions]] = None,
+        transactions_list: list,
         lookback_days: int = 0,
     ):
         """
         Remove duplicated Transaction in one or two groups of Transaction.
+        Transactions with identical account in the given time period are deemed duplicated
 
             Parameters:
                 lhs: Transactions or list of Transactions to be deduped
@@ -26,21 +26,67 @@ class TransactionProcessor:
             Returns:
                 None, modified in-place
         """
-        transactions_list = []
-        if isinstance(lhs, Transactions):
-            transactions_list.append(lhs)
-        elif isinstance(lhs, list):
-            transactions_list.extend(lhs)
+        lookback_days_perm = range(-lookback_days, lookback_days + 1)
 
+        bucket = defaultdict(list)
+        for transactions in transactions_list:
+            unique = []
+            for t in transactions:
+                duplicated = False
+                for i in lookback_days_perm:
+                    d = timedelta(days=i)
+                    postings_key = frozenset(
+                        [(p.account, str(p.units)) for p in t.postings]
+                    )
+                    key = (t.date + d, postings_key)
+
+                    if len(bucket[key]):
+                        for existing_t in bucket[key]:
+                            if t.postings[0] == existing_t.postings[0]:
+                                # do not dedup transactions from the same source
+                                continue
+                            duplicated = True
+                            bucket[key].remove(existing_t)
+                            break
+
+                if not duplicated:
+                    postings_key = frozenset(
+                        [(p.account, str(p.units)) for p in t.postings]
+                    )
+                    key = (t.date, postings_key)
+                    unique.append(t)
+                    bucket[key].append(t)
+
+            transactions.clear()
+            transactions.extend(unique)
+
+    def dedup_by_title_and_amount(
+        self,
+        lhs: Union[Transactions, list[Transactions]],
+        rhs: Union[Transactions, list[Transactions]],
+        lookback_days: int = 0,
+    ):
+        """
+        Remove duplicated Transaction in  rhs against lhs.
+        Transactions with identical title and amount in the given time period are deemed duplicated
+
+            Returns:
+                None, modified in-place
+        """
+        if isinstance(lhs, Transactions):
+            lhs = [lhs]
         if isinstance(rhs, Transactions):
-            transactions_list.append(rhs)
-        elif isinstance(rhs, list):
-            transactions_list.extend(rhs)
+            rhs = [rhs]
 
         lookback_days_perm = range(-lookback_days, lookback_days + 1)
 
-        bucket = set()
-        for transactions in transactions_list:
+        bucket = defaultdict(int)
+        for transactions in lhs:
+            for t in transactions:
+                key = (t.date, str(t.postings[0].units), t.narration)
+                bucket[key] += 1
+
+        for transactions in rhs:
             unique = []
             for t in transactions:
                 duplicated = False
@@ -48,19 +94,18 @@ class TransactionProcessor:
                     d = timedelta(days=i)
                     key = (t.date + d, str(t.postings[0].units), t.narration)
 
-                    if key in bucket:
+                    if bucket[key]:
+                        bucket[key] -= 1
                         duplicated = True
                         break
 
                 if not duplicated:
-                    key = (t.date, str(t.postings[0].units), t.narration)
                     unique.append(t)
-                    bucket.add(key)
 
             transactions.clear()
             transactions.extend(unique)
 
-    def merge_similar_transactions(
+    def merge_same_date_amount(
         self,
         lhs: Union[Transactions, list[Transactions]],
         rhs: Union[Transactions, list[Transactions]],
@@ -76,30 +121,27 @@ class TransactionProcessor:
 
         # build map for comparison
         bucket: dict[tuple, list] = defaultdict(list)
-        counter: dict[tuple, int] = dict()
-        for trans_list in lhs:
-            for trans in trans_list:
-                key = (trans.date, str(trans.postings[0].units))
+        counter: dict[tuple, int] = defaultdict(int)
+        for transactions in lhs:
+            for t in transactions:
+                key = (t.date, str(t.postings[0].units))
                 if key in bucket.keys():
                     counter[key] += 1
-                    bucket[key].append(trans)
-                else:
-                    counter[key] = 1
-                    bucket[key].append(trans)
+                bucket[key].append(t)
 
-        for trans_list in rhs:
+        for transactions in rhs:
             unique = []
-            for trans in trans_list:
-                key = (trans.date, str(trans.postings[0].units))
+            for t in transactions:
+                key = (t.date, str(t.postings[0].units))
                 count = counter.get(key, 0)
                 if count > 0:
                     counter[key] -= 1
                     index = counter[key]
-                    existing_trans = bucket[key][index]
+                    existing_t = bucket[key][index]
                     self.beancount_api.merge_transactions(
-                        existing_trans, trans, keep_dest_accounts=False
+                        existing_t, t, keep_dest_accounts=False
                     )
                 else:
-                    unique.append(trans)
-            trans_list.clear()
-            trans_list.extend(unique)
+                    unique.append(t)
+            transactions.clear()
+            transactions.extend(unique)

@@ -56,48 +56,37 @@ class Cinderella:
         return parsers
 
     def count_beans(self):
-        category_transactions = self.statement_loader.load()
+        transactions_group = self.statement_loader.load()
 
-        # dedup transactions (same source and account)
-        for transactions in category_transactions.values():
-            self.processor.dedup_transactions(transactions)
-
-        # merge similar transactions, like a transaction may appear in creditcard and receipt
-        receipt_transactions_list = category_transactions.pop(
-            StatementCategory.receipt, []
+        # merge trans in receipt and card with same date and amount
+        self.processor.merge_same_date_amount(
+            transactions_group[StatementCategory.receipt],
+            transactions_group[StatementCategory.card],
         )
-        for transactions_list in category_transactions.values():
-            self.processor.merge_similar_transactions(
-                receipt_transactions_list, transactions_list
-            )
-        category_transactions[StatementCategory.receipt] = receipt_transactions_list
 
         # collect autogen list of transactions
-        autogen_transactions_list = []
-        for trans_list in category_transactions.values():
-            autogen_transactions_list.extend(trans_list)
-
-        # dedup transactions listed in custom bean files
+        autogen_trans_list = [
+            ts for ts_list in transactions_group.values() for ts in ts_list
+        ]
+        # remove transactions listed in custom and ignored bean files
         custom_transactions = self.bean_loader.load_custom_bean()
-        self.processor.dedup_transactions(
-            custom_transactions, autogen_transactions_list
-        )
-
-        # TODO: merge the two dedup
-        # remove transactions listed in custom bean files
         ignored_transactions = self.bean_loader.load_ignored_bean()
-        self.processor.dedup_transactions(
-            ignored_transactions, autogen_transactions_list
+        pre_defined_trans_list = [custom_transactions, ignored_transactions]
+        self.processor.dedup_by_title_and_amount(
+            pre_defined_trans_list, autogen_trans_list
         )
 
         # classify
-        for transactions_list in category_transactions.values():
+        for transactions_list in transactions_group.values():
             for transactions in transactions_list:
                 self.classifier.classify_account(transactions)
+
+        # remove duplicated transfer transactions between banks
+        self.processor.dedup_bank_transfer(autogen_trans_list, lookback_days=3)
 
         # output
         path = str(Path(self.output_path, "result.bean"))
         Path(path).unlink(missing_ok=True)
-        for transactions_list in category_transactions.values():
+        for transactions_list in transactions_group.values():
             for transactions in transactions_list:
                 self.bean_api.print_beans(transactions, path)

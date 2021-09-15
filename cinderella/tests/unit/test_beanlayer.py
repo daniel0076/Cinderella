@@ -1,17 +1,9 @@
-import pytest
 from decimal import Decimal
 from datetime import datetime
 from copy import deepcopy
 
 from beancount.core.amount import Amount, sub
 from beancount.core.data import Transaction, Posting
-
-from cinderella.beanlayer import BeanCountAPI
-
-
-@pytest.fixture
-def beancount_api():
-    yield BeanCountAPI()
 
 
 class TestBeanLayer:

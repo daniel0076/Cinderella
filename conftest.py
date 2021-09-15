@@ -5,6 +5,13 @@ from datetime import datetime, timedelta
 from beancount.core.amount import Amount
 from beancount.core.data import Transaction, Posting
 
+from cinderella.beanlayer import BeanCountAPI
+
+
+@pytest.fixture
+def beancount_api():
+    yield BeanCountAPI()
+
 
 @pytest.fixture
 def sample_transaction_narration():

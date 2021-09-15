@@ -40,6 +40,10 @@ class BeanCountAPI:
         amount = amount.quantize(Decimal("1.00"))
         return Amount(amount, currency)
 
+    def _make_simple_posting(self, account: str, price: Decimal, currency: str):
+        amount = self._make_amount(price, currency)
+        return self._make_posting(account, amount)
+
     def _make_posting(
         self,
         account: str,
