@@ -62,6 +62,7 @@ class Cinderella:
         self.processor.merge_same_date_amount(
             transactions_group[StatementCategory.receipt],
             transactions_group[StatementCategory.card],
+            lookback_days=3,
         )
 
         # collect autogen list of transactions
@@ -82,7 +83,7 @@ class Cinderella:
                 self.classifier.classify_account(transactions)
 
         # remove duplicated transfer transactions between banks
-        self.processor.dedup_bank_transfer(autogen_trans_list, lookback_days=3)
+        self.processor.dedup_bank_transfer(autogen_trans_list, lookback_days=2)
 
         # output
         path = str(Path(self.output_path, "result.bean"))

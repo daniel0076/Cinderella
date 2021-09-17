@@ -34,28 +34,32 @@ class TransactionProcessor:
             for t in transactions:
                 duplicated = False
                 for i in lookback_days_perm:
-                    d = timedelta(days=i)
+                    delta = timedelta(days=i)
                     postings_key = frozenset(
                         [(p.account, str(p.units)) for p in t.postings]
                     )
-                    key = (t.date + d, postings_key)
+                    key = (t.date + delta, postings_key)
 
-                    if len(bucket[key]):
-                        for existing_t in bucket[key]:
-                            if t.postings[0] == existing_t.postings[0]:
-                                # do not dedup transactions from the same source
-                                continue
-                            duplicated = True
-                            bucket[key].remove(existing_t)
-                            break
+                    if len(bucket[key]) == 0:
+                        continue
 
-                if not duplicated:
-                    postings_key = frozenset(
-                        [(p.account, str(p.units)) for p in t.postings]
-                    )
-                    key = (t.date, postings_key)
-                    unique.append(t)
-                    bucket[key].append(t)
+                    for existing_t in bucket[key]:
+                        if t.postings[0] == existing_t.postings[0]:
+                            # do not dedup transactions from the same source
+                            continue
+                        duplicated = True
+                        bucket[key].remove(existing_t)
+                        break
+
+                if duplicated:
+                    continue
+
+                postings_key = frozenset(
+                    [(p.account, str(p.units)) for p in t.postings]
+                )
+                key = (t.date, postings_key)
+                unique.append(t)
+                bucket[key].append(t)
 
             transactions.clear()
             transactions.extend(unique)
@@ -109,39 +113,42 @@ class TransactionProcessor:
         self,
         lhs: Union[Transactions, list[Transactions]],
         rhs: Union[Transactions, list[Transactions]],
+        lookback_days: int = 0,
     ) -> None:
         """
         merge similar transactions from rhs to lhs
         two transactions are deemed similar if they have common date and amount
         """
-        if isinstance(rhs, Transactions):
-            rhs = [rhs]
         if isinstance(lhs, Transactions):
             lhs = [lhs]
+        if isinstance(rhs, Transactions):
+            rhs = [rhs]
 
         # build map for comparison
         bucket: dict[tuple, list] = defaultdict(list)
-        counter: dict[tuple, int] = defaultdict(int)
         for transactions in lhs:
             for t in transactions:
                 key = (t.date, str(t.postings[0].units))
-                if key in bucket.keys():
-                    counter[key] += 1
                 bucket[key].append(t)
 
+        lookback_days_perm = range(-lookback_days, lookback_days + 1)
         for transactions in rhs:
             unique = []
             for t in transactions:
-                key = (t.date, str(t.postings[0].units))
-                count = counter.get(key, 0)
-                if count > 0:
-                    counter[key] -= 1
-                    index = counter[key]
-                    existing_t = bucket[key][index]
-                    self.beancount_api.merge_transactions(
-                        existing_t, t, keep_dest_accounts=False
-                    )
-                else:
+                duplicated = False
+                for i in lookback_days_perm:
+                    d = timedelta(days=i)
+                    key = (t.date + d, str(t.postings[0].units))
+                    if len(bucket[key]) > 0:
+                        existing_t = bucket[key][-1]
+                        self.beancount_api.merge_transactions(
+                            existing_t, t, keep_dest_accounts=False
+                        )
+                        bucket[key].pop()
+                        duplicated = True
+                        break
+
+                if not duplicated:
                     unique.append(t)
             transactions.clear()
             transactions.extend(unique)
