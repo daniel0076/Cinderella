@@ -57,7 +57,7 @@ class Cathay(StatementParser):
                     year=self.statement_year, month=int(item_month), day=int(item_day)
                 )
 
-            title = record["交易說明"]
+            title = record["交易說明"].strip()
             currency = "TWD"
             price = Decimal(record["臺幣金額"])
             account = self.default_source_accounts[category]
@@ -100,6 +100,7 @@ class Cathay(StatementParser):
             else:
                 title = record["說明"]
 
+            title = title.strip()
             currency = "TWD"
             account = self.default_source_accounts[category]
 
