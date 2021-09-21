@@ -113,7 +113,7 @@ class TransactionProcessor:
         self,
         lhs: Union[Transactions, list[Transactions]],
         rhs: Union[Transactions, list[Transactions]],
-        lookback_days: int = 0
+        lookback_days: int = 0,
     ) -> None:
         """
         merge similar transactions from rhs to lhs
