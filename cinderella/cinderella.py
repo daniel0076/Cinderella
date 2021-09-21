@@ -62,7 +62,7 @@ class Cinderella:
         self.processor.merge_same_date_amount(
             transactions_group[StatementCategory.receipt],
             transactions_group[StatementCategory.card],
-            lookback_days=3,
+            lookback_days=3
         )
 
         # collect autogen list of transactions
