@@ -27,7 +27,7 @@ Cinderella
 | 永豐銀行         | ✅ (csv)* |✅ (csv)   | `sinopac`         | 網銀下載   |
 | 玉山銀行         | ✅ (excel)|🚀         | `esun`            |手動 xls->xlsx|
 | 國泰世華         | ✅ (csv)  |✅ (csv)   | `cathay`          | 網銀下載           |
-| 中國信託         | 🚀        |🚀         |                   |                   |
+| 中國信託         | ✅ (pdf)  |🚀         | `ctbc`            | 網銀下載(需解除PDF密碼) |
 
 > 🚀: 已規劃支援
 
