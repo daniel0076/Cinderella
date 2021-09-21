@@ -6,7 +6,6 @@
         "expenses": "Expenses:Other",
         "income": "Income:Other",
         "liabilities": "Liabilities:Other",
-        "assets": "Assets:Cash",
-        "wallet": "Assets:Cash:Wallet"
+        "assets": "Assets:Cash"
     }
 }

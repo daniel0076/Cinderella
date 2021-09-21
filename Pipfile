@@ -9,6 +9,7 @@ fava = "*"
 pandas = "*"
 xlrd = "*"
 openpyxl = "*"
+camelot-py = {extras = ["base"], version = "*"}
 
 [dev-packages]
 flake8 = "*"

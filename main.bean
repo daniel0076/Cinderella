@@ -1,8 +1,5 @@
 option "operating_currency" "TWD"
 
 include "./beans/*.bean"
-
-
-
-
+include "./beans/custom/*.bean"
 

@@ -14,7 +14,7 @@ class Receipt(StatementParser):
 
     def __init__(self):
         super().__init__()
-        self.default_source_accounts = {StatementCategory.receipt: "Assets:Cash:Wallet"}
+        self.default_source_accounts = {StatementCategory.receipt: "Assets:Cash"}
 
     def parse(self, _: str, filepath: str) -> Transactions:
         if "invos" in filepath and "csv" in filepath:
