@@ -20,7 +20,7 @@ jobs:
       run: |
         pip install --upgrade pip
         pip install pipenv
-        pipenv install --dev
+        pipenv install --dev --skip-lock
     - name: Lint with flake8 and black
       run: |
         pipenv run flake8 .
