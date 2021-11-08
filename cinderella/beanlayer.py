@@ -15,7 +15,7 @@ from beancount.core.position import CostSpec
 from cinderella.configs import Configs
 from cinderella.datatypes import Transactions
 
-LOGGER = logging.getLogger("BeanCountAPI")
+LOGGER = logging.getLogger(__name__)
 
 
 class BeanCountAPI:

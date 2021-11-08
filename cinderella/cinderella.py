@@ -11,7 +11,7 @@ from cinderella.beanlayer import BeanCountAPI
 from cinderella.loader import StatementLoader, BeanLoader
 from cinderella.processor import TransactionProcessor
 
-LOGGER = logging.getLogger("Cinderella")
+LOGGER = logging.getLogger(__name__)
 CURRENT_DIR = os.getcwd()
 
 

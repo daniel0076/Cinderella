@@ -4,7 +4,7 @@ from os.path import dirname, realpath
 from pathlib import Path
 import logging
 
-LOGGER = logging.getLogger("Configs")
+LOGGER = logging.getLogger(__name__)
 
 
 class Singleton(type):

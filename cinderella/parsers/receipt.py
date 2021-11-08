@@ -6,7 +6,7 @@ from decimal import Decimal
 from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.parsers.base import StatementParser
 
-LOGGER = logging.getLogger("ReceiptParser")
+LOGGER = logging.getLogger(__name__)
 
 
 class Receipt(StatementParser):

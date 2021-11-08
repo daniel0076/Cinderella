@@ -9,7 +9,7 @@ from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.beanlayer import BeanCountAPI
 from cinderella.configs import Configs
 
-LOGGER = logging.getLogger("StatementLoader")
+LOGGER = logging.getLogger(__name__)
 CURRENT_DIR = getcwd()
 
 

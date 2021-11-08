@@ -5,7 +5,7 @@ from pathlib import Path
 
 from cinderella.cinderella import Cinderella
 
-LOGGER = logging.getLogger("main")
+LOGGER = logging.getLogger(__name__)
 PROJECT_ROOT = os.path.dirname(__file__)
 CURRENT_DIR = os.getcwd()
 
@@ -43,8 +43,9 @@ if __name__ == "__main__":
 
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
+        #LOGGER.setLevel(level=logging.DEBUG)
     elif args.verbose:
-        logging.basicConfig(level=logging.INFO)
+        LOGGER.setLevel(level=logging.INFO)
 
     cinderella = Cinderella(statements_path, output_path)
     print("Processing transactions...", end="")

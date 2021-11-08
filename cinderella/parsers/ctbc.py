@@ -1,12 +1,15 @@
 import pandas as pd
 from datetime import datetime
 from decimal import Decimal
+import logging
 
 import camelot
 
 from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.parsers.base import StatementParser
 
+# Turn off logs from pdfminer used by camelot
+logging.getLogger("pdfminer").setLevel(logging.ERROR)
 
 class CTBC(StatementParser):
     identifier = "ctbc"
@@ -19,13 +22,18 @@ class CTBC(StatementParser):
         }
 
     def _read_statement(self, filepath: str) -> pd.DataFrame:
-        tables = camelot.read_pdf(filepath, process_background=True)
+        if filepath.endswith(".pdf"):
+            tables = camelot.read_pdf(filepath, process_background=True)
 
-        df = tables[0].df
-        df = df.replace({"[ ]": ""}, regex=True)
-        df[2] = df[2].replace({"[\n]": ""}, regex=True)  # title
-        df[6] = df[6].replace({"[\n]": ", "}, regex=True)  # comment
-        df.iloc[:, 3:6] = df.iloc[:, 3:6].replace({",": ""}, regex=True)  # amounts
+            df = tables[0].df
+            df = df.replace({"[ ]": ""}, regex=True)
+            df[2] = df[2].replace({"[\n]": ""}, regex=True)  # title
+            df[6] = df[6].replace({"[\n]": ", "}, regex=True)  # comment
+            df.iloc[:, 3:6] = df.iloc[:, 3:6].replace({",": ""}, regex=True)  # amounts
+
+        elif filepath.endswith(".pdf"):
+            print("error, not supported")
+            df = pd.DataFrame([])
 
         return df
 
