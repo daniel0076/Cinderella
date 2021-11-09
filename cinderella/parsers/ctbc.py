@@ -1,9 +1,8 @@
 import pandas as pd
+import numpy as np
 from datetime import datetime
 from decimal import Decimal
 import logging
-
-import camelot
 
 from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.parsers.base import StatementParser
@@ -22,19 +21,7 @@ class CTBC(StatementParser):
         }
 
     def _read_statement(self, filepath: str) -> pd.DataFrame:
-        if filepath.endswith(".pdf"):
-            tables = camelot.read_pdf(filepath, process_background=True)
-
-            df = tables[0].df
-            df = df.replace({"[ ]": ""}, regex=True)
-            df[2] = df[2].replace({"[\n]": ""}, regex=True)  # title
-            df[6] = df[6].replace({"[\n]": ", "}, regex=True)  # comment
-            df.iloc[:, 3:6] = df.iloc[:, 3:6].replace({",": ""}, regex=True)  # amounts
-
-        elif filepath.endswith(".pdf"):
-            print("error, not supported")
-            df = pd.DataFrame([])
-
+        df = pd.read_csv(filepath, encoding="big5", skiprows=2, thousands=',')
         return df
 
     def _parse_card_statement(self, records: pd.DataFrame) -> Transactions:
@@ -45,15 +32,13 @@ class CTBC(StatementParser):
         transactions = Transactions(category, self.identifier)
 
         for _, record in records.iterrows():
-            if record[1] == "":
-                continue
 
-            date = datetime.strptime(record[1], "%Y/%m/%d")
-            title = record[2]
-            if record[3] != "":  # spend
-                price = -Decimal(record[3])
-            elif record[4] != "":  # income
-                price = Decimal(record[4])
+            date = datetime.strptime(record["日期"], "%Y/%m/%d")
+            title = record["摘要"]
+            if not np.isnan(record["支出"]):  # spend
+                price = -Decimal(record["支出"])
+            elif not np.isnan(record["存入"]):  # income
+                price = Decimal(record["存入"])
             else:
                 raise RuntimeError(
                     f"Can not parse {self.identifier} {category.name} statement {record}"
@@ -65,7 +50,14 @@ class CTBC(StatementParser):
             transaction = self.beancount_api.make_transaction(
                 date, title, account, price, currency
             )
-            self.beancount_api.add_transaction_comment(transaction, f"{record[6]}")
+            comment = ""
+            if record["備註"]:
+                comment += str(record["備註"])
+            if str(record["轉出入帳號"]) != "nan":
+                comment += str(record["轉出入帳號"])
+
+            if comment:
+                self.beancount_api.add_transaction_comment(transaction, comment)
 
             transactions.append(transaction)
 
