@@ -22,7 +22,7 @@ class AccountClassifier:
 
     def classify_account(self, transactions: Transactions) -> None:
         specific_map = self.configs.get_map(transactions.source)
-        pattern_maps = [self.general_map, specific_map]  # latter has higher priority
+        pattern_maps = [specific_map, self.general_map]  # former has higher priority
 
         for transaction in transactions:
             account = self._match_patterns(
