@@ -43,7 +43,6 @@ if __name__ == "__main__":
 
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
-        #LOGGER.setLevel(level=logging.DEBUG)
     elif args.verbose:
         LOGGER.setLevel(level=logging.INFO)
 

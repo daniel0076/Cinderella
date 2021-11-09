@@ -10,6 +10,7 @@ from cinderella.parsers.base import StatementParser
 # Turn off logs from pdfminer used by camelot
 logging.getLogger("pdfminer").setLevel(logging.ERROR)
 
+
 class CTBC(StatementParser):
     identifier = "ctbc"
 
