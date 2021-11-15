@@ -32,7 +32,6 @@ class Cathay(StatementParser):
                 filepath, encoding="big5", skiprows=20, encoding_errors="replace"
             )
 
-        df = df.applymap(str)
         return df
 
     def _parse_card_statement(self, records: pd.DataFrame) -> Transactions:
@@ -90,27 +89,24 @@ class Cathay(StatementParser):
                     f"Can not parse {self.identifier} {category.name} statement {record}"
                 )
 
-            extra = None
-            if record["備註"].strip():
-                title = record["備註"]
-                if record["交易資訊"].strip():
-                    extra = record["交易資訊"]
-            elif record["交易資訊"].strip():
-                title = record["交易資訊"]
-            else:
-                title = record["說明"]
+            comment = str(record["備註"]).lstrip() if not pd.isna(record["備註"]) else ""
+            explanation = str(record["說明"])
+            info = str(record["交易資訊"]).lstrip()
 
-            title = title.strip()
+            if comment:
+                title = comment
+                extra = f"{explanation} {info}"
+            else:
+                title = info
+                extra = explanation
+
             currency = "TWD"
             account = self.default_source_accounts[category]
-
             transaction = self.beancount_api.make_simple_transaction(
                 date, title, account, price, currency
             )
-            transactions.append(transaction)
+            self.beancount_api.add_transaction_comment(transaction, extra)
 
-            self.beancount_api.add_transaction_comment(transaction, f"{record['說明']}")
-            if extra:
-                self.beancount_api.add_transaction_comment(transaction, extra)
+            transactions.append(transaction)
 
         return transactions
