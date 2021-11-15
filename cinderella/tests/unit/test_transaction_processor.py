@@ -63,18 +63,18 @@ class TestDedupBankTransfer:
         # Arrange
         trans1 = Transactions(category=StatementCategory.bank, source="bank1")
         trans2 = Transactions(category=StatementCategory.bank, source="bank2")
-        postings_from = beancount_api._make_simple_posting(
+        postings_from = beancount_api.make_simple_posting(
             "Asset:Bank1:Test", Decimal(-100), "TWD"
         )
-        postings_to = beancount_api._make_simple_posting(
+        postings_to = beancount_api.make_simple_posting(
             "Asset:Bank2:Test", Decimal(100), "TWD"
         )
 
         today = datetime.today()
-        t1 = beancount_api._make_transaction(
+        t1 = beancount_api.make_transaction(
             today, "bank1", [postings_from, postings_to]
         )
-        t2 = beancount_api._make_transaction(
+        t2 = beancount_api.make_transaction(
             today, "bank2", [postings_to, postings_from]
         )
         trans1.append(t1)
@@ -88,18 +88,18 @@ class TestDedupBankTransfer:
         # Arrange
         trans1 = Transactions(category=StatementCategory.bank, source="bank1")
         trans2 = Transactions(category=StatementCategory.bank, source="bank2")
-        postings_from = beancount_api._make_simple_posting(
+        postings_from = beancount_api.make_simple_posting(
             "Asset:Bank1:Test", Decimal(-100), "TWD"
         )
-        postings_to = beancount_api._make_simple_posting(
+        postings_to = beancount_api.make_simple_posting(
             "Asset:Bank2:Test", Decimal(100), "TWD"
         )
 
         today = datetime.today()
-        t1 = beancount_api._make_transaction(
+        t1 = beancount_api.make_transaction(
             today, "bank1", [postings_from, postings_to]
         )
-        t2 = beancount_api._make_transaction(
+        t2 = beancount_api.make_transaction(
             today, "bank2", [postings_to, postings_from]
         )
         trans1.append(t1)

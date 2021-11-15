@@ -36,18 +36,18 @@ class BeanCountAPI:
             for directive in directives:
                 f.write(directive.to_bean())
 
-    def _make_amount(self, amount: Decimal, currency: str):
+    def make_amount(self, amount: Decimal, currency: str) -> Amount:
         amount = amount.quantize(Decimal("1.00"))
         return Amount(amount, currency)
 
-    def _make_simple_posting(self, account: str, price: Decimal, currency: str):
-        amount = self._make_amount(price, currency)
-        return self._make_posting(account, amount)
+    def make_simple_posting(self, account: str, price: Decimal, currency: str):
+        amount = self.make_amount(price, currency)
+        return self.make_posting(account, amount)
 
-    def _make_posting(
+    def make_posting(
         self,
         account: str,
-        amount: Amount,
+        amount: Union[Amount, None],
         cost: Union[Cost, CostSpec] = None,
         price: Amount = None,
         flag: str = None,
@@ -61,7 +61,7 @@ class BeanCountAPI:
         posting = Posting(account, amount, cost, price, flag, meta)
         return posting
 
-    def _make_transaction(
+    def make_transaction(
         self,
         date: Union[datetime.datetime, datetime.date],
         title: str,
@@ -89,7 +89,7 @@ class BeanCountAPI:
         entries, _, _ = load_file(path)
         return [transaction for transaction in filter_txns(entries)]
 
-    def make_transaction(
+    def make_simple_transaction(
         self,
         date: datetime.datetime,
         title: str,
@@ -97,10 +97,10 @@ class BeanCountAPI:
         amount: Decimal,
         currency: str,
     ) -> Transaction:
-        bean_amount = self._make_amount(amount, currency)
-        posting = self._make_posting(account, bean_amount)
+        bean_amount = self.make_amount(amount, currency)
+        posting = self.make_posting(account, bean_amount)
 
-        return self._make_transaction(date, title, [posting])
+        return self.make_transaction(date, title, [posting])
 
     def add_transaction_comment(self, transaction: Transaction, value: str) -> None:
         count = len(transaction.meta.keys())
@@ -126,7 +126,7 @@ class BeanCountAPI:
         # https://github.com/beancount/beancount/blob/master/beancount/core/amount.py#L33
         posting = transaction.postings[index]
         old_amount = posting.units
-        new_amount = self._make_amount(old_amount.number + number, old_amount.currency)
+        new_amount = self.make_amount(old_amount.number + number, old_amount.currency)
         posting = posting._replace(units=new_amount)  # replace namedtuple
         transaction.postings[index] = posting
 
@@ -147,8 +147,8 @@ class BeanCountAPI:
         if not price or not currency:
             amount = None
         else:
-            amount = self._make_amount(price, currency)
-        posting = self._make_posting(account, amount)
+            amount = self.make_amount(price, currency)
+        posting = self.make_posting(account, amount)
 
         transaction.postings.append(posting)
         # return index

@@ -9,21 +9,21 @@ from beancount.core.data import Transaction, Posting
 class TestBeanLayer:
     def test_make_amount(self, beancount_api):
         number = Decimal(100)
-        amount = beancount_api._make_amount(number, "TWD")
+        amount = beancount_api.make_amount(number, "TWD")
         assert amount == Amount(number, "TWD")
 
     def test_make_posting(self, beancount_api, sample_account, sample_amount):
         account = sample_account
-        posting = beancount_api._make_posting(account, sample_amount)
+        posting = beancount_api.make_posting(account, sample_amount)
         assert posting == Posting(account, sample_amount, None, None, None, {})
 
-    def test_private_make_transaction(
+    def test_make_transaction(
         self, beancount_api, sample_posting, sample_transaction_narration
     ):
         title = sample_transaction_narration
         meta = {}
         date = datetime.now().date()
-        trans = beancount_api._make_transaction(date, title, [sample_posting])
+        trans = beancount_api.make_transaction(date, title, [sample_posting])
         assert trans == Transaction(
             meta, date, "*", None, title, set(), set(), [sample_posting]
         )
@@ -103,7 +103,7 @@ class TestBeanLayer:
     def test_merge_duplicated_transactions_different_round(
         self, beancount_api, sample_transaction, sample_account
     ):
-        amount1 = beancount_api._make_amount(Decimal("100.0"), "TWD")
+        amount1 = beancount_api.make_amount(Decimal("100.0"), "TWD")
         removed_trans = deepcopy(sample_transaction)
         appended_trans = deepcopy(sample_transaction)
 
