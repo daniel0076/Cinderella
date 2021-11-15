@@ -37,7 +37,7 @@ class BeanCountAPI:
                 f.write(directive.to_bean())
 
     def make_amount(self, amount: Decimal, currency: str) -> Amount:
-        amount = amount.quantize(Decimal("1.00"))
+        amount = amount.quantize(Decimal("1.0000"))
         return Amount(amount, currency)
 
     def make_simple_posting(self, account: str, price: Decimal, currency: str):

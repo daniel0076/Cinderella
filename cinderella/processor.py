@@ -36,7 +36,7 @@ class TransactionProcessor:
                 for i in lookback_days_perm:
                     delta = timedelta(days=i)
                     postings_key = frozenset(
-                        [(p.account, str(p.units)) for p in t.postings]
+                        [(p.account, p.units) for p in t.postings]
                     )
                     key = (t.date + delta, postings_key)
 
@@ -55,7 +55,7 @@ class TransactionProcessor:
                     continue
 
                 postings_key = frozenset(
-                    [(p.account, str(p.units)) for p in t.postings]
+                    [(p.account, p.units) for p in t.postings]
                 )
                 key = (t.date, postings_key)
                 unique.append(t)
@@ -87,7 +87,7 @@ class TransactionProcessor:
         bucket = defaultdict(int)
         for transactions in lhs:
             for t in transactions:
-                key = (t.date, str(t.postings[0].units), t.narration)
+                key = (t.date, t.postings[0].units, t.narration)
                 bucket[key] += 1
 
         for transactions in rhs:
@@ -96,7 +96,7 @@ class TransactionProcessor:
                 duplicated = False
                 for i in lookback_days_perm:
                     d = timedelta(days=i)
-                    key = (t.date + d, str(t.postings[0].units), t.narration)
+                    key = (t.date + d, t.postings[0].units, t.narration)
 
                     if bucket[key]:
                         bucket[key] -= 1
@@ -128,7 +128,7 @@ class TransactionProcessor:
         bucket: dict[tuple, list] = defaultdict(list)
         for transactions in lhs:
             for t in transactions:
-                key = (t.date, str(t.postings[0].units))
+                key = (t.date, t.postings[0].units)
                 bucket[key].append(t)
 
         lookback_days_perm = range(-lookback_days, lookback_days + 1)
@@ -138,7 +138,7 @@ class TransactionProcessor:
                 duplicated = False
                 for i in lookback_days_perm:
                     d = timedelta(days=i)
-                    key = (t.date + d, str(t.postings[0].units))
+                    key = (t.date + d, t.postings[0].units)
                     if len(bucket[key]) > 0:
                         existing_t = bucket[key][-1]
                         self.beancount_api.merge_transactions(
