@@ -10,6 +10,8 @@ pandas = "*"
 xlrd = "*"
 openpyxl = "*"
 camelot-py = {extras = ["base"], version = "*"}
+flake8 = "*"
+black = "*"
 
 [dev-packages]
 flake8 = "*"

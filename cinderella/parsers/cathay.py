@@ -62,7 +62,7 @@ class Cathay(StatementParser):
             price = Decimal(record["臺幣金額"])
             account = self.default_source_accounts[category]
 
-            transaction = self.beancount_api.make_transaction(
+            transaction = self.beancount_api.make_simple_transaction(
                 date, title, account, -price, currency
             )
             transactions.append(transaction)
@@ -104,7 +104,7 @@ class Cathay(StatementParser):
             currency = "TWD"
             account = self.default_source_accounts[category]
 
-            transaction = self.beancount_api.make_transaction(
+            transaction = self.beancount_api.make_simple_transaction(
                 date, title, account, price, currency
             )
             transactions.append(transaction)

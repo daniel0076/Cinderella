@@ -26,7 +26,7 @@ class Taishin(StatementParser):
             amount, currency = self._parse_price(str(record[3]))
 
             account = self.default_source_accounts[category]
-            transaction = self.beancount_api.make_transaction(
+            transaction = self.beancount_api.make_simple_transaction(
                 date, title, account, amount, currency
             )
             transactions.append(transaction)
@@ -41,7 +41,7 @@ class Taishin(StatementParser):
             amount, currency = self._parse_price(str(record["金額"]))
             account = self.default_source_accounts[category]
 
-            transaction = self.beancount_api.make_transaction(
+            transaction = self.beancount_api.make_simple_transaction(
                 date, title, account, amount, currency
             )
             self.beancount_api.add_transaction_comment(transaction, str(record["摘要"]))

@@ -6,6 +6,7 @@
         "expenses": "Expenses:Other",
         "income": "Income:Other",
         "liabilities": "Liabilities:Other",
-        "assets": "Assets:Cash"
+        "assets": "Assets:Cash",
+        "exchange_pnl": "Expenses:Exchange:PNL"
     }
 }

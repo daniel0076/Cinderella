@@ -46,7 +46,7 @@ class ESun(StatementParser):
             currency = "TWD"
             account = self.default_source_accounts[category]
 
-            transaction = self.beancount_api.make_transaction(
+            transaction = self.beancount_api.make_simple_transaction(
                 date, title, account, price, currency
             )
 

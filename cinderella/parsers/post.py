@@ -49,7 +49,7 @@ class TaiwanPost(StatementParser):
                     transaction, f"{title}-{price}"
                 )
             else:
-                transaction = self.beancount_api.make_transaction(
+                transaction = self.beancount_api.make_simple_transaction(
                     date, title, account, price, currency
                 )
                 transactions.append(transaction)

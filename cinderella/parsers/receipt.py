@@ -41,7 +41,7 @@ class Receipt(StatementParser):
                 currency = "TWD"
                 account = self.default_source_accounts[StatementCategory.receipt]
 
-                transaction = self.beancount_api.make_transaction(
+                transaction = self.beancount_api.make_simple_transaction(
                     date, title, account, -amount, currency
                 )
                 transactions.append(transaction)
@@ -86,7 +86,7 @@ class Receipt(StatementParser):
                 )
 
             else:
-                transaction = self.beancount_api.make_transaction(
+                transaction = self.beancount_api.make_simple_transaction(
                     date, title, account, -amount, currency
                 )
                 self.beancount_api.add_transaction_comment(

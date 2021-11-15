@@ -25,6 +25,8 @@ class AccountClassifier:
         pattern_maps = [specific_map, self.general_map]  # former has higher priority
 
         for transaction in transactions:
+            if len(transaction.postings) >= 2:
+                continue
             account = self._match_patterns(
                 transaction, pattern_maps, self.default_expense_account
             )
