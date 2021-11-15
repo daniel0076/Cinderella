@@ -22,7 +22,7 @@ class CTBC(StatementParser):
         }
 
     def _read_statement(self, filepath: str) -> pd.DataFrame:
-        df = pd.read_csv(filepath, encoding="big5", skiprows=2, thousands=',')
+        df = pd.read_csv(filepath, encoding="big5", skiprows=2, thousands=",")
         return df
 
     def _parse_card_statement(self, records: pd.DataFrame) -> Transactions:

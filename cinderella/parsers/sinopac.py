@@ -68,16 +68,28 @@ class Sinopac(StatementParser):
             # check currency exchange
             rate = Decimal(str(record[6])) if not np.isnan(record[6]) else None
             if rate:
-                foreign_currency = re.search(r"\(([A-Z]*)\)", str(record[7])).group(1)  # xxxxxx(USD)
+                foreign_currency = re.search(r"\(([A-Z]*)\)", str(record[7])).group(
+                    1
+                )  # xxxxxx(USD)
                 foreign_price = self.beancount_api.make_amount(rate, currency)
                 local_amount = self.beancount_api.make_amount(price, currency)
-                foreign_amount = self.beancount_api.make_amount(Decimal(-price/rate), foreign_currency)
+                foreign_amount = self.beancount_api.make_amount(
+                    Decimal(-price / rate), foreign_currency
+                )
 
-                local_posting = self.beancount_api.make_posting(account, amount=local_amount)
-                foreign_posting = self.beancount_api.make_posting(account, foreign_amount, price=foreign_price)
-                pnl_posting = self.beancount_api.make_posting(self.configs.default_accounts["exchange_pnl"], None)
+                local_posting = self.beancount_api.make_posting(
+                    account, amount=local_amount
+                )
+                foreign_posting = self.beancount_api.make_posting(
+                    account, foreign_amount, price=foreign_price
+                )
+                pnl_posting = self.beancount_api.make_posting(
+                    self.configs.default_accounts["exchange_pnl"], None
+                )
 
-                transaction = self.beancount_api.make_transaction(date, title, [local_posting, foreign_posting, pnl_posting])
+                transaction = self.beancount_api.make_transaction(
+                    date, title, [local_posting, foreign_posting, pnl_posting]
+                )
 
             else:
                 transaction = self.beancount_api.make_simple_transaction(

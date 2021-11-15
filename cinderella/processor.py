@@ -35,9 +35,7 @@ class TransactionProcessor:
                 duplicated = False
                 for i in lookback_days_perm:
                     delta = timedelta(days=i)
-                    postings_key = frozenset(
-                        [(p.account, p.units) for p in t.postings]
-                    )
+                    postings_key = frozenset([(p.account, p.units) for p in t.postings])
                     key = (t.date + delta, postings_key)
 
                     if len(bucket[key]) == 0:
@@ -54,9 +52,7 @@ class TransactionProcessor:
                 if duplicated:
                     continue
 
-                postings_key = frozenset(
-                    [(p.account, p.units) for p in t.postings]
-                )
+                postings_key = frozenset([(p.account, p.units) for p in t.postings])
                 key = (t.date, postings_key)
                 unique.append(t)
                 bucket[key].append(t)
