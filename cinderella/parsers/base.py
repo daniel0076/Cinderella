@@ -18,6 +18,8 @@ class StatementParser(ABC):
             return self._parse_bank_statement(df)
         elif category == StatementCategory.card:
             return self._parse_card_statement(df)
+        elif category == StatementCategory.stock:
+            return self._parse_stock_statement(df)
         else:
             raise NotImplementedError
 
@@ -29,8 +31,11 @@ class StatementParser(ABC):
 
     @abstractmethod
     def _parse_card_statement(self, df: pd.DataFrame) -> Transactions:
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def _parse_bank_statement(self, df: pd.DataFrame) -> Transactions:
-        raise NotImplementedError
+        pass
+
+    def _parse_stock_statement(self, df: pd.DataFrame) -> Transactions:
+        pass

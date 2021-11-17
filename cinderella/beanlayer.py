@@ -3,7 +3,7 @@ import logging
 import re
 from copy import deepcopy
 from decimal import Decimal
-from typing import Union, Any, Dict, Set, List
+from typing import Union, Any, Dict, Set, List, Optional
 
 from beancount.loader import load_file
 from beancount.parser import printer
@@ -39,6 +39,15 @@ class BeanCountAPI:
     def make_amount(self, amount: Decimal, currency: str) -> Amount:
         amount = amount.quantize(Decimal("1.0000"))
         return Amount(amount, currency)
+
+    def make_cost(
+        self,
+        number: Decimal,
+        currency: str,
+        date: datetime.date,
+        label: Optional[str] = None,
+    ) -> Cost:
+        return Cost(number, currency, date, label)
 
     def make_simple_posting(self, account: str, price: Decimal, currency: str):
         amount = self.make_amount(price, currency)

@@ -7,6 +7,7 @@ class StatementCategory(Enum):
     bank = auto()
     card = auto()
     receipt = auto()
+    stock = auto()
 
 
 class Transactions(list):

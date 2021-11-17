@@ -19,6 +19,7 @@ class Singleton(type):
 class Configs(metaclass=Singleton):
     def __init__(self):
         self.current_dir = dirname(realpath(__file__))
+        self._check_mappings()
 
         config_path = Path(self.current_dir, "settings.json")
         with open(config_path) as f:
@@ -62,6 +63,9 @@ class Configs(metaclass=Singleton):
 
     def get_map(self, name: str) -> dict:
         path = Path(self.current_dir, f"mappings/{name}.json")
+        if not os.path.exists(path):
+            return {}
+
         with open(path) as f:
             mappings = json.load(f)
         return mappings
