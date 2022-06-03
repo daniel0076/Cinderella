@@ -26,7 +26,9 @@ class CTBC(StatementParser):
         return df
 
     def _parse_card_statement(self, records: pd.DataFrame) -> Transactions:
-        raise NotImplementedError
+        category = StatementCategory.bank
+        transactions = Transactions(category, self.identifier)
+        return transactions
 
     def _parse_bank_statement(self, records: pd.DataFrame) -> Transactions:
         category = StatementCategory.bank

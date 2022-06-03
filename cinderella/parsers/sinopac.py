@@ -21,10 +21,14 @@ class Sinopac(StatementParser):
         self.configs = Configs()
 
     def _read_statement(self, filepath: str) -> pd.DataFrame:
-        try:
-            df = pd.read_csv(filepath, encoding="big5", skiprows=2)
-        except UnicodeDecodeError:
+        if "bank" in filepath:
+            try:
+                df = pd.read_csv(filepath, encoding="big5", skiprows=2)
+            except UnicodeDecodeError:
+                df = pd.read_csv(filepath, skiprows=2)
+        else:
             df = pd.read_csv(filepath)
+
         df = df.replace({"\t": ""}, regex=True)
         return df
 
