@@ -1,6 +1,0 @@
-{
-    "Assets:Cash": ["提款"],
-    "Assets:Bank:LinePay": ["LINE Pay"],
-    "Assets:Bank:Taishin": ["0000000988867194"],
-    "Liabilities:CreditCard:Cathay": ["信用卡作業部"]
-}
