@@ -3,6 +3,7 @@ project(beancount)
 include(${CMAKE_CURRENT_LIST_DIR}/external/protobuf.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/external/mpdecimal.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/external/absl.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/external/re2.cmake)
 
 FetchContent_Declare(
     beancount
@@ -33,18 +34,33 @@ foreach(PROTO_FILE ${PROTO_FILES})
 
 endforeach()
 
-add_library(${PROJECT_NAME}
+add_library(${PROJECT_NAME} STATIC
     ${PROTO_GENERATED_SRC}
-    ${beancount_SOURCE_DIR}/beancount/cparser/ledger.cc)
+    ${beancount_SOURCE_DIR}/beancount/cparser/ledger.cc
+    ${beancount_SOURCE_DIR}/beancount/ccore/precision.cc
+    ${beancount_SOURCE_DIR}/beancount/ccore/currency.cc
+    ${beancount_SOURCE_DIR}/beancount/ccore/inventory.cc
+    ${beancount_SOURCE_DIR}/beancount/ccore/std_utils.cc
+    ${beancount_SOURCE_DIR}/beancount/ccore/number.cc
+    ${beancount_SOURCE_DIR}/beancount/utils/errors.cc
+)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES CXX_STANDARD 20)
-add_dependencies(${PROJECT_NAME} libmpdec)
+#add_dependencies(${PROJECT_NAME} mpdecimal)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE absl::status libmpdec libmpdec++ ${protobuf_BINARY_DIR}/libprotobuf.a)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    absl::status
+    absl::hash
+    re2::re2
+    protobuf::libprotobuf
+    ${MPDECIMAL_AR}
+)
 
 target_include_directories(${PROJECT_NAME} PUBLIC
     ${protobuf_SOURCE_DIR}/src
     ${beancount_SOURCE_DIR}
+    ${beancount_SOURCE_DIR}/beancount/utils
     ${absl_SOURCE_DIR}
-    ${CMAKE_BINARY_DIR}/external/include
-    )
+    ${MPDECIMAL_INC}
+    ${re2_SOURCE_DIR}
+)
