@@ -11,11 +11,14 @@ xlrd = "*"
 openpyxl = "*"
 flake8 = "*"
 black = "*"
+camelot-py = {extras = ["base"], version = "*"}
 
 [dev-packages]
 flake8 = "*"
 pytest = "*"
 black = "*"
+autopep8 = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.9"
