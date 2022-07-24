@@ -12,6 +12,7 @@ openpyxl = "*"
 flake8 = "*"
 black = "*"
 camelot-py = {extras = ["base"], version = "*"}
+dacite = "*"
 
 [dev-packages]
 flake8 = "*"
