@@ -6,7 +6,7 @@ import poplib
 from email.message import Message
 from email.parser import BytesParser
 from email import policy
-from pipelines.downloaders.settings import MailSettings
+from downloaders.settings import MailSettings
 from typing import Union
 from pathlib import Path
 
