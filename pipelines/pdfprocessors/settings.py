@@ -14,10 +14,12 @@ class StatementSettings:
     password: str = ""
     after_processed: AfterProcessedAction = AfterProcessedAction.keep
 
+
 @dataclass
 class SourceSettings:
     identifier: str
     statements: List[StatementSettings] = field(default_factory=list)
+
 
 @dataclass
 class PDFProcessorSettings:
@@ -29,8 +31,9 @@ class PDFProcessorSettings:
     @staticmethod
     def from_dict(config: dict) -> tuple[bool, Union[PDFProcessorSettings]]:
         try:
-            settings = from_dict(data_class=PDFProcessorSettings,
-                                 data=config, config=Config(cast=[Enum]))
+            settings = from_dict(
+                data_class=PDFProcessorSettings, data=config, config=Config(cast=[Enum])
+            )
         except Exception as e:
             return False, "{}: {}".format(__name__, e)
 

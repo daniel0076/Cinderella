@@ -13,7 +13,9 @@ class KokoPDFProcessor(ProcessorBase):
     def __init__(self, settings: SourceSettings):
         super().__init__(settings)
 
-    def _process_creditcard(self, filename: str, settings: StatementSettings) -> ProcessedResult:
+    def _process_creditcard(
+        self, filename: str, settings: StatementSettings
+    ) -> ProcessedResult:
         # no lattices, edge_tol used to rule out small tables
         tables = camelot.read_pdf(
             filename,
@@ -52,11 +54,13 @@ class KokoPDFProcessor(ProcessorBase):
         # try to retrieve statement date from the filename (easier)
         try:
             taiwanese_date = Path(filename).stem.split("_")[-1]
-            year = int(taiwanese_date[0:-2])+1911
+            year = int(taiwanese_date[0:-2]) + 1911
             month = int(taiwanese_date[-2:])
             statement_date = datetime(year=year, month=month, day=1)
         except ValueError:
             statement_date = datetime.now().date()
 
-        result = ProcessedResult(True, StatementCategory.creditcard, table, statement_date)
+        result = ProcessedResult(
+            True, StatementCategory.creditcard, table, statement_date
+        )
         return result
