@@ -24,9 +24,9 @@ class ProcessorBase:
         self.settings_by_type = settings_by_type
 
         functions_by_type = {
-            StatementCategory.creditcard: self._process_creditcard,
-            StatementCategory.bank: self._process_bank,
-            StatementCategory.receipt: self._process_receipt,
+            StatementCategory.creditcard: self.process_creditcard,
+            StatementCategory.bank: self.process_bank,
+            StatementCategory.receipt: self.process_receipt,
         }
         self.functions_by_type = functions_by_type
 
@@ -48,13 +48,13 @@ class ProcessorBase:
                 return process_function(filepath_str, statement_settings)
 
     @abstractmethod
-    def _process_creditcard(cls, filepath: str) -> ProcessedResult:
+    def process_creditcard(cls, filepath: str) -> ProcessedResult:
         raise NotImplementedError
 
     @abstractmethod
-    def _process_bank(cls, filepath: str) -> ProcessedResult:
+    def process_bank(cls, filepath: str) -> ProcessedResult:
         raise NotImplementedError
 
     @abstractmethod
-    def _process_receipt(cls, filepath: str) -> ProcessedResult:
+    def process_receipt(cls, filepath: str) -> ProcessedResult:
         raise NotImplementedError
