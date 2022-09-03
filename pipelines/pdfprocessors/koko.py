@@ -22,14 +22,12 @@ class KokoPDFProcessor(ProcessorBase):
             password=settings.password,
             flavor="stream",
             pages="1-end",
-            split_text=True,
-            edge_tol=100,
             row_tol=10,
         )
 
-        # last 3 tables are not about statement info
-        frames = [table.df for table in tables[0:-3]]
-        table = pd.concat(frames)
+        # the correct tables contains exactly 10 columns
+        table_splits = [table.df for table in tables if table.df.shape[1] == 10]
+        table = pd.concat(table_splits)
         table.reset_index(drop=True, inplace=True)
 
         # the first table contains headers, drop the beginning unwanted 4 rows
@@ -39,7 +37,7 @@ class KokoPDFProcessor(ProcessorBase):
 
         # merge the errorly-cut rows to previous row
         drop_rows = []
-        for index, row in table.iterrows():
+        for index, row in table.iterrows():  # should use better way
             if row.iat[0] == "":
                 missing_text = row.iat[2]
                 table.iat[index - 1, 2] += missing_text
