@@ -9,7 +9,6 @@ from datatypes import AfterProcessedAction
 processor_path = Path(__file__).parents[0] / "pdfprocessors"
 sys.path.append(processor_path.as_posix())
 from pdfprocessors.settings import PDFProcessorSettings, StatementSettings  # noqa: E402
-from pdfprocessors.koko import KokoPDFProcessor  # noqa: E402
 from pdfprocessors.base import ProcessedResult  # noqa: E402
 
 
@@ -17,7 +16,7 @@ logging.basicConfig()  # note this will set logging globally to warning level
 LOGGER = logging.getLogger("PDFProcessor")
 
 if __name__ == "__main__":
-    processor_cls = {KokoPDFProcessor.identifier: KokoPDFProcessor}
+    processor_cls = {}
 
     parser = argparse.ArgumentParser(
         description="Cinderella Pipeline - PDF to CSV Processor"
