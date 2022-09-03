@@ -6,20 +6,20 @@ import sys
 import os
 from datatypes import AfterProcessedAction
 
-processor_path = Path(__file__).parents[0] / "pdfprocessors"
+processor_path = Path(__file__).parents[0] / "processors"
 sys.path.append(processor_path.as_posix())
-from pdfprocessors.settings import PDFProcessorSettings, StatementSettings  # noqa: E402
-from pdfprocessors.base import ProcessedResult  # noqa: E402
+from processors.settings import ProcessorSettings, StatementSettings  # noqa: E402
+from processors.base import ProcessedResult  # noqa: E402
 
 
 logging.basicConfig()  # note this will set logging globally to warning level
-LOGGER = logging.getLogger("PDFProcessor")
+LOGGER = logging.getLogger("Processor")
 
 if __name__ == "__main__":
     processor_cls = {}
 
     parser = argparse.ArgumentParser(
-        description="Cinderella Pipeline - PDF to CSV Processor"
+        description="Cinderella Pipeline - raw file Processor"
     )
     parser.add_argument(
         "-c",
@@ -44,13 +44,13 @@ if __name__ == "__main__":
         config_dict = json.load(fp)
 
     # create configuration object
-    success, value = PDFProcessorSettings.from_dict(config_dict)
+    success, value = ProcessorSettings.from_dict(config_dict)
     if not success:
         LOGGER.error(value)
         exit(1)
     settings = value
 
-    # create pdfprocessor objects
+    # create processor objects
     processor_objs = {}
     for src_settings in settings.sources:
         try:
@@ -62,7 +62,7 @@ if __name__ == "__main__":
             LOGGER.warning(f"{src_settings.identifier} not yet implemented")
             continue
 
-    print("PDFProcessor initialized, configuration:")
+    print("Processor initialized, configuration:")
     print("input directory: {}".format(settings.input_directory))
     print("outpu directory: {}".format(settings.output_directory))
 

@@ -22,17 +22,17 @@ class SourceSettings:
 
 
 @dataclass
-class PDFProcessorSettings:
+class ProcessorSettings:
     input_directory: str
     output_directory: str
     move_directory: str
     sources: List[SourceSettings] = field(default_factory=list)
 
     @staticmethod
-    def from_dict(config: dict) -> tuple[bool, Union[PDFProcessorSettings]]:
+    def from_dict(config: dict) -> tuple[bool, Union[ProcessorSettings]]:
         try:
             settings = from_dict(
-                data_class=PDFProcessorSettings, data=config, config=Config(cast=[Enum])
+                data_class=ProcessorSettings, data=config, config=Config(cast=[Enum])
             )
         except Exception as e:
             return False, "{}: {}".format(__name__, e)
