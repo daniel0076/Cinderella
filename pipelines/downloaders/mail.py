@@ -82,12 +82,10 @@ class MailDownloader(DownloaderBase):
                     # append file hash to avoid collections
                     filehash = hashlib.sha256(attachment.get_content()).hexdigest()
                     filename = "{}_{}".format(filehash[:8], filename)
-                    save_to = Path(
-                        self.settings.output_directory,
-                        source.identifier,
-                        statement.type,
-                        filename,
+                    output_directory = self.settings.output_directory.format(
+                        statement_type=statement.type, identifier=source.identifier
                     )
+                    save_to = Path(output_directory, filename)
                     if os.path.exists(save_to):
                         print(
                             "In mail: {}\nFile already downloaded: {}".format(

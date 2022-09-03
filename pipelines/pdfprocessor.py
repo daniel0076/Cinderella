@@ -8,9 +8,9 @@ from datatypes import AfterProcessedAction
 
 processor_path = Path(__file__).parents[0] / "pdfprocessors"
 sys.path.append(processor_path.as_posix())
-from pdfprocessors.settings import PDFProcessorSettings, StatementSettings
-from pdfprocessors.koko import KokoPDFProcessor
-from pdfprocessors.base import ProcessedResult
+from pdfprocessors.settings import PDFProcessorSettings, StatementSettings  # noqa: E402
+from pdfprocessors.koko import KokoPDFProcessor  # noqa: E402
+from pdfprocessors.base import ProcessedResult  # noqa: E402
 
 
 logging.basicConfig()  # note this will set logging globally to warning level
