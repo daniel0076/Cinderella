@@ -58,9 +58,14 @@ if __name__ == "__main__":
             processor_objs[src_settings.identifier] = processor_cls[
                 src_settings.identifier
             ](src_settings)
+            LOGGER.info(f"Creating {src_settings.identifier} object")
         except IndexError:
             LOGGER.warning(f"{src_settings.identifier} not yet implemented")
             continue
+
+    print("PDFProcessor initialized, configuration:")
+    print("input directory: {}".format(settings.input_directory))
+    print("outpu directory: {}".format(settings.output_directory))
 
     input_dir = Path(settings.input_directory)
     for dirpath, _, filenames in os.walk(input_dir):
@@ -75,6 +80,9 @@ if __name__ == "__main__":
                 if identifier not in file.as_posix():
                     continue
 
+                print(
+                    f"{identifier} processing {file.relative_to(settings.input_directory)}"
+                )
                 result: ProcessedResult = processor.process(file)
                 if not result.success:
                     continue
