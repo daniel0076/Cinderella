@@ -47,9 +47,7 @@ class MailDownloader(DownloaderBase):
             raw_email = b"\n".join(
                 self.mailbox.retr(i + 1)[1]
             )  # retr()[1] means the octets
-            mail = BytesParser(policy=policy.default).parsebytes(
-                raw_email
-            )  # python email lib
+            mail = BytesParser(policy=policy.default).parsebytes(raw_email)
             self.verify_and_download(mail)
 
     def verify_and_download(self, mail: Message) -> bool:
@@ -79,8 +77,26 @@ class MailDownloader(DownloaderBase):
                     if not bool(re.search(statement.attachment_regex, filename)):
                         continue
 
+                    # process the attachment according to its content type
+                    # https://datatracker.ietf.org/doc/html/rfc1341
+                    transfer_encoding = attachment["Content-Transfer-Encoding"]
+
+                    if transfer_encoding.lower() == "base64":
+                        try:
+                            bytes_content = attachment.get_content(
+                                errors="strict"
+                            ).encode()
+                        except UnicodeDecodeError:
+                            # at least try again with UTF-8
+                            if attachment.get_content_charset().lower() != "utf-8":
+                                attachment.set_charset("utf-8")
+                                bytes_content = attachment.get_content().encode()
+
+                    else:  # transfer_encoding == "binary" or "7bit"
+                        bytes_content = attachment.get_content()
+
                     # append file hash to avoid collections
-                    filehash = hashlib.sha256(attachment.get_content()).hexdigest()
+                    filehash = hashlib.sha256(bytes_content).hexdigest()
                     filename = "{}_{}".format(filehash[:8], filename)
                     output_directory = self.settings.output_directory.format(
                         statement_type=statement.type, identifier=source.identifier
@@ -96,7 +112,7 @@ class MailDownloader(DownloaderBase):
 
                     # TODO: error handling
                     os.makedirs(save_to.parents[0], mode=0o755, exist_ok=True)
-                    self._write(attachment.get_content(), save_to)
+                    self._write(bytes_content, save_to)
                     print("In mail: {}\nDownloaded: {}".format(subject, filename))
                     return True
 
