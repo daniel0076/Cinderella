@@ -4,19 +4,20 @@ import json
 from pathlib import Path
 import sys
 import os
-from datatypes import AfterProcessedAction
 
 processor_path = Path(__file__).parents[0] / "processors"
 sys.path.append(processor_path.as_posix())
-from processors.settings import ProcessorSettings, StatementSettings  # noqa: E402
+from processors.settings import ProcessorSettings  # noqa: E402
 from processors.base import ProcessedResult  # noqa: E402
+from processors.einvoice import Einvoice  # noqa: E402
 
 
 logging.basicConfig()  # note this will set logging globally to warning level
 LOGGER = logging.getLogger("Processor")
 
 if __name__ == "__main__":
-    processor_cls = {}
+    # register the processors that we have
+    processor_cls = {"einvoice": Einvoice}
 
     parser = argparse.ArgumentParser(
         description="Cinderella Pipeline - raw file Processor"
@@ -50,21 +51,22 @@ if __name__ == "__main__":
         exit(1)
     settings = value
 
-    # create processor objects
+    # create processor objects according to config
     processor_objs = {}
     for src_settings in settings.sources:
         try:
             processor_objs[src_settings.identifier] = processor_cls[
                 src_settings.identifier
-            ](src_settings)
+            ](settings.output_directory, settings.move_directory, src_settings)
             LOGGER.info(f"Creating {src_settings.identifier} object")
-        except IndexError:
+        except KeyError:
             LOGGER.warning(f"{src_settings.identifier} not yet implemented")
             continue
 
     print("Processor initialized, configuration:")
     print("input directory: {}".format(settings.input_directory))
-    print("outpu directory: {}".format(settings.output_directory))
+    print("output directory: {}".format(settings.output_directory))
+    print()
 
     input_dir = Path(settings.input_directory)
     for dirpath, _, filenames in os.walk(input_dir):
@@ -80,36 +82,9 @@ if __name__ == "__main__":
                     continue
 
                 print(
-                    f"{identifier} processing {file.relative_to(settings.input_directory)}"
+                    f"\n{identifier}: processing {file.relative_to(settings.input_directory)}"
                 )
                 result: ProcessedResult = processor.process(file)
                 if not result.success:
+                    LOGGER.error(result.message)
                     continue
-
-                filename = result.date.strftime("%Y%m") + ".csv"
-                output_directory = Path(
-                    settings.output_directory.format(
-                        identifier=identifier, statement_type=result.type.value
-                    )
-                )
-                output_path = output_directory / filename
-                # ensure the directory is created
-                os.makedirs(output_directory, exist_ok=True)
-                result.data.to_csv(output_path, header=False, index=False)
-
-                # execute action after processed
-                stmt_settings: StatementSettings = processor.get_settings(result.type)
-
-                if stmt_settings.after_processed == AfterProcessedAction.move:
-                    dst_directory = Path(
-                        settings.move_directory.format(
-                            identifier=identifier, statement_type=result.type.value
-                        )
-                    )
-                    dst = dst_directory / file.name
-                    os.makedirs(dst_directory, exist_ok=True)
-                    os.rename(file, dst)
-                elif stmt_settings.after_processed == AfterProcessedAction.delete:
-                    os.remove(file)
-                elif stmt_settings.after_processed == AfterProcessedAction.keep:
-                    pass

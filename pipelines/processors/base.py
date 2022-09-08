@@ -1,23 +1,27 @@
-import pandas as pd
+import os
 from dataclasses import dataclass
-from datetime import datetime
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from pathlib import Path
 
 from settings import SourceSettings, StatementSettings
-from datatypes import StatementCategory
+from datatypes import StatementCategory, AfterProcessedAction
 
 
 @dataclass
 class ProcessedResult:
     success: bool = False
-    type: StatementCategory = StatementCategory.invalid
-    data: pd.DataFrame = pd.DataFrame()
-    date: datetime.date = datetime.now().date()
+    message: str = ""
 
 
-class ProcessorBase:
-    def __init__(self, settings: SourceSettings):
+class ProcessorBase(ABC):
+    identifier = "ProcessorBase"
+
+    def __init__(
+        self, output_dir_format: str, move_dir_format: str, settings: SourceSettings
+    ):
+        self.output_dir_format = output_dir_format
+        self.move_dir_format = move_dir_format
+
         settings_by_type = {}
         for statement_settings in settings.statements:
             settings_by_type[statement_settings.type] = statement_settings
@@ -33,28 +37,57 @@ class ProcessorBase:
     def get_settings(self, type: StatementCategory) -> StatementSettings:
         return self.settings_by_type[type]
 
-    def process(self, filepath: Path) -> ProcessedResult:
-        filepath_str = filepath.as_posix()
+    def process(self, file: Path) -> ProcessedResult:
+        file_str = file.as_posix()
 
         for statement_type in self.settings_by_type.keys():
-            if statement_type.value in filepath_str:
-                statement_settings = self.settings_by_type.get(statement_type)
-                if not statement_settings:
-                    return ProcessedResult(False)
+            if statement_type.value not in file_str:
+                continue
 
-                process_function = self.functions_by_type.get(statement_type)
-                if not process_function:
-                    return ProcessedResult(False)
-                return process_function(filepath_str, statement_settings)
+            statement_settings = self.settings_by_type.get(statement_type)
+            if not statement_settings:
+                return ProcessedResult(
+                    False, f"Statement settings for {statement_type} not found"
+                )
+
+            process_function = self.functions_by_type.get(statement_type)
+            if not process_function:
+                return ProcessedResult(
+                    False, f"Process function for {statement_type} not found"
+                )
+
+            result: ProcessedResult = process_function(file_str)
+            if result.success:
+                # execute action after processed
+                after_processed = self.settings_by_type[statement_type].after_processed
+                if after_processed == AfterProcessedAction.move:
+                    dst_directory = Path(
+                        self.move_dir_format.format(
+                            identifier=type(self).identifier,
+                            statement_type=statement_type,
+                        )
+                    )
+                    os.makedirs(dst_directory, exist_ok=True)
+
+                    dst = dst_directory / file.name
+                    os.rename(file, dst)
+                elif after_processed == AfterProcessedAction.delete:
+                    os.remove(file)
+                elif after_processed == AfterProcessedAction.keep:
+                    pass
+
+            return result
+
+        return ProcessedResult(False, f"Unsupported {statement_type} for {file}")
 
     @abstractmethod
-    def process_creditcard(cls, filepath: str) -> ProcessedResult:
-        raise NotImplementedError
+    def process_creditcard(cls, file: str) -> ProcessedResult:
+        pass
 
     @abstractmethod
-    def process_bank(cls, filepath: str) -> ProcessedResult:
-        raise NotImplementedError
+    def process_bank(cls, file: str) -> ProcessedResult:
+        pass
 
     @abstractmethod
-    def process_receipt(cls, filepath: str) -> ProcessedResult:
-        raise NotImplementedError
+    def process_receipt(cls, file: str) -> ProcessedResult:
+        pass
