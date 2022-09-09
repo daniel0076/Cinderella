@@ -50,6 +50,8 @@ class MailDownloader(DownloaderBase):
             mail = BytesParser(policy=policy.default).parsebytes(raw_email)
             self.verify_and_download(mail)
 
+        self.mailbox.quit()
+
     def verify_and_download(self, mail: Message) -> bool:
         # for verification
         subject = mail["subject"]
