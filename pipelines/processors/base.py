@@ -40,6 +40,7 @@ class ProcessorBase(ABC):
     def process(self, file: Path) -> ProcessedResult:
         file_str = file.as_posix()
 
+        statement_type = "Unknown"
         for statement_type in self.settings_by_type.keys():
             if statement_type.value not in file_str:
                 continue
@@ -64,7 +65,7 @@ class ProcessorBase(ABC):
                     dst_directory = Path(
                         self.move_dir_format.format(
                             identifier=type(self).identifier,
-                            statement_type=statement_type,
+                            statement_type=statement_type.value,
                         )
                     )
                     os.makedirs(dst_directory, exist_ok=True)
