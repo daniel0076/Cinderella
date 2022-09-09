@@ -78,7 +78,7 @@ class Einvoice(ProcessorBase):
             duplicated_df = receipt_id_df[receipt_id_df.isin(existing_receipt_id_df)]
             # duplication detected, remove previous file
             if len(duplicated_df) == len(existing_receipt_id_df):
-                LOGGER.warning(f"csv duplication detected, remove {existing_csv}")
+                print(f"csv duplication detected, remove {existing_csv}")
                 os.remove(existing_csv)
 
     def process_creditcard(self, file: str) -> ProcessedResult:
