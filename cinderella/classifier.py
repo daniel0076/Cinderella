@@ -1,27 +1,26 @@
 import logging
 
 from cinderella.beanlayer import BeanCountAPI
-from cinderella.configs import Configs
 from cinderella.datatypes import Transactions
+from cinderella.settings import MainSettings
 
 LOGGER = logging.getLogger(__name__)
 
 
 class AccountClassifier:
-    def __init__(self):
+    def __init__(self, settings: MainSettings):
+        self.settings = settings
         self.beancount_api = BeanCountAPI()
-        self.configs = Configs()
         # setup default accounts
-        self.configs = Configs()
-        default_account = self.configs.default_accounts
+        default_account = settings.default_accounts
         self.default_expense_account = default_account.get("expenses", "Expenses:Other")
         self.default_income_account = default_account.get("income", "Income:Other")
 
         # load mappings
-        self.general_map = self.configs.general_map
+        self.general_map = self.settings.get_mapping("general")
 
     def classify_account(self, transactions: Transactions) -> None:
-        specific_map = self.configs.get_map(transactions.source)
+        specific_map = self.settings.get_mapping(transactions.source)
         pattern_maps = [specific_map, self.general_map]  # former has higher priority
 
         for transaction in transactions:

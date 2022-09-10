@@ -4,7 +4,6 @@ from decimal import Decimal
 
 from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.parsers.base import StatementParser
-from cinderella.configs import Configs
 
 
 class Schwab(StatementParser):
@@ -15,8 +14,9 @@ class Schwab(StatementParser):
         self.default_source_accounts = {
             StatementCategory.stock: "Assets:Stock:Schwab",
             StatementCategory.bank: "Assets:Bank:Schwab",
+            "pnl_account": "Income:Stock:Schwab:PnL",
+            "fees_account": "Expanses:Stock:Schwab:Fees",
         }
-        self.configs = Configs()
 
     def _read_statement(self, filepath: str) -> pd.DataFrame:
         df = pd.read_csv(
@@ -38,8 +38,8 @@ class Schwab(StatementParser):
         transactions = Transactions(StatementCategory.stock, self.identifier)
         stock_account = self.default_source_accounts[StatementCategory.stock]
         bank_account = self.default_source_accounts[StatementCategory.bank]
-        pnl_account = self.configs.default_accounts["stock_pnl"]
-        fees_account = self.configs.default_accounts["stock_fees"]
+        pnl_account = self.default_source_accounts["pnl_account"]
+        fees_account = self.default_source_accounts["fees_account"]
 
         for _, record in records.iterrows():
             date = datetime.strptime(str(record["Date"]), "%m/%d/%Y")

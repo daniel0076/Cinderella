@@ -1,11 +1,10 @@
 import os
 import logging
 from pathlib import Path
-from typing import Union
 
 from cinderella.datatypes import StatementCategory
 from cinderella.parsers import get_parsers
-from cinderella.configs import Configs
+from cinderella.settings import MainSettings
 from cinderella.classifier import AccountClassifier
 from cinderella.beanlayer import BeanCountAPI
 from cinderella.loader import StatementLoader, BeanLoader
@@ -16,38 +15,32 @@ CURRENT_DIR = os.getcwd()
 
 
 class Cinderella:
-    def __init__(self, statement_path: str, output_path: Union[str, None]):
+    def __init__(self, settings: MainSettings):
 
         self.parsers = self._setup_parsers()
-        self.configs = Configs()
         self.bean_api = BeanCountAPI()
-        self.classifier = AccountClassifier()
+        self.classifier = AccountClassifier(settings)
         self.processor = TransactionProcessor()
-        self.statement_loader = StatementLoader(statement_path, self.parsers)
-        self.bean_loader = BeanLoader()
-
-        if not output_path:
-            output_path = str(Path(CURRENT_DIR, self.configs.default_output))
-        self.output_path = output_path
-
-        self._setup_accounts(
-            self.parsers, self.configs, self.output_path, self.bean_api
+        self.statement_loader = StatementLoader(
+            settings.statements_directory, self.parsers
         )
+        self.bean_loader = BeanLoader(settings)
+        self.settings = settings
 
-    def _setup_accounts(
-        self, parsers: list, configs: Configs, output_path: str, bean_api: BeanCountAPI
-    ):
+        self._setup_accounts()
+
+    def _setup_accounts(self):
         accounts = []
 
-        for parser in parsers:
+        for parser in self.parsers:
             accounts += parser.default_source_accounts.values()
-            accounts += configs.get_map(parser.identifier).keys()
+            accounts += self.settings.get_mapping(parser.identifier).keys()
 
-        accounts += configs.default_accounts.values()
-        accounts += configs.general_map.keys()
+        accounts += self.settings.default_accounts.values()
+        accounts += self.settings.get_mapping("general").keys()
 
-        account_bean_path = str(Path(output_path, "account.bean"))
-        bean_api.write_account_bean(accounts, account_bean_path)
+        account_bean_path = str(Path(self.settings.output_directory, "account.bean"))
+        self.bean_api.write_account_bean(accounts, account_bean_path)
 
     def _setup_parsers(self) -> list:
         parsers = []
@@ -86,7 +79,8 @@ class Cinderella:
         self.processor.dedup_bank_transfer(autogen_trans_list, lookback_days=5)
 
         # output
-        path = str(Path(self.output_path, "result.bean"))
+        path = str(Path(self.settings.output_directory, "result.bean"))
+        # remove existing files
         Path(path).unlink(missing_ok=True)
         for transactions_list in transactions_group.values():
             for transactions in transactions_list:

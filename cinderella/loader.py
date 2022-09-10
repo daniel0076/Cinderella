@@ -7,7 +7,7 @@ from collections import defaultdict
 from cinderella.parsers.base import StatementParser
 from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.beanlayer import BeanCountAPI
-from cinderella.configs import Configs
+from cinderella.settings import MainSettings
 
 LOGGER = logging.getLogger(__name__)
 CURRENT_DIR = getcwd()
@@ -86,19 +86,19 @@ class StatementLoader:
 
 
 class BeanLoader:
-    def __init__(self):
-        self.configs = Configs()
+    def __init__(self, settings: MainSettings):
+        self.settings = settings
         self.beancount_api = BeanCountAPI()
-        self.default_path = str(Path(CURRENT_DIR, self.configs.default_output))
+        self.default_path = str(Path(CURRENT_DIR, self.settings.output_directory))
 
-    def load_custom_bean(self, root: str = None) -> Transactions:
+    def load_custom_bean(self, root: str = "") -> Transactions:
         if not root:
             root = self.default_path
 
         category = StatementCategory.custom
         transactions = Transactions(category, category.name)
 
-        keyword = self.configs.custom_bean_keyword
+        keyword = self.settings.custom_bean_keyword
         LOGGER.debug("===Loading custom bean files===")
         for (dirpath, _, filenames) in walk(root):
             LOGGER.debug(f"Current directory {dirpath}")
@@ -121,7 +121,7 @@ class BeanLoader:
         category = StatementCategory.ignored
         transactions = Transactions(category, category.name)
 
-        keyword = self.configs.ignored_bean_keyword
+        keyword = self.settings.ignored_bean_keyword
         LOGGER.debug("===Loading ignored bean files===")
         for (dirpath, _, filenames) in walk(root):
             LOGGER.debug(f"Current directory {dirpath}")

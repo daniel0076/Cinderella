@@ -6,7 +6,6 @@ import re
 
 from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.parsers.base import StatementParser
-from cinderella.configs import Configs
 
 
 class Sinopac(StatementParser):
@@ -17,8 +16,8 @@ class Sinopac(StatementParser):
         self.default_source_accounts = {
             StatementCategory.card: "Liabilities:CreditCard:Sinopac",
             StatementCategory.bank: "Assets:Bank:Sinopac",
+            "exchange_diff_pnl": "Income:Bank:Sinopac:ExchangeDiffPnL",
         }
-        self.configs = Configs()
 
     def _read_statement(self, filepath: str) -> pd.DataFrame:
         if "bank" in filepath:
@@ -88,7 +87,7 @@ class Sinopac(StatementParser):
                     account, foreign_amount, price=foreign_price
                 )
                 pnl_posting = self.beancount_api.make_posting(
-                    self.configs.default_accounts["exchange_pnl"], None
+                    self.default_source_accounts["exchange_diff_pnl"], None
                 )
 
                 transaction = self.beancount_api.make_transaction(

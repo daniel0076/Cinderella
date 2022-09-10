@@ -12,7 +12,6 @@ from beancount.core.amount import Amount
 from beancount.core.position import Cost
 from beancount.core.position import CostSpec
 
-from cinderella.configs import Configs
 from cinderella.datatypes import Transactions
 
 LOGGER = logging.getLogger(__name__)
@@ -20,7 +19,7 @@ LOGGER = logging.getLogger(__name__)
 
 class BeanCountAPI:
     def __init__(self):
-        self.config = Configs()
+        pass
 
     def write_account_bean(self, accounts: list, output_path: str):
 
