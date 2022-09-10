@@ -1,8 +1,8 @@
-from abc import ABCMeta
+from abc import ABC
 from abc import abstractmethod
 
 
-class DownloaderBase(metaclass=ABCMeta):
+class DownloaderBase(ABC):
     @abstractmethod
     def run(self):
         pass

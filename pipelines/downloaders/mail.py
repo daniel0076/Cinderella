@@ -6,11 +6,11 @@ import poplib
 from email.message import Message
 from email.parser import BytesParser
 from email import policy
-from downloaders.settings import MailSettings
 from typing import Union
 from pathlib import Path
 
-from .base import DownloaderBase
+from downloaders.settings import MailSettings
+from downloaders.base import DownloaderBase
 
 
 class MailDownloader(DownloaderBase):
@@ -41,7 +41,7 @@ class MailDownloader(DownloaderBase):
 
     def run(self):
         num_mails = len(self.mailbox.list()[1])  # (response, ['line', ...], octets)
-        print("Found {} mail(s)".format(num_mails))
+        print("Inbox: found {} mail(s)".format(num_mails))
 
         for i in range(num_mails):
             raw_email = b"\n".join(
@@ -66,7 +66,7 @@ class MailDownloader(DownloaderBase):
             # loop each possible statements in a source
             for statement in source.statements:
                 # check the subject
-                if not bool(re.search(statement.subject_regex, subject)):
+                if not bool(re.search(statement.subject_keyword, subject)):
                     continue
                 # mail found, verify sender for security concerns
                 if statement.valid_senders and sender not in statement.valid_senders:
@@ -76,7 +76,7 @@ class MailDownloader(DownloaderBase):
                 for attachment in mail.iter_attachments():
                     filename = attachment.get_filename()
                     # check if the filenames matchs the pattern in the settings
-                    if not bool(re.search(statement.attachment_regex, filename)):
+                    if not bool(re.search(statement.attachment_keyword, filename)):
                         continue
 
                     # process the attachment according to its content type
@@ -101,7 +101,7 @@ class MailDownloader(DownloaderBase):
                     filehash = hashlib.sha256(bytes_content).hexdigest()
                     filename = "{}_{}".format(filehash[:8], filename)
                     output_directory = self.settings.output_directory.format(
-                        statement_type=statement.type, identifier=source.identifier
+                        statement_type=statement.type.value, source_name=source.name
                     )
                     save_to = Path(output_directory, filename)
                     if os.path.exists(save_to):

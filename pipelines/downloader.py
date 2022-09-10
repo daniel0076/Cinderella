@@ -44,7 +44,7 @@ if __name__ == "__main__":
     if not success:
         LOGGER.error(value)
         exit(1)
-    downloader_settings = value
+    downloader_settings: DownloaderSettings = value
 
     # create downloader object
     if downloader_settings.mail_settings:
@@ -61,5 +61,5 @@ if __name__ == "__main__":
             LOGGER.error(value)
             exit(1)
 
-        mail_downloader = value
+        mail_downloader: MailDownloader = value
         mail_downloader.run()

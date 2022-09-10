@@ -1,6 +1,6 @@
 from __future__ import annotations  # for typing
 from dataclasses import dataclass, field
-from typing import List, Union
+from typing import List
 from dacite.core import from_dict
 from dacite.config import Config
 from enum import Enum
@@ -17,7 +17,7 @@ class StatementSettings:
 
 @dataclass
 class SourceSettings:
-    identifier: str
+    name: str
     statements: List[StatementSettings] = field(default_factory=list)
 
 
@@ -29,7 +29,7 @@ class ProcessorSettings:
     sources: List[SourceSettings] = field(default_factory=list)
 
     @staticmethod
-    def from_dict(config: dict) -> tuple[bool, Union[ProcessorSettings]]:
+    def from_dict(config: dict) -> tuple[bool, ProcessorSettings | str]:
         try:
             settings = from_dict(
                 data_class=ProcessorSettings, data=config, config=Config(cast=[Enum])

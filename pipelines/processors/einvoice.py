@@ -12,7 +12,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class Einvoice(ProcessorBase):
-    identifier = "einvoice"
+    source_name = "einvoice"
 
     def __init__(
         self, output_dir_format: str, move_dir_format: str, settings: SourceSettings
@@ -23,7 +23,7 @@ class Einvoice(ProcessorBase):
         # ensure the directory exists
         output_dir = Path(
             self.output_dir_format.format(
-                identifier=type(self).identifier, statement_type="receipt"
+                source_name=type(self).source_name, statement_type="receipt"
             )
         )
         os.makedirs(output_dir, exist_ok=True)
@@ -45,7 +45,7 @@ class Einvoice(ProcessorBase):
         year = datetime.strptime(one_date, "%Y%m%d").year
 
         # marshal the filename
-        filename = f"{type(self).identifier}_{year}{''.join(months)}.csv"
+        filename = f"{type(self).source_name}_{year}{''.join(months)}.csv"
         file_output = output_dir / filename
 
         # find the receipt ids and remove duplicated csv
@@ -69,6 +69,8 @@ class Einvoice(ProcessorBase):
         """
         filenames = sorted(os.listdir(directory))
         for filename in filenames:
+            if not filename.endswith("csv"):
+                continue
             existing_csv = directory / filename
             existing_df = pd.read_csv(
                 existing_csv, delimiter="|", skiprows=2, header=None
@@ -83,8 +85,8 @@ class Einvoice(ProcessorBase):
 
     def process_creditcard(self, file: str) -> ProcessedResult:
         return ProcessedResult(
-            False, f"creditcard not supported by {type(self).identifier}"
+            False, f"creditcard not supported by {type(self).source_name}"
         )
 
     def process_bank(self, file: str) -> ProcessedResult:
-        return ProcessedResult(False, f"bank not supported by {type(self).identifier}")
+        return ProcessedResult(False, f"bank not supported by {type(self).source_name}")

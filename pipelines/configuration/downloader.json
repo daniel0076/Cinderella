@@ -3,35 +3,17 @@
     "server": "pop.gmail.com",
     "username": "",
     "password": "",
-    "output_directory": "",
+    "output_directory": "/path/to/output/{statement_type}/{source_name}",
     "sources": [
       {
-        "identifier": "koko",
+        "name": "name of the source",
         "enabled": true,
         "statements": [
           {
-            "type": "bank",
-            "subject_regex": "數位存款帳戶對帳單",
-            "attachment_regex": "數位存款帳戶對帳單",
-            "valid_senders": []
-          },
-          {
-            "type": "creditcard",
-            "subject_regex": "【KOKO】國泰世華銀行信用卡.*電子帳單",
-            "attachment_regex": "信用卡電子帳單消費明細_",
-            "valid_senders": []
-          }
-        ]
-      },
-      {
-        "identifier": "sinopac",
-        "enabled": true,
-        "statements": [
-          {
-            "type": "creditcard",
-            "subject_regex": "永豐銀行信用卡.*月份電子帳單通知",
-            "attachment_regex": "永豐銀行信用卡帳單",
-            "valid_senders": []
+            "type": "receipt",
+            "subject_keyword": "keyword to identify subject (supports regex)",
+            "attachment_keyword": "keyword to identify attachment (supports regex)",
+            "valid_senders": ["valid_sender@gmail.com"]
           }
         ]
       }

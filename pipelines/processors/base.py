@@ -14,7 +14,7 @@ class ProcessedResult:
 
 
 class ProcessorBase(ABC):
-    identifier = "ProcessorBase"
+    source_name = "ProcessorBase"
 
     def __init__(
         self, output_dir_format: str, move_dir_format: str, settings: SourceSettings
@@ -64,7 +64,7 @@ class ProcessorBase(ABC):
                 if after_processed == AfterProcessedAction.move:
                     dst_directory = Path(
                         self.move_dir_format.format(
-                            identifier=type(self).identifier,
+                            source_name=type(self).source_name,
                             statement_type=statement_type.value,
                         )
                     )

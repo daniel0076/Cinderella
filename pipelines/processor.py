@@ -55,12 +55,12 @@ if __name__ == "__main__":
     processor_objs = {}
     for src_settings in settings.sources:
         try:
-            processor_objs[src_settings.identifier] = processor_cls[
-                src_settings.identifier
-            ](settings.output_directory, settings.move_directory, src_settings)
-            LOGGER.info(f"Creating {src_settings.identifier} object")
+            processor_objs[src_settings.name] = processor_cls[src_settings.name](
+                settings.output_directory, settings.move_directory, src_settings
+            )
+            LOGGER.info(f"Creating {src_settings.name} object")
         except KeyError:
-            LOGGER.warning(f"{src_settings.identifier} not yet implemented")
+            LOGGER.warning(f"{src_settings.name} not yet implemented")
             continue
 
     print("Processor initialized, configuration:")
@@ -77,12 +77,12 @@ if __name__ == "__main__":
         ]
 
         for file in files:
-            for identifier, processor in processor_objs.items():
-                if identifier not in file.as_posix():
+            for source_name, processor in processor_objs.items():
+                if source_name not in file.as_posix():
                     continue
 
                 print(
-                    f"\n{identifier}: processing {file.relative_to(settings.input_directory)}"
+                    f"\n{source_name}: processing {file.relative_to(settings.input_directory)}"
                 )
                 result: ProcessedResult = processor.process(file)
                 if not result.success:

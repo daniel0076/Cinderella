@@ -1,20 +1,24 @@
 from __future__ import annotations  # for typing
 from dataclasses import dataclass, field
 from typing import List, Optional, Union
-from dacite import from_dict
+from dacite.core import from_dict
+from dacite.config import Config
+from enum import Enum
+
+from datatypes import StatementCategory
 
 
 @dataclass
 class StatementDetails:
-    type: str
-    subject_regex: str
-    attachment_regex: str
+    type: StatementCategory = StatementCategory.invalid
+    subject_keyword: str = ".*"  # regex supported
+    attachment_keyword: str = ".*"  # regex supported
     valid_senders: List[str] = field(default_factory=list)
 
 
 @dataclass
 class SourceSettings:
-    identifier: str
+    name: str
     enabled: bool
     statements: List[StatementDetails]
 
@@ -41,7 +45,9 @@ class DownloaderSettings:
     @staticmethod
     def from_dict(config: dict) -> tuple[bool, Union[str, DownloaderSettings]]:
         try:
-            settings = from_dict(data_class=DownloaderSettings, data=config)
+            settings = from_dict(
+                data_class=DownloaderSettings, data=config, config=Config(cast=[Enum])
+            )
         except Exception as e:
             return False, "{}: {}".format(__name__, e)
 
