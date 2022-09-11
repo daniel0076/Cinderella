@@ -33,8 +33,10 @@ if __name__ == "__main__":
         exit(1)
     settings: MainSettings = value
 
+    print("Cinderella configurations:")
     print(f"Reading statements from: {settings.statements_directory}")
     print(f"Output bean files to: {settings.output_directory}")
+    print()
 
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)

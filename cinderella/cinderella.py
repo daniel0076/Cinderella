@@ -30,13 +30,22 @@ class Cinderella:
         self._setup_accounts()
 
     def _setup_accounts(self):
+        """
+        Beancount requires accounts to be declared in the bean files first.
+        So we have to collect all the accounts used in Cinderella
+        """
         accounts = []
 
+        # Collect accounts from each parser
         for parser in self.parsers:
+            # accounts created by each source
             accounts += parser.default_source_accounts.values()
+            # accounts created by mappings of each source
             accounts += self.settings.get_mapping(parser.identifier).keys()
 
+        # accounts created as default accounts, used when not mapping is found
         accounts += self.settings.default_accounts.values()
+        # accounts created for general mapping
         accounts += self.settings.get_mapping("general").keys()
 
         account_bean_path = str(Path(self.settings.output_directory, "account.bean"))
@@ -49,6 +58,7 @@ class Cinderella:
         return parsers
 
     def count_beans(self):
+        # load all the transactions group
         transactions_group = self.statement_loader.load()
 
         # merge trans in receipt and card with same date and amount
