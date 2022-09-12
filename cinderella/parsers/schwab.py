@@ -15,7 +15,7 @@ class Schwab(StatementParser):
             StatementCategory.stock: "Assets:Stock:Schwab",
             StatementCategory.bank: "Assets:Bank:Schwab",
             "pnl_account": "Income:Stock:Schwab:PnL",
-            "fees_account": "Expanses:Stock:Schwab:Fees",
+            "fees_account": "Expenses:Stock:Schwab:Fees",
         }
 
     def _read_statement(self, filepath: str) -> pd.DataFrame:
