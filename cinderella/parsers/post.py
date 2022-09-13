@@ -54,9 +54,10 @@ class TaiwanPost(StatementParser):
                 )
                 transactions.append(transaction)
 
-            if str(record[6]).strip():
+            # comments
+            if not pd.isna(record[6]):
                 self.beancount_api.add_transaction_comment(transaction, str(record[6]))
-            if record[7]:
+            if not pd.isna(record[7]):
                 self.beancount_api.add_transaction_comment(transaction, str(record[7]))
 
             prev_transaction = transaction

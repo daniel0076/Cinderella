@@ -54,10 +54,12 @@ class CTBC(StatementParser):
                 date, title, account, price, currency
             )
             comment = ""
-            if record["備註"]:
+            if not pd.isna(record["備註"]):
                 comment += str(record["備註"])
-            if str(record["轉出入帳號"]) != "nan":
+            if not pd.isna(record["轉出入帳號"]):
                 comment += str(record["轉出入帳號"])
+            if not pd.isna(record["註記"]):
+                comment += str(record["註記"])
 
             if comment:
                 self.beancount_api.add_transaction_comment(transaction, comment)

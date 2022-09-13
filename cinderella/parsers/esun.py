@@ -51,9 +51,9 @@ class ESun(StatementParser):
             )
 
             comment = ""
-            if str(record["備註"]).strip():
+            if not pd.isna(record["備註"]):
                 comment += str(record["備註"])
-            if str(record["對方銀行代碼/帳號"]).strip():
+            if not pd.isna(record["對方銀行代碼/帳號"]):
                 comment += " " + str(record["對方銀行代碼/帳號"])
 
             if comment:
