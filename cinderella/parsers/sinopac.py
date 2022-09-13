@@ -3,10 +3,12 @@ import numpy as np
 from datetime import datetime
 from decimal import Decimal
 import re
+import logging
 
 from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.parsers.base import StatementParser
 
+LOGGER = logging.getLogger(__name__)
 
 class Sinopac(StatementParser):
     identifier = "sinopac"
@@ -69,11 +71,15 @@ class Sinopac(StatementParser):
             account = self.default_source_accounts[category]
 
             # check currency exchange
-            rate = Decimal(str(record[6])) if not np.isnan(record[6]) else None
+            rate = Decimal(str(record[6])) if not pd.isna(record[6]) else None
             if rate:
-                foreign_currency = re.search(r"\(([A-Z]*)\)", str(record[7])).group(
-                    1
-                )  # xxxxxx(USD)
+                # xxxxxx(USD)
+                try:
+                    foreign_currency = re.search(r"\(([A-Z]*)\)", str(record[7])).group(1)
+                except:
+                    LOGGER.error(f"Can not determine currency for row: {record}")
+                    continue
+
                 foreign_price = self.beancount_api.make_amount(rate, currency)
                 local_amount = self.beancount_api.make_amount(price, currency)
                 foreign_amount = self.beancount_api.make_amount(
