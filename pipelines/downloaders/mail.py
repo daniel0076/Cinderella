@@ -82,20 +82,24 @@ class MailDownloader(DownloaderBase):
                     # process the attachment according to its content type
                     # https://datatracker.ietf.org/doc/html/rfc1341
                     transfer_encoding = attachment["Content-Transfer-Encoding"]
+                    main_content_type = attachment.get_content_maintype()
 
-                    if transfer_encoding.lower() == "base64":
-                        try:
-                            bytes_content = attachment.get_content(
-                                errors="strict"
-                            ).encode()
-                        except UnicodeDecodeError:
-                            # at least try again with UTF-8
-                            if attachment.get_content_charset().lower() != "utf-8":
-                                attachment.set_charset("utf-8")
-                                bytes_content = attachment.get_content().encode()
-
-                    else:  # transfer_encoding == "binary" or "7bit"
+                    if main_content_type != "text":
                         bytes_content = attachment.get_content()
+
+                    else:  # main_content_type = "text"
+                        if transfer_encoding.lower() == "base64":
+                            try:
+                                bytes_content = attachment.get_content(
+                                    errors="strict"
+                                ).encode()
+                            except UnicodeDecodeError:
+                                # at least try again with UTF-8
+                                if attachment.get_content_charset().lower() != "utf-8":
+                                    attachment.set_charset("utf-8")
+                                    bytes_content = attachment.get_content().encode()
+                        else:  # transfer_encoding == "binary" or "7bit"
+                            bytes_content = attachment.get_content()
 
                     # append file hash to avoid collections
                     filehash = hashlib.sha256(bytes_content).hexdigest()
