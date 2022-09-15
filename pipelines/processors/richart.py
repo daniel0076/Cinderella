@@ -1,9 +1,7 @@
 import os
-import shutil
 import pandas as pd
 import logging
 import zipfile
-from datetime import datetime
 from pathlib import Path
 
 
@@ -23,7 +21,8 @@ class Richart(ProcessorBase):
 
     def process(self, file: Path) -> ProcessedResult:
         """
-        Overrides the default process, as Richart has bank and creditcard in the same file, process them together
+        Overrides the default process
+        Richart has bank and creditcard in the same file, process them together
         """
         all_success = True
         for statement in self.settings.statements:
@@ -40,7 +39,9 @@ class Richart(ProcessorBase):
         return ProcessedResult(True, "")  # Supress warning outside
 
     def process_receipt(self, file: Path) -> ProcessedResult:
-        return ProcessedResult(False, f"{file} not supported by {type(self).source_name}")
+        return ProcessedResult(
+            False, f"{file} not supported by {type(self).source_name}"
+        )
 
     def process_creditcard(self, file: Path) -> ProcessedResult:
         """
@@ -54,12 +55,17 @@ class Richart(ProcessorBase):
         """
         return self._process_combined_file(file, StatementCategory.bank)
 
-    def _process_combined_file(self, file: Path, statement_type: StatementCategory) -> ProcessedResult:
+    def _process_combined_file(
+        self, file: Path, statement_type: StatementCategory
+    ) -> ProcessedResult:
         settings = self.get_settings(statement_type)
 
         # ensure the directory exists
-        output_dir = Path(self.output_dir_format.format(source_name=type(
-            self).source_name, statement_type=statement_type.value))
+        output_dir = Path(
+            self.output_dir_format.format(
+                source_name=type(self).source_name, statement_type=statement_type.value
+            )
+        )
         os.makedirs(output_dir, exist_ok=True)
 
         with zipfile.ZipFile(file) as zipfp:
@@ -71,19 +77,24 @@ class Richart(ProcessorBase):
                 elif statement_type == StatementCategory.bank:
                     df = pd.read_excel(fp, sheet_name=1)
                 else:
-                    return ProcessedResult(False, f"{statement_type} not supported by {type(self).source_name}")
-        #print(df)
-        df.iloc[:,0] = pd.to_datetime(df.iloc[:,0])
-        df.iloc[:,1] = pd.to_datetime(df.iloc[:,1])
-        years = df.iloc[:,0].dt.year.unique()
-        months = df.iloc[:,0].dt.month.unique()
+                    return ProcessedResult(
+                        False,
+                        f"{statement_type} not supported by {type(self).source_name}",
+                    )
+        # print(df)
+        df.iloc[:, 0] = pd.to_datetime(df.iloc[:, 0])
+        df.iloc[:, 1] = pd.to_datetime(df.iloc[:, 1])
+        years = df.iloc[:, 0].dt.year.unique()
+        months = df.iloc[:, 0].dt.month.unique()
         for year in years:
             for month in months:
-                result_df = df.loc[(df.iloc[:,0].dt.year == year) & (df.iloc[:,0].dt.month == month)]
+                result_df = df.loc[
+                    (df.iloc[:, 0].dt.year == year) & (df.iloc[:, 0].dt.month == month)
+                ]
                 if result_df.empty:
                     continue
 
-                output_file =  output_dir / f"{year}{str(month).zfill(2)}.csv"
+                output_file = output_dir / f"{year}{str(month).zfill(2)}.csv"
                 if output_file.exists():
                     if not self._should_replace(output_file, result_df):
                         continue
@@ -101,5 +112,3 @@ class Richart(ProcessorBase):
             return True
 
         return False
-
-
