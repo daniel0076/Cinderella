@@ -6,14 +6,14 @@ from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.parsers.base import StatementParser
 
 
-class Taishin(StatementParser):
-    identifier = "taishin"
+class Richart(StatementParser):
+    identifier = "richart"
 
     def __init__(self, config: dict = {}):
         super().__init__()
         self.default_source_accounts = {
-            StatementCategory.card: "Liabilities:CreditCard:Taishin",
-            StatementCategory.bank: "Assets:Bank:Taishin",
+            StatementCategory.card: "Liabilities:CreditCard:Richart",
+            StatementCategory.bank: "Assets:Bank:Richart",
         }
 
     def _parse_card_statement(self, records: pd.DataFrame) -> Transactions:
@@ -21,7 +21,7 @@ class Taishin(StatementParser):
         transactions = Transactions(category, self.identifier)
 
         for _, record in records.iterrows():
-            date = datetime.strptime(str(record[0]), "%Y/%m/%d")
+            date = datetime.strptime(str(record[0]), "%Y-%m-%d")
             title = str(record[4])
             amount, currency = self._parse_price(str(record[3]))
 
@@ -36,7 +36,7 @@ class Taishin(StatementParser):
         category = StatementCategory.bank
         transactions = Transactions(category, self.identifier)
         for _, record in records.iterrows():
-            date = datetime.strptime(str(record["交易日期"]), "%Y/%m/%d")
+            date = datetime.strptime(str(record["交易日期"]), "%Y-%m-%d")
             title = str(record["備註"])
             amount, currency = self._parse_price(str(record["金額"]))
             account = self.default_source_accounts[category]

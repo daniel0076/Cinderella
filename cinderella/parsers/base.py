@@ -24,10 +24,7 @@ class StatementParser(ABC):
             raise NotImplementedError
 
     def _read_statement(self, filepath: str) -> pd.DataFrame:
-        if filepath.endswith("xls") or filepath.endswith("xlsx"):
-            return pd.read_excel(filepath)
-        elif filepath.endswith("csv"):
-            return pd.read_csv(filepath)
+        return pd.read_csv(filepath)
 
     @abstractmethod
     def _parse_card_statement(self, df: pd.DataFrame) -> Transactions:
