@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from datetime import datetime
 from decimal import Decimal
 import re
@@ -9,6 +8,7 @@ from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.parsers.base import StatementParser
 
 LOGGER = logging.getLogger(__name__)
+
 
 class Sinopac(StatementParser):
     identifier = "sinopac"
@@ -75,8 +75,10 @@ class Sinopac(StatementParser):
             if rate:
                 # xxxxxx(USD)
                 try:
-                    foreign_currency = re.search(r"\(([A-Z]*)\)", str(record[7])).group(1)
-                except:
+                    foreign_currency = re.search(r"\(([A-Z]*)\)", str(record[7])).group(
+                        1
+                    )
+                except IndexError:
                     LOGGER.error(f"Can not determine currency for row: {record}")
                     continue
 
