@@ -10,6 +10,7 @@ sys.path.append(processor_path.as_posix())
 from processors.settings import ProcessorSettings  # noqa: E402
 from processors.base import ProcessedResult  # noqa: E402
 from processors.einvoice import Einvoice  # noqa: E402
+from processors.richart import Richart # noqa: E402
 
 
 logging.basicConfig()  # note this will set logging globally to warning level
@@ -17,7 +18,10 @@ LOGGER = logging.getLogger("Processor")
 
 if __name__ == "__main__":
     # register the processors that we have
-    processor_cls = {"einvoice": Einvoice}
+    processor_cls = {
+        "einvoice": Einvoice,
+        "richart": Richart
+    }
 
     parser = argparse.ArgumentParser(
         description="Cinderella Pipeline - raw file Processor"
@@ -87,4 +91,3 @@ if __name__ == "__main__":
                 result: ProcessedResult = processor.process(file)
                 if not result.success:
                     LOGGER.error(result.message)
-                    continue

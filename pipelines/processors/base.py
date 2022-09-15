@@ -21,6 +21,7 @@ class ProcessorBase(ABC):
     ):
         self.output_dir_format = output_dir_format
         self.move_dir_format = move_dir_format
+        self.settings = settings
 
         settings_by_type = {}
         for statement_settings in settings.statements:
@@ -38,8 +39,11 @@ class ProcessorBase(ABC):
         return self.settings_by_type[type]
 
     def process(self, file: Path) -> ProcessedResult:
-        file_str = file.as_posix()
+        """
+        Process the file using a source processor based on the type hint from the file name
+        """
 
+        file_str = file.as_posix()
         statement_type = "Unknown"
         for statement_type in self.settings_by_type.keys():
             if statement_type.value not in file_str:
@@ -60,26 +64,33 @@ class ProcessorBase(ABC):
             result: ProcessedResult = process_function(file_str)
             if result.success:
                 # execute action after processed
-                after_processed = self.settings_by_type[statement_type].after_processed
-                if after_processed == AfterProcessedAction.move:
-                    dst_directory = Path(
-                        self.move_dir_format.format(
-                            source_name=type(self).source_name,
-                            statement_type=statement_type.value,
-                        )
-                    )
-                    os.makedirs(dst_directory, exist_ok=True)
-
-                    dst = dst_directory / file.name
-                    os.rename(file, dst)
-                elif after_processed == AfterProcessedAction.delete:
-                    os.remove(file)
-                elif after_processed == AfterProcessedAction.keep:
-                    pass
+                self.post_process(file, statement_type)
 
             return result
 
         return ProcessedResult(False, f"Unsupported {statement_type} for {file}")
+
+    def post_process(self, file: Path, statement_type: StatementCategory):
+        """
+        post process operations, like moving the files
+        """
+
+        after_processed = self.settings_by_type[statement_type].after_processed
+        if after_processed == AfterProcessedAction.move:
+            dst_directory = Path(
+                self.move_dir_format.format(
+                    source_name=type(self).source_name,
+                    statement_type=statement_type.value,
+                )
+            )
+            os.makedirs(dst_directory, exist_ok=True)
+
+            dst = dst_directory / file.name
+            os.rename(file, dst)
+        elif after_processed == AfterProcessedAction.delete:
+            os.remove(file)
+        elif after_processed == AfterProcessedAction.keep:
+            pass
 
     @abstractmethod
     def process_creditcard(cls, file: str) -> ProcessedResult:
