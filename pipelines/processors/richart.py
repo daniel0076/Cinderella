@@ -23,12 +23,19 @@ class Richart(ProcessorBase):
 
     def process(self, file: Path) -> ProcessedResult:
         """
-        Overrides the default process
+        Overrides the default process, as Richart has bank and creditcard in the same file, process them together
         """
+        all_success = True
         for statement in self.settings.statements:
             result = self._process_combined_file(file, statement.type)
             if not result.success:
+                all_success = False
                 LOGGER.error(result.message)
+
+        if all_success:
+            for statement in self.settings.statements:
+                # execute action after processed
+                self.post_process(file, statement.type)
 
         return ProcessedResult(True, "")  # Supress warning outside
 
