@@ -74,6 +74,8 @@ class ProcessorBase(ABC):
         """
         post process operations, like moving the files
         """
+        if not file.exists():
+            return
 
         after_processed = self.settings_by_type[statement_type].after_processed
         if after_processed == AfterProcessedAction.move:
