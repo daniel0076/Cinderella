@@ -61,7 +61,7 @@ class ProcessorBase(ABC):
                     False, f"Process function for {statement_type} not found"
                 )
 
-            result: ProcessedResult = process_function(file_str)
+            result: ProcessedResult = process_function(file)
             if result.success:
                 # execute action after processed
                 self.post_process(file, statement_type)
@@ -95,13 +95,13 @@ class ProcessorBase(ABC):
             pass
 
     @abstractmethod
-    def process_creditcard(cls, file: str) -> ProcessedResult:
+    def process_creditcard(cls, file: Path) -> ProcessedResult:
         pass
 
     @abstractmethod
-    def process_bank(cls, file: str) -> ProcessedResult:
+    def process_bank(cls, file: Path) -> ProcessedResult:
         pass
 
     @abstractmethod
-    def process_receipt(cls, file: str) -> ProcessedResult:
+    def process_receipt(cls, file: Path) -> ProcessedResult:
         pass

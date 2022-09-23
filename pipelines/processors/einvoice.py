@@ -19,7 +19,7 @@ class Einvoice(ProcessorBase):
     ):
         super().__init__(output_dir_format, move_dir_format, settings)
 
-    def process_receipt(self, file: str) -> ProcessedResult:
+    def process_receipt(self, file: Path) -> ProcessedResult:
         # ensure the directory exists
         output_dir = Path(
             self.output_dir_format.format(
@@ -83,10 +83,10 @@ class Einvoice(ProcessorBase):
                 print(f"csv duplication detected, remove {existing_csv}")
                 os.remove(existing_csv)
 
-    def process_creditcard(self, file: str) -> ProcessedResult:
+    def process_creditcard(self, file: Path) -> ProcessedResult:
         return ProcessedResult(
             False, f"creditcard not supported by {type(self).source_name}"
         )
 
-    def process_bank(self, file: str) -> ProcessedResult:
+    def process_bank(self, file: Path) -> ProcessedResult:
         return ProcessedResult(False, f"bank not supported by {type(self).source_name}")
