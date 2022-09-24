@@ -19,9 +19,11 @@ LOGGER = logging.getLogger("Processor")
 
 if __name__ == "__main__":
     # register the processors that we have
-    processor_cls = {Einvoice.source_name: Einvoice,
-                     Richart.source_name: Richart,
-                     ESun.source_name: ESun}
+    processor_cls = {
+        Einvoice.source_name: Einvoice,
+        Richart.source_name: Richart,
+        ESun.source_name: ESun,
+    }
 
     parser = argparse.ArgumentParser(
         description="Cinderella Pipeline - raw file Processor"

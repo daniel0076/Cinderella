@@ -31,8 +31,12 @@ class ESun(ProcessorBase):
     def process_bank(self, file: Path) -> ProcessedResult:
 
         # ensure the directory exists
-        output_dir = Path(self.output_dir_format.format(source_name=type(
-            self).source_name, statement_type=StatementCategory.bank.value))
+        output_dir = Path(
+            self.output_dir_format.format(
+                source_name=type(self).source_name,
+                statement_type=StatementCategory.bank.value,
+            )
+        )
         os.makedirs(output_dir, exist_ok=True)
 
         df = pd.read_html(file, header=0)[1]  # The first table is useless
