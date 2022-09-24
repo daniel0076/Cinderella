@@ -13,6 +13,7 @@ flake8 = "*"
 black = "*"
 camelot-py = {extras = ["base"], version = "*"}
 dacite = "*"
+lxml = "*"
 
 [dev-packages]
 flake8 = "*"
