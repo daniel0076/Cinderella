@@ -15,10 +15,6 @@ class ESun(StatementParser):
             StatementCategory.bank: "Assets:Bank:ESun",
         }
 
-    def _read_statement(self, filepath: str) -> pd.DataFrame:
-        df = pd.read_excel(filepath, skiprows=9, skipfooter=3, thousands=",")
-        return df
-
     def _parse_card_statement(self, records: pd.DataFrame) -> Transactions:
         raise NotImplementedError
 
@@ -27,22 +23,19 @@ class ESun(StatementParser):
         transactions = Transactions(category, self.identifier)
 
         for _, record in records.iterrows():
-            date = record["交易日期"]
-            if isinstance(record["交易日期"], str):
-                # Some column has *
-                date = datetime.strptime(date[1:], "%Y/%m/%d")
+            date = pd.to_datetime(record[0])
 
-            if not pd.isna(record["提"]):
-                price = Decimal(str(record["提"]))
+            if not pd.isna(record[2]):
+                price = Decimal(record[2])
                 price *= -1
-            elif not pd.isna(record["存"]):
-                price = Decimal(str(record["存"]))
+            elif not pd.isna(record[3]):
+                price = Decimal(record[3])
             else:
                 raise RuntimeError(
                     f"Can not parse {self.identifier} {category.name} statement {record}"
                 )
 
-            title = str(record["摘要"])
+            title = str(record[1])
             currency = "TWD"
             account = self.default_source_accounts[category]
 
@@ -51,10 +44,8 @@ class ESun(StatementParser):
             )
 
             comment = ""
-            if not pd.isna(record["備註"]):
-                comment += str(record["備註"])
-            if not pd.isna(record["對方銀行代碼/帳號"]):
-                comment += " " + str(record["對方銀行代碼/帳號"])
+            if not pd.isna(record[5]):
+                comment += str(record[5])
 
             if comment:
                 self.beancount_api.add_transaction_comment(transaction, comment)
@@ -62,16 +53,6 @@ class ESun(StatementParser):
             transactions.append(transaction)
 
         return transactions
-
-    def _parse_price(self, raw_str: str) -> tuple:
-        premise, price_str = raw_str.split("$", maxsplit=1)
-        price = Decimal(price_str.replace(",", ""))
-
-        # used as expense, convert to positive
-        if premise.startswith("-"):
-            price *= -1
-
-        return (price, "TWD")
 
     def _parse_stock_statement(self, records: list) -> Transactions:
         raise NotImplementedError
