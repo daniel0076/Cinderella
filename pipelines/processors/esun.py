@@ -29,7 +29,6 @@ class ESun(ProcessorBase):
         )
 
     def process_bank(self, file: Path) -> ProcessedResult:
-
         # ensure the directory exists
         output_dir = Path(
             self.output_dir_format.format(

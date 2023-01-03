@@ -39,7 +39,7 @@ class StatementLoader:
 
     def _load_file(self) -> Iterator[Transactions]:
         LOGGER.debug("Loading statement files")
-        for (dirpath, _, filenames) in walk(self.root):
+        for dirpath, _, filenames in walk(self.root):
             LOGGER.debug(f"Current directory: {dirpath}")
             for filename in filenames:
                 if filename.startswith("."):
@@ -100,7 +100,7 @@ class BeanLoader:
 
         keyword = self.settings.custom_bean_keyword
         LOGGER.debug("===Loading custom bean files===")
-        for (dirpath, _, filenames) in walk(root):
+        for dirpath, _, filenames in walk(root):
             LOGGER.debug(f"Current directory {dirpath}")
             for filename in filenames:
                 path = str(Path(dirpath, filename))
@@ -123,7 +123,7 @@ class BeanLoader:
 
         keyword = self.settings.ignored_bean_keyword
         LOGGER.debug("===Loading ignored bean files===")
-        for (dirpath, _, filenames) in walk(root):
+        for dirpath, _, filenames in walk(root):
             LOGGER.debug(f"Current directory {dirpath}")
             for filename in filenames:
                 path = str(Path(dirpath, filename))

@@ -73,7 +73,6 @@ class TestBeanLayer:
         another_amount,
         another_posting,
     ):
-
         index = beancount_api.create_and_add_transaction_posting(
             sample_transaction,
             another_account,

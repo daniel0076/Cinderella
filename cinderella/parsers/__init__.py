@@ -7,7 +7,6 @@ from cinderella.parsers.base import StatementParser
 
 
 def get_parsers() -> list[type[StatementParser]]:
-
     # Auto import source modules in source/
     EXCLUDED_FILES = [basename(__file__), "base.py"]
 

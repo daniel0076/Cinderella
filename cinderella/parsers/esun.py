@@ -1,5 +1,4 @@
 import pandas as pd
-from datetime import datetime
 from decimal import Decimal
 
 from cinderella.datatypes import Transactions, StatementCategory

@@ -11,7 +11,6 @@ CURRENT_DIR = os.getcwd()
 
 
 if __name__ == "__main__":
-
     parser = argparse.ArgumentParser(
         description="Cinderella - enable automatic beancount"
     )

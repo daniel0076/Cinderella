@@ -16,7 +16,6 @@ CURRENT_DIR = os.getcwd()
 
 class Cinderella:
     def __init__(self, settings: MainSettings):
-
         self.parsers = self._setup_parsers()
         self.bean_api = BeanCountAPI()
         self.classifier = AccountClassifier(settings)

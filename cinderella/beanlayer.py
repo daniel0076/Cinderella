@@ -22,7 +22,6 @@ class BeanCountAPI:
         pass
 
     def write_account_bean(self, accounts: list, output_path: str):
-
         accounts = sorted(list(set(accounts)))
 
         with open(output_path, "w") as f:

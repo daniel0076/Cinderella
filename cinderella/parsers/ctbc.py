@@ -35,7 +35,6 @@ class CTBC(StatementParser):
         transactions = Transactions(category, self.identifier)
 
         for _, record in records.iterrows():
-
             date = datetime.strptime(record["日期"], "%Y/%m/%d")
             title = record["摘要"]
             if not np.isnan(record["支出"]):  # spend
