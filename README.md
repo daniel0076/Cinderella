@@ -14,7 +14,7 @@ Cinderella
 
 ### 支援的金融機構
 
-目前支援自動分析下列機構對帳單，未來會繼續增加。歡迎直接 PR 或 Feature Request (如果我有空的話)
+目前支援自動分析下列機構對帳單，未來會繼續增加。歡迎直接 PR 或 Feature Request
 
 每個機構帶有一個 **source name**，用於識別
 
@@ -30,8 +30,7 @@ Cinderella
 | 中國信託         | ✅ (csv)    |❌           | `ctbc`            | 網銀下載 |
 
 
-> ✅: 下載後直接支援, ❌: 目前不支援
-> 🛠: 下載後需經 Cinderella Pipeline 處理, 📋：需手動複製網銀表格後貼上
+> ✅下載後直接支援 | ❌目前不支援 | 🛠下載後需經 Cinderella Pipeline 處理 | 📋需手動複製網銀表格後貼上
 
 
 ### 支援帳單的種類
@@ -52,18 +51,18 @@ Cinderella
 ### 安裝
 
 + 下載專案
-```
+```bash
 git clone https://github.com/daniel0076/Cinderella
 ```
 
 + 安裝 Python packages (推薦使用 [pipenv](https://pipenv.pypa.io/en/latest/))
 + 在專案目錄下
-```
+```bash
 pipenv install
 pipenv shell
 ```
 或 (使用 [virtualenv](https://virtualenv.pypa.io/en/latest/) 等)
-```
+```bash
 pip install -r requirements.txt
 ```
 
@@ -73,25 +72,22 @@ pip install -r requirements.txt
 1. 依對帳單的金融機構，將 **帳單識別字** 及 **source name** 加入對帳單的**資料夾名或檔名**，二個識別字需在資料夾或檔名(檔案路徑)中。例如
     + `statements/bank/receipt-202101.csv`
     + `statements/card/cathay-202101.csv`
-
 1. 範例對帳單資料夾
-```
+```bash
 statements
 |-- card
 |   |-- cathay-202101.csv
-|
 |-- bank
     |-- receipt-202101.csv
 ```
-
-1. 在 `examples/` 有範例 config 和 bean 輸出資料夾
+4. 在 `examples/` 有範例 config 和 bean 輸出資料夾
  + 修改 `examples/configs/cinderella_sample.json`
    + `statements_directory` 指向對帳單資料夾
    + `output_directory` 指向 `examples/beans`，為 BeanCount 記帳輸出資料夾
 
 ### 執行
 
-```
+```bash
 python3 main.py -dv -c examples/configs/cinderella_sample.json
 fava examples/beans/main.bean  # 啟動 GUI，在 localhost:5000
 ```
@@ -111,4 +107,4 @@ Cinderella 能夠依照使用者提供的關鍵字在對帳單項目中比對，
 
 Cinderella?
 
-小時候看灰姑娘一直記得 Cinderella 有挑豆子的橋段。不過問了身邊好多朋友，都沒有人對這段有印象。[但 Cinderella 真的有挑豆子的?](https://sites.pitt.edu/~dash/grimm021.html)不論如何，就讓 Cinderella 來幫我們做 bean counting 吧
+小時候看灰姑娘一直記得 Cinderella 有挑豆子的橋段。不過問了身邊朋友，很少人對這段有印象。[但 Cinderella 真的有挑豆子的?](https://sites.pitt.edu/~dash/grimm021.html)不論如何，就讓 Cinderella 來幫我們做 bean counting 吧
