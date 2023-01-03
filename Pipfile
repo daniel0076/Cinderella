@@ -4,14 +4,13 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
+matplotlib = "*"
 beancount = "*"
 fava = "*"
 pandas = "*"
 xlrd = "*"
 openpyxl = "*"
-flake8 = "*"
 black = "*"
-camelot-py = {extras = ["base"], version = "*"}
 dacite = "*"
 lxml = "*"
 
@@ -20,10 +19,9 @@ flake8 = "*"
 pytest = "*"
 black = "*"
 autopep8 = "*"
-matplotlib = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3.10"
 
 [pipenv]
 allow_prereleases = true
