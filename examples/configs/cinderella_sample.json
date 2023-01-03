@@ -16,7 +16,7 @@
       "Expenses:Food:Grocery": ["全聯", "寶雅", "小北", "家樂福"],
       "Income:Interest": ["利息"]
     },
-    "cathay:" {
+    "cathay": {
       "Liabilities::CreditCard": "信用卡帳單"
     }
   }
