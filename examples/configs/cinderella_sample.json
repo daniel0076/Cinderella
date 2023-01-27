@@ -1,8 +1,23 @@
 {
-  "statements_directory": "/PATH/TO/STATEMENTS",
-  "output_directory": "/PATH/TO/OUTPUT",
-  "ignored_bean_keyword": "ignored",
-  "custom_bean_keyword": "custom",
+  "statement_settings": {
+    "raw_statement_folder": "",
+    "ready_statement_folder": "",
+    "backup_statement_folder": "",
+    "raw_statement_processing_settings": [
+      {
+        "source": "einvoice",
+        "type": "receipt",
+        "password": "",
+        "after_processed": "keep"
+      }
+    ]
+  },
+
+  "beancount_settings": {
+    "output_beanfiles_folder": "",
+    "ignored_beanfiles_folder": "",
+    "overwrite_beanfiles_folder": ""
+  },
   "default_accounts": {
     "expenses": "Expenses:Other",
     "income": "Income:Other",

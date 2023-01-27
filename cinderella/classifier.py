@@ -2,13 +2,13 @@ import logging
 
 from cinderella.beanlayer import BeanCountAPI
 from cinderella.datatypes import Transactions
-from cinderella.settings import MainSettings
+from cinderella.settings import CinderellaSettings
 
 LOGGER = logging.getLogger(__name__)
 
 
 class AccountClassifier:
-    def __init__(self, settings: MainSettings):
+    def __init__(self, settings: CinderellaSettings):
         self.settings = settings
         self.beancount_api = BeanCountAPI()
         # setup default accounts

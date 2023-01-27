@@ -7,7 +7,7 @@ from collections import defaultdict
 from cinderella.parsers.base import StatementParser
 from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.beanlayer import BeanCountAPI
-from cinderella.settings import MainSettings
+from cinderella.settings import CinderellaSettings
 
 LOGGER = logging.getLogger(__name__)
 CURRENT_DIR = getcwd()
@@ -86,10 +86,11 @@ class StatementLoader:
 
 
 class BeanLoader:
-    def __init__(self, settings: MainSettings):
+    def __init__(self, settings: CinderellaSettings):
         self.settings = settings
         self.beancount_api = BeanCountAPI()
-        self.default_path = str(Path(CURRENT_DIR, self.settings.output_directory))
+        self.default_path = str(
+            Path(CURRENT_DIR, self.settings.beancount_settings.output_beanfiles_folder))
 
     def load_custom_bean(self, root: str = "") -> Transactions:
         if not root:

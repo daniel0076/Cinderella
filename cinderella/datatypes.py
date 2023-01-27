@@ -1,13 +1,13 @@
-from enum import Enum, auto
+from enum import Enum
 
 
 class StatementCategory(Enum):
-    ignored = auto()
-    custom = auto()
-    bank = auto()
-    card = auto()
-    receipt = auto()
-    stock = auto()
+    ignored = "ignored"
+    custom = "custom"
+    bank = "bank"
+    card = "card"
+    receipt = "receipt"
+    stock = "stock"
 
 
 class Transactions(list):
@@ -15,3 +15,10 @@ class Transactions(list):
         self.category: StatementCategory = category
         self.source = source
         super().__init__()
+
+
+class AfterProcessedAction(Enum):
+    keep = "keep"
+    move = "move"
+    delete = "delete"
+

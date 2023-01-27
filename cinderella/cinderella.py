@@ -4,24 +4,24 @@ from pathlib import Path
 
 from cinderella.datatypes import StatementCategory
 from cinderella.parsers import get_parsers
-from cinderella.settings import MainSettings
+from cinderella.settings import CinderellaSettings
 from cinderella.classifier import AccountClassifier
 from cinderella.beanlayer import BeanCountAPI
 from cinderella.loader import StatementLoader, BeanLoader
-from cinderella.processor import TransactionProcessor
+from cinderella.transaction import TransactionProcessor
 
 LOGGER = logging.getLogger(__name__)
 CURRENT_DIR = os.getcwd()
 
 
 class Cinderella:
-    def __init__(self, settings: MainSettings):
+    def __init__(self, settings: CinderellaSettings):
         self.parsers = self._setup_parsers()
         self.bean_api = BeanCountAPI()
         self.classifier = AccountClassifier(settings)
         self.processor = TransactionProcessor()
         self.statement_loader = StatementLoader(
-            settings.statements_directory, self.parsers
+            settings.statement_settings.ready_statement_folder, self.parsers
         )
         self.bean_loader = BeanLoader(settings)
         self.settings = settings
@@ -47,7 +47,8 @@ class Cinderella:
         # accounts created for general mapping
         accounts += self.settings.get_mapping("general").keys()
 
-        account_bean_path = str(Path(self.settings.output_directory, "account.bean"))
+        account_bean_path = str(
+            Path(self.settings.beancount_settings.output_beanfiles_folder, "account.bean"))
         self.bean_api.write_account_bean(accounts, account_bean_path)
 
     def _setup_parsers(self) -> list:
@@ -88,9 +89,9 @@ class Cinderella:
         self.processor.dedup_bank_transfer(autogen_trans_list, lookback_days=5)
 
         # output
-        path = str(Path(self.settings.output_directory, "result.bean"))
+        path = Path(self.settings.beancount_settings.output_beanfiles_folder) / "result.bean"
         # remove existing files
-        Path(path).unlink(missing_ok=True)
+        path.unlink(missing_ok=True)
         for transactions_list in transactions_group.values():
             for transactions in transactions_list:
-                self.bean_api.print_beans(transactions, path)
+                self.bean_api.print_beans(transactions, path.as_posix())
