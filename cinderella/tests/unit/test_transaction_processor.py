@@ -3,7 +3,7 @@ from decimal import Decimal
 from datetime import datetime
 from copy import deepcopy
 
-from cinderella.processor import TransactionProcessor
+from cinderella.transaction import TransactionProcessor
 from cinderella.datatypes import Transactions, StatementCategory
 
 
