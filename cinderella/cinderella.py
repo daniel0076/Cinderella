@@ -48,7 +48,10 @@ class Cinderella:
         accounts += self.settings.get_mapping("general").keys()
 
         account_bean_path = str(
-            Path(self.settings.beancount_settings.output_beanfiles_folder, "account.bean"))
+            Path(
+                self.settings.beancount_settings.output_beanfiles_folder, "account.bean"
+            )
+        )
         self.bean_api.write_account_bean(accounts, account_bean_path)
 
     def _setup_parsers(self) -> list:
@@ -89,7 +92,10 @@ class Cinderella:
         self.processor.dedup_bank_transfer(autogen_trans_list, lookback_days=5)
 
         # output
-        path = Path(self.settings.beancount_settings.output_beanfiles_folder) / "result.bean"
+        path = (
+            Path(self.settings.beancount_settings.output_beanfiles_folder)
+            / "result.bean"
+        )
         # remove existing files
         path.unlink(missing_ok=True)
         for transactions_list in transactions_group.values():

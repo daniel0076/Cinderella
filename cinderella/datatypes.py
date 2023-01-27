@@ -21,4 +21,3 @@ class AfterProcessedAction(Enum):
     keep = "keep"
     move = "move"
     delete = "delete"
-

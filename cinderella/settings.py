@@ -11,7 +11,6 @@ import json
 
 @dataclass
 class SettingsBase:
-
     @classmethod
     def from_file(cls, path: str):
         with open(path) as fp:
@@ -32,12 +31,14 @@ class SettingsBase:
     def __str__(self) -> str:
         return pformat(self, indent=2)
 
+
 @dataclass
 class RawStatementProcessingSettings:
     source: str
     type: StatementCategory
     password: str
     after_processed: AfterProcessedAction
+
 
 @dataclass
 class StatementSettings:
@@ -46,11 +47,13 @@ class StatementSettings:
     backup_statement_folder: str
     raw_statement_processing_settings: list[RawStatementProcessingSettings]
 
+
 @dataclass
 class BeancountSettings:
     output_beanfiles_folder: str
     ignored_beanfiles_folder: str
     overwrite_beanfiles_folder: str
+
 
 @dataclass
 class CinderellaSettings(SettingsBase):
@@ -61,4 +64,3 @@ class CinderellaSettings(SettingsBase):
 
     def get_mapping(self, source_name: str):
         return self.mappings.get(source_name, {})
-

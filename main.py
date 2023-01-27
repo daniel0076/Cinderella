@@ -38,8 +38,12 @@ if __name__ == "__main__":
     settings: CinderellaSettings = value
 
     LOGGER.debug(f"Cinderella configurations:\n{settings}")
-    LOGGER.info(f"Reading statements from: {settings.statement_settings.ready_statement_folder}")
-    LOGGER.info(f"Output beanfiles to: {settings.beancount_settings.output_beanfiles_folder}")
+    LOGGER.info(
+        f"Reading statements from: {settings.statement_settings.ready_statement_folder}"
+    )
+    LOGGER.info(
+        f"Output beanfiles to: {settings.beancount_settings.output_beanfiles_folder}"
+    )
     print()
 
     cinderella = Cinderella(settings)

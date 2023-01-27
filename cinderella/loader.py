@@ -90,7 +90,8 @@ class BeanLoader:
         self.settings = settings
         self.beancount_api = BeanCountAPI()
         self.default_path = str(
-            Path(CURRENT_DIR, self.settings.beancount_settings.output_beanfiles_folder))
+            Path(CURRENT_DIR, self.settings.beancount_settings.output_beanfiles_folder)
+        )
 
     def load_custom_bean(self, root: str = "") -> Transactions:
         if not root:
