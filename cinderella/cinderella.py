@@ -76,8 +76,14 @@ class Cinderella:
             ts for ts_list in transactions_group.values() for ts in ts_list
         ]
         # remove transactions listed in custom and ignored bean files
-        custom_transactions = self.bean_loader.load_custom_bean()
-        ignored_transactions = self.bean_loader.load_ignored_bean()
+        custom_transactions = self.bean_loader.load_beanfile_as_transactions(
+            self.settings.beancount_settings.overwrite_beanfiles_folder,
+            StatementCategory.custom,
+        )
+        ignored_transactions = self.bean_loader.load_beanfile_as_transactions(
+            self.settings.beancount_settings.ignored_beanfiles_folder,
+            StatementCategory.ignored,
+        )
         pre_defined_trans_list = [custom_transactions, ignored_transactions]
         self.processor.dedup_by_title_and_amount(
             pre_defined_trans_list, autogen_trans_list

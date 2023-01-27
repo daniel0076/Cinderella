@@ -89,56 +89,19 @@ class BeanLoader:
     def __init__(self, settings: CinderellaSettings):
         self.settings = settings
         self.beancount_api = BeanCountAPI()
-        self.default_path = str(
-            Path(CURRENT_DIR, self.settings.beancount_settings.output_beanfiles_folder)
-        )
 
-    def load_custom_bean(self, root: str = "") -> Transactions:
-        if not root:
-            root = self.default_path
-
-        category = StatementCategory.custom
+    def load_beanfile_as_transactions(
+        self, path: Path | str, category: StatementCategory
+    ) -> Transactions:
         transactions = Transactions(category, category.name)
-
-        keyword = self.settings.custom_bean_keyword
-        LOGGER.debug("===Loading custom bean files===")
-        for dirpath, _, filenames in walk(root):
+        LOGGER.debug(f"===Loading beanfiles: {category.name}===")
+        for dirpath, _, filenames in walk(path):
             LOGGER.debug(f"Current directory {dirpath}")
             for filename in filenames:
-                path = str(Path(dirpath, filename))
-                if keyword not in path or not filename.endswith("bean"):
-                    continue
-                LOGGER.debug(f"Bean file: {filename}")
+                path = Path(dirpath, filename)
+                LOGGER.debug(f"Loading beanfile: {filename}")
 
-                entries = self._load_bean(path)
+                entries = self.beancount_api._load_bean(path.as_posix())
                 transactions.extend(entries)
 
         return transactions
-
-    # TODO: merge load_XXX_bean
-    def load_ignored_bean(self, root: str = None) -> Transactions:
-        if not root:
-            root = self.default_path
-
-        category = StatementCategory.ignored
-        transactions = Transactions(category, category.name)
-
-        keyword = self.settings.ignored_bean_keyword
-        LOGGER.debug("===Loading ignored bean files===")
-        for dirpath, _, filenames in walk(root):
-            LOGGER.debug(f"Current directory {dirpath}")
-            for filename in filenames:
-                path = str(Path(dirpath, filename))
-                if keyword not in path or not filename.endswith("bean"):
-                    continue
-                LOGGER.debug(f"Bean file: {filename}")
-
-                entries = self._load_bean(path)
-                transactions.extend(entries)
-
-        return transactions
-
-    def _load_bean(self, path) -> list:
-        results = self.beancount_api._load_bean(path)
-
-        return results

@@ -29,7 +29,7 @@ class SettingsBase:
         return True, settings
 
     def __str__(self) -> str:
-        return pformat(self, indent=2)
+        return pformat(self, indent=2, compact=True, sort_dicts=True)
 
 
 @dataclass
