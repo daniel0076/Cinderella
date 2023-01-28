@@ -6,8 +6,9 @@ import logging
 
 from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.parsers.base import StatementParser
+from cinderella.settings import LOG_NAME
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(LOG_NAME)
 
 
 class Sinopac(StatementParser):
@@ -79,7 +80,9 @@ class Sinopac(StatementParser):
                         1
                     )
                 except IndexError:
-                    LOGGER.error(f"Can not determine currency for row: {record}")
+                    logger.error(
+                        f"{self.identifier}: Can not determine currency for row: {record}"
+                    )
                     continue
 
                 foreign_price = self.beancount_api.make_amount(rate, currency)

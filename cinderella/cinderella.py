@@ -1,5 +1,3 @@
-import os
-import logging
 from pathlib import Path
 
 from cinderella.datatypes import StatementCategory
@@ -9,9 +7,6 @@ from cinderella.classifier import AccountClassifier
 from cinderella.beanlayer import BeanCountAPI
 from cinderella.loader import StatementLoader, BeanLoader
 from cinderella.transaction import TransactionProcessor
-
-LOGGER = logging.getLogger(__name__)
-CURRENT_DIR = os.getcwd()
 
 
 class Cinderella:

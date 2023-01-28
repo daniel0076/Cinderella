@@ -3,9 +3,8 @@ import os
 import logging
 
 from cinderella.cinderella import Cinderella
-from cinderella.settings import CinderellaSettings
+from cinderella.settings import CinderellaSettings, LOG_NAME
 
-LOGGER = logging.getLogger(__name__)
 PROJECT_ROOT = os.path.dirname(__file__)
 CURRENT_DIR = os.getcwd()
 
@@ -25,23 +24,31 @@ if __name__ == "__main__":
     parser.add_argument("-v", "--verbose", help="Verbose mode", action="store_true")
     args = parser.parse_args()
 
+    # set up logger
+    logger = logging.getLogger(LOG_NAME)
     if args.debug:
-        logging.basicConfig(level=logging.DEBUG)
+        logger.setLevel(logging.DEBUG)
     elif args.verbose:
-        LOGGER.setLevel(level=logging.INFO)
+        logger.setLevel(logging.INFO)
+    # create console handler and set level to debug
+    ch = logging.StreamHandler()
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter("[%(levelname)s] %(message)s")
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
 
     # create configuration object
     success, value = CinderellaSettings.from_file(args.config)
     if not success:
-        LOGGER.error(value)
+        logger.error(value)
         exit(1)
     settings: CinderellaSettings = value
 
-    LOGGER.debug(f"Cinderella configurations:\n{settings}")
-    LOGGER.info(
+    logger.debug(f"Cinderella configurations:\n{settings}")
+    logger.info(
         f"Reading statements from: {settings.statement_settings.ready_statement_folder}"
     )
-    LOGGER.info(
+    logger.info(
         f"Output beanfiles to: {settings.beancount_settings.output_beanfiles_folder}"
     )
     print()

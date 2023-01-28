@@ -13,8 +13,9 @@ from beancount.core.position import Cost
 from beancount.core.position import CostSpec
 
 from cinderella.datatypes import Transactions
+from cinderella.settings import LOG_NAME
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(LOG_NAME)
 
 
 class BeanCountAPI:
@@ -61,7 +62,7 @@ class BeanCountAPI:
         meta: Dict[str, Any] = None,
     ):
         if not isinstance(account, str):
-            LOGGER.error("account must be a string, got %s instead", account)
+            logger.error("account must be a string, got %s instead", account)
             raise RuntimeError
         if not meta:
             meta = dict()

@@ -5,8 +5,9 @@ from decimal import Decimal
 
 from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.parsers.base import StatementParser
+from cinderella.settings import LOG_NAME
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(LOG_NAME)
 
 
 class Receipt(StatementParser):
@@ -18,7 +19,7 @@ class Receipt(StatementParser):
 
     def parse(self, _: str, filepath: str) -> Transactions:
         if "invos" in filepath and "csv" in filepath:
-            LOGGER.debug("Using Invos specification")
+            logger.warning("Using Invos specification")
             df = pd.read_csv(filepath)
             return self._parse_receipt_invos(df)
 

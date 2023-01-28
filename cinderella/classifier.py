@@ -1,10 +1,6 @@
-import logging
-
 from cinderella.beanlayer import BeanCountAPI
 from cinderella.datatypes import Transactions
 from cinderella.settings import CinderellaSettings
-
-LOGGER = logging.getLogger(__name__)
 
 
 class AccountClassifier:

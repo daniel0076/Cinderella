@@ -9,6 +9,9 @@ from pprint import pformat
 import json
 
 
+LOG_NAME = "Cinderella"
+
+
 @dataclass
 class SettingsBase:
     @classmethod

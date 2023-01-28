@@ -7,9 +7,9 @@ from collections import defaultdict
 from cinderella.parsers.base import StatementParser
 from cinderella.datatypes import Transactions, StatementCategory
 from cinderella.beanlayer import BeanCountAPI
-from cinderella.settings import CinderellaSettings
+from cinderella.settings import CinderellaSettings, LOG_NAME
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(LOG_NAME)
 CURRENT_DIR = getcwd()
 
 
@@ -38,9 +38,9 @@ class StatementLoader:
         return None
 
     def _load_file(self) -> Iterator[Transactions]:
-        LOGGER.debug("Loading statement files")
+        logger.debug("Loading statement files")
         for dirpath, _, filenames in walk(self.root):
-            LOGGER.debug(f"Current directory: {dirpath}")
+            logger.debug(f"Current directory: {dirpath}")
             for filename in filenames:
                 if filename.startswith("."):
                     continue
@@ -49,7 +49,7 @@ class StatementLoader:
                 category = self._find_category(filepath)
 
                 if not parser or not category:
-                    LOGGER.warn(
+                    logger.warn(
                         "Load fail: %s, Category: %s, Parser: %s",
                         filepath,
                         "Unknown" if not category else category,
@@ -57,7 +57,7 @@ class StatementLoader:
                     )
                     continue
 
-                LOGGER.debug(
+                logger.debug(
                     f"File: {filename}, Category: {category}, Parser: {parser.identifier}"
                 )
                 transactions = parser.parse(category, filepath)
@@ -94,12 +94,12 @@ class BeanLoader:
         self, path: Path | str, category: StatementCategory
     ) -> Transactions:
         transactions = Transactions(category, category.name)
-        LOGGER.debug(f"===Loading beanfiles: {category.name}===")
+        logger.debug(f"===Loading beanfiles: {category.name}===")
         for dirpath, _, filenames in walk(path):
-            LOGGER.debug(f"Current directory {dirpath}")
+            logger.debug(f"Current directory {dirpath}")
             for filename in filenames:
                 path = Path(dirpath, filename)
-                LOGGER.debug(f"Loading beanfile: {filename}")
+                logger.debug(f"Loading beanfile: {filename}")
 
                 entries = self.beancount_api._load_bean(path.as_posix())
                 transactions.extend(entries)
