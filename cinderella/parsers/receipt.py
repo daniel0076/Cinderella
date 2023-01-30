@@ -3,7 +3,7 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
-from cinderella.datatypes import Transactions, StatementCategory
+from cinderella.datatypes import Transactions, StatementType
 from cinderella.parsers.base import StatementParser
 from cinderella.settings import LOG_NAME
 
@@ -15,7 +15,7 @@ class Receipt(StatementParser):
 
     def __init__(self):
         super().__init__()
-        self.default_source_accounts = {StatementCategory.receipt: "Assets:Cash"}
+        self.default_source_accounts = {StatementType.receipt: "Assets:Cash"}
 
     def parse(self, _: str, filepath: str) -> Transactions:
         if "invos" in filepath and "csv" in filepath:
@@ -31,7 +31,7 @@ class Receipt(StatementParser):
             raise NotImplementedError
 
     def _parse_receipt(self, records: pd.DataFrame) -> Transactions:
-        transactions = Transactions(StatementCategory.receipt, self.identifier)
+        transactions = Transactions(StatementType.receipt, self.identifier)
         prev_transaction = None
 
         for _, record in records.iterrows():
@@ -40,7 +40,7 @@ class Receipt(StatementParser):
                 title = str(record[5])
                 amount = Decimal(str(record[7]))
                 currency = "TWD"
-                account = self.default_source_accounts[StatementCategory.receipt]
+                account = self.default_source_accounts[StatementType.receipt]
 
                 transaction = self.beancount_api.make_simple_transaction(
                     date, title, account, -amount, currency
@@ -60,7 +60,7 @@ class Receipt(StatementParser):
         return transactions
 
     def _parse_receipt_invos(self, records: pd.DataFrame) -> Transactions:
-        transactions = Transactions(StatementCategory.receipt, self.identifier)
+        transactions = Transactions(StatementType.receipt, self.identifier)
         prev_title, prev_date = "", datetime.now()
         prev_transaction = None
 
@@ -78,7 +78,7 @@ class Receipt(StatementParser):
             item_name = str(record["消費品項"])
             item_price = Decimal(str(record["單價"]))
             item_count = Decimal(str(record["個數"]))
-            account = self.default_source_accounts[StatementCategory.receipt]
+            account = self.default_source_accounts[StatementType.receipt]
 
             if prev_transaction and (prev_title, prev_date) == (title, date):
                 self.beancount_api.add_posting_amount(prev_transaction, -amount)

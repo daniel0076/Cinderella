@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
-from cinderella.datatypes import Transactions, StatementCategory
+from cinderella.datatypes import Transactions, StatementType
 from cinderella.parsers.base import StatementParser
 
 
@@ -12,12 +12,12 @@ class Richart(StatementParser):
     def __init__(self, config: dict = {}):
         super().__init__()
         self.default_source_accounts = {
-            StatementCategory.card: "Liabilities:CreditCard:Richart",
-            StatementCategory.bank: "Assets:Bank:Richart",
+            StatementType.creditcard: "Liabilities:CreditCard:Richart",
+            StatementType.bank: "Assets:Bank:Richart",
         }
 
     def _parse_card_statement(self, records: pd.DataFrame) -> Transactions:
-        category = StatementCategory.card
+        category = StatementType.creditcard
         transactions = Transactions(category, self.identifier)
 
         for _, record in records.iterrows():
@@ -33,7 +33,7 @@ class Richart(StatementParser):
         return transactions
 
     def _parse_bank_statement(self, records: pd.DataFrame) -> Transactions:
-        category = StatementCategory.bank
+        category = StatementType.bank
         transactions = Transactions(category, self.identifier)
         for _, record in records.iterrows():
             date = datetime.strptime(str(record["交易日期"]), "%Y-%m-%d")

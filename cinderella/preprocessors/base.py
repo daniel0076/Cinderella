@@ -3,8 +3,8 @@ from dataclasses import dataclass
 from abc import abstractmethod, ABC
 from pathlib import Path
 
-from settings import SourceSettings, StatementSettings
-from datatypes import StatementCategory, AfterProcessedAction
+from cinderella.settings import StatementSettings, RawStatementProcessSettings
+from cinderella.datatypes import StatementType, AfterProcessedAction
 
 
 @dataclass
@@ -16,27 +16,21 @@ class ProcessedResult:
 class ProcessorBase(ABC):
     source_name = "ProcessorBase"
 
-    def __init__(
-        self, output_dir_format: str, move_dir_format: str, settings: SourceSettings
-    ):
-        self.output_dir_format = output_dir_format
-        self.move_dir_format = move_dir_format
+    def __init__(self, settings: StatementSettings):
+        self.output_dir_format = settings.ready_statement_folder
+        self.move_dir_format = settings.backup_statement_folder
         self.settings = settings
 
-        settings_by_type = {}
-        for statement_settings in settings.statements:
-            settings_by_type[statement_settings.type] = statement_settings
+        settings_by_type: dict[StatementType, RawStatementProcessSettings] = {}
+        for setting in settings.raw_statement_processing.get(self.source_name, []):
+            settings_by_type[setting.statement_type] = setting
         self.settings_by_type = settings_by_type
 
-        functions_by_type = {
-            StatementCategory.creditcard: self.process_creditcard,
-            StatementCategory.bank: self.process_bank,
-            StatementCategory.receipt: self.process_receipt,
+        self.process_functions = {
+            StatementType.creditcard: self.process_creditcard,
+            StatementType.bank: self.process_bank,
+            StatementType.receipt: self.process_receipt,
         }
-        self.functions_by_type = functions_by_type
-
-    def get_settings(self, type: StatementCategory) -> StatementSettings:
-        return self.settings_by_type[type]
 
     def process(self, file: Path) -> ProcessedResult:
         """
@@ -44,33 +38,26 @@ class ProcessorBase(ABC):
         """
 
         file_str = file.as_posix()
-        statement_type = "Unknown"
-        for statement_type in self.settings_by_type.keys():
+        for statement_type in self.process_functions.keys():
             if statement_type.value not in file_str:
                 continue
 
-            statement_settings = self.settings_by_type.get(statement_type)
-            if not statement_settings:
-                return ProcessedResult(
-                    False, f"Statement settings for {statement_type} not found"
+            process_settings = self.settings_by_type.get(statement_type, None)
+            if not process_settings:
+                process_settings = RawStatementProcessSettings(
+                    statement_type, "", AfterProcessedAction.move
                 )
 
-            process_function = self.functions_by_type.get(statement_type)
-            if not process_function:
-                return ProcessedResult(
-                    False, f"Process function for {statement_type} not found"
-                )
-
-            result: ProcessedResult = process_function(file)
+            result: ProcessedResult = self.process_functions[statement_type](file)
             if result.success:
                 # execute action after processed
                 self.post_process(file, statement_type)
 
             return result
 
-        return ProcessedResult(False, f"Unsupported {statement_type} for {file}")
+        return ProcessedResult(False, f"No process function for {file}")
 
-    def post_process(self, file: Path, statement_type: StatementCategory):
+    def post_process(self, file: Path, statement_type: StatementType):
         """
         post process operations, like moving the files
         """
@@ -95,13 +82,19 @@ class ProcessorBase(ABC):
             pass
 
     @abstractmethod
-    def process_creditcard(cls, file: Path) -> ProcessedResult:
+    def process_creditcard(
+        cls, file: Path, settings: RawStatementProcessSettings
+    ) -> ProcessedResult:
         pass
 
     @abstractmethod
-    def process_bank(cls, file: Path) -> ProcessedResult:
+    def process_bank(
+        cls, file: Path, settings: RawStatementProcessSettings
+    ) -> ProcessedResult:
         pass
 
     @abstractmethod
-    def process_receipt(cls, file: Path) -> ProcessedResult:
+    def process_receipt(
+        cls, file: Path, settings: RawStatementProcessSettings
+    ) -> ProcessedResult:
         pass

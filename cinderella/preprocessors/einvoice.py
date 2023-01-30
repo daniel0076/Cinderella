@@ -5,8 +5,8 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-from base import ProcessorBase, ProcessedResult
-from settings import SourceSettings
+from cinderella.preprocessors.base import ProcessorBase, ProcessedResult
+from cinderella.settings import RawStatementProcessSettings
 
 LOGGER = logging.getLogger(__name__)
 
@@ -14,12 +14,9 @@ LOGGER = logging.getLogger(__name__)
 class Einvoice(ProcessorBase):
     source_name = "einvoice"
 
-    def __init__(
-        self, output_dir_format: str, move_dir_format: str, settings: SourceSettings
-    ):
-        super().__init__(output_dir_format, move_dir_format, settings)
-
-    def process_receipt(self, file: Path) -> ProcessedResult:
+    def process_receipt(
+        self, file: Path, settings: RawStatementProcessSettings
+    ) -> ProcessedResult:
         # ensure the directory exists
         output_dir = Path(
             self.output_dir_format.format(
@@ -83,10 +80,14 @@ class Einvoice(ProcessorBase):
                 print(f"csv duplication detected, remove {existing_csv}")
                 os.remove(existing_csv)
 
-    def process_creditcard(self, file: Path) -> ProcessedResult:
+    def process_creditcard(
+        self, file: Path, settings: RawStatementProcessSettings
+    ) -> ProcessedResult:
         return ProcessedResult(
             False, f"creditcard not supported by {type(self).source_name}"
         )
 
-    def process_bank(self, file: Path) -> ProcessedResult:
+    def process_bank(
+        self, file: Path, settings: RawStatementProcessSettings
+    ) -> ProcessedResult:
         return ProcessedResult(False, f"bank not supported by {type(self).source_name}")

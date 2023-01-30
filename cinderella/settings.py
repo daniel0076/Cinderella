@@ -1,6 +1,7 @@
-from __future__ import annotations  # for typing
+from __future__ import annotations
+from collections import defaultdict  # for typing
 from dataclasses import dataclass
-from cinderella.datatypes import AfterProcessedAction, StatementCategory
+from cinderella.datatypes import AfterProcessedAction, StatementType
 from typing import Dict
 from dacite.core import from_dict
 from dacite.config import Config
@@ -36,23 +37,22 @@ class SettingsBase:
 
 
 @dataclass
-class RawStatementProcessingSettings:
-    source: str
-    type: StatementCategory
+class RawStatementProcessSettings(SettingsBase):
+    statement_type: StatementType
     password: str
     after_processed: AfterProcessedAction
 
 
 @dataclass
-class StatementSettings:
+class StatementSettings(SettingsBase):
     raw_statement_folder: str
     ready_statement_folder: str
     backup_statement_folder: str
-    raw_statement_processing_settings: list[RawStatementProcessingSettings]
+    raw_statement_processing: dict[str, list[RawStatementProcessSettings]]
 
 
 @dataclass
-class BeancountSettings:
+class BeancountSettings(SettingsBase):
     output_beanfiles_folder: str
     ignored_beanfiles_folder: str
     overwrite_beanfiles_folder: str

@@ -4,66 +4,70 @@ import logging
 import zipfile
 from pathlib import Path
 
+from cinderella.preprocessors.base import ProcessorBase, ProcessedResult
+from cinderella.datatypes import AfterProcessedAction, StatementType
+from cinderella.settings import LOG_NAME, RawStatementProcessSettings
 
-from base import ProcessorBase, ProcessedResult
-from settings import SourceSettings, StatementCategory
-
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(LOG_NAME)
 
 
 class Richart(ProcessorBase):
     source_name = "richart"
-
-    def __init__(
-        self, output_dir_format: str, move_dir_format: str, settings: SourceSettings
-    ):
-        super().__init__(output_dir_format, move_dir_format, settings)
 
     def process(self, file: Path) -> ProcessedResult:
         """
         Overrides the default process
         Richart has bank and creditcard in the same file, process them together
         """
+        supported_types = [StatementType.bank, StatementType.creditcard]
         all_success = True
-        for statement in self.settings.statements:
-            result = self._process_combined_file(file, statement.type)
+        for statement_type in supported_types:
+            settings = self.settings_by_type.get(
+                statement_type,
+                RawStatementProcessSettings(
+                    statement_type, "", AfterProcessedAction.move
+                ),
+            )
+            result = self._process_combined_file(file, settings)
             if not result.success:
                 all_success = False
-                LOGGER.error(result.message)
+                logger.error(result.message)
 
         if all_success:
-            for statement in self.settings.statements:
-                # execute action after processed
-                self.post_process(file, statement.type)
+            # Richart has bank and creditcard in the same file, process them together
+            self.post_process(file, StatementType.bank)
 
         return ProcessedResult(True, "")  # Supress warning outside
 
-    def process_receipt(self, file: Path) -> ProcessedResult:
-        return ProcessedResult(
-            False, f"{file} not supported by {type(self).source_name}"
-        )
+    def process_receipt(
+        self, file: Path, settings: RawStatementProcessSettings
+    ) -> ProcessedResult:
+        return ProcessedResult(False, f"{file} not supported by {self.source_name}")
 
-    def process_creditcard(self, file: Path) -> ProcessedResult:
+    def process_creditcard(
+        self, file: Path, settings: RawStatementProcessSettings
+    ) -> ProcessedResult:
         """
         Richart has bank and creditcard in the same file, process them together
         """
-        return self._process_combined_file(file, StatementCategory.creditcard)
+        return self._process_combined_file(file, settings)
 
-    def process_bank(self, file: Path) -> ProcessedResult:
+    def process_bank(
+        self, file: Path, settings: RawStatementProcessSettings
+    ) -> ProcessedResult:
         """
         Richart has bank and creditcard in the same file, process them together
         """
-        return self._process_combined_file(file, StatementCategory.bank)
+        return self._process_combined_file(file, settings)
 
     def _process_combined_file(
-        self, file: Path, statement_type: StatementCategory
+        self, file: Path, settings: RawStatementProcessSettings
     ) -> ProcessedResult:
-        settings = self.get_settings(statement_type)
-
         # ensure the directory exists
         output_dir = Path(
             self.output_dir_format.format(
-                source_name=type(self).source_name, statement_type=statement_type.value
+                source_name=type(self).source_name,
+                statement_type=settings.statement_type.value,
             )
         )
         os.makedirs(output_dir, exist_ok=True)
@@ -72,16 +76,16 @@ class Richart(ProcessorBase):
             filename = zipfp.namelist()[0]  # only contains one file
             with zipfp.open(filename, pwd=settings.password.encode()) as fp:
                 # 0 for creditcard, 1 for bank
-                if statement_type == StatementCategory.creditcard:
+                if settings.statement_type == StatementType.creditcard:
                     df = pd.read_excel(fp, sheet_name=0)
-                elif statement_type == StatementCategory.bank:
+                elif settings.statement_type == StatementType.bank:
                     df = pd.read_excel(fp, sheet_name=1)
                 else:
                     return ProcessedResult(
                         False,
-                        f"{statement_type} not supported by {type(self).source_name}",
+                        f"{settings.statement_type} not supported by {type(self).source_name}",
                     )
-        # print(df)
+
         df.iloc[:, 0] = pd.to_datetime(df.iloc[:, 0])
         df.iloc[:, 1] = pd.to_datetime(df.iloc[:, 1])
         years = df.iloc[:, 0].dt.year.unique()
@@ -99,7 +103,7 @@ class Richart(ProcessorBase):
                     if not self._should_replace(output_file, result_df):
                         continue
                     else:
-                        LOGGER.warning(f"Replace {output_file} with newer records")
+                        logger.warning(f"Replace {output_file} with newer records")
 
                 print(f"output {output_file}")
                 result_df.to_csv(output_file, index=False)

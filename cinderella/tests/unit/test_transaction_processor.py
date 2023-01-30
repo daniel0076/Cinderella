@@ -4,7 +4,7 @@ from datetime import datetime
 from copy import deepcopy
 
 from cinderella.transaction import TransactionProcessor
-from cinderella.datatypes import Transactions, StatementCategory
+from cinderella.datatypes import Transactions, StatementType
 
 
 @pytest.fixture
@@ -61,8 +61,8 @@ class TestDedupByTitleAndAmount:
 class TestDedupBankTransfer:
     def test_dedup(self, beancount_api, transaction_processor):
         # Arrange
-        trans1 = Transactions(category=StatementCategory.bank, source="bank1")
-        trans2 = Transactions(category=StatementCategory.bank, source="bank2")
+        trans1 = Transactions(category=StatementType.bank, source="bank1")
+        trans2 = Transactions(category=StatementType.bank, source="bank2")
         postings_from = beancount_api.make_simple_posting(
             "Asset:Bank1:Test", Decimal(-100), "TWD"
         )
@@ -86,8 +86,8 @@ class TestDedupBankTransfer:
 
     def test_dedup_same_source(self, beancount_api, transaction_processor):
         # Arrange
-        trans1 = Transactions(category=StatementCategory.bank, source="bank1")
-        trans2 = Transactions(category=StatementCategory.bank, source="bank2")
+        trans1 = Transactions(category=StatementType.bank, source="bank1")
+        trans2 = Transactions(category=StatementType.bank, source="bank2")
         postings_from = beancount_api.make_simple_posting(
             "Asset:Bank1:Test", Decimal(-100), "TWD"
         )

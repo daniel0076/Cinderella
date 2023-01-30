@@ -3,14 +3,15 @@
     "raw_statement_folder": "",
     "ready_statement_folder": "",
     "backup_statement_folder": "",
-    "raw_statement_processing_settings": [
-      {
-        "source": "einvoice",
-        "type": "receipt",
-        "password": "",
-        "after_processed": "keep"
-      }
-    ]
+    "raw_statement_processing": {
+      "einvoice": [
+        {
+          "statement_type": "receipt",
+          "password": "",
+          "after_processed": "keep"
+        }
+      ]
+    }
   },
 
   "beancount_settings": {

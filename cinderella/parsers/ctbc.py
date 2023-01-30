@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 import logging
 
-from cinderella.datatypes import Transactions, StatementCategory
+from cinderella.datatypes import Transactions, StatementType
 from cinderella.parsers.base import StatementParser
 
 # Turn off logs from pdfminer used by camelot
@@ -17,8 +17,8 @@ class CTBC(StatementParser):
     def __init__(self):
         super().__init__()
         self.default_source_accounts = {
-            StatementCategory.card: "Liabilities:CreditCard:CTBC",
-            StatementCategory.bank: "Assets:Bank:CTBC",
+            StatementType.creditcard: "Liabilities:CreditCard:CTBC",
+            StatementType.bank: "Assets:Bank:CTBC",
         }
 
     def _read_statement(self, filepath: str) -> pd.DataFrame:
@@ -26,12 +26,12 @@ class CTBC(StatementParser):
         return df
 
     def _parse_card_statement(self, records: pd.DataFrame) -> Transactions:
-        category = StatementCategory.bank
+        category = StatementType.bank
         transactions = Transactions(category, self.identifier)
         return transactions
 
     def _parse_bank_statement(self, records: pd.DataFrame) -> Transactions:
-        category = StatementCategory.bank
+        category = StatementType.bank
         transactions = Transactions(category, self.identifier)
 
         for _, record in records.iterrows():

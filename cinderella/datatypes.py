@@ -1,18 +1,19 @@
 from enum import Enum
 
 
-class StatementCategory(Enum):
+class StatementType(Enum):
+    invalid = "invalid"
     ignored = "ignored"
     custom = "custom"
     bank = "bank"
-    card = "card"
+    creditcard = "creditcard"
     receipt = "receipt"
     stock = "stock"
 
 
 class Transactions(list):
-    def __init__(self, category=StatementCategory.custom, source=""):
-        self.category: StatementCategory = category
+    def __init__(self, category=StatementType.custom, source=""):
+        self.category: StatementType = category
         self.source = source
         super().__init__()
 

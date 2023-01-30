@@ -2,7 +2,7 @@ from typing import Union
 from collections import defaultdict
 from datetime import timedelta
 
-from cinderella.datatypes import Transactions, StatementCategory
+from cinderella.datatypes import Transactions, StatementType
 from cinderella.beanlayer import BeanCountAPI
 
 
@@ -30,7 +30,7 @@ class TransactionProcessor:
 
         bucket = defaultdict(list)
         for transactions in transactions_list:
-            if transactions.category != StatementCategory.bank:
+            if transactions.category != StatementType.bank:
                 continue
 
             unique = []

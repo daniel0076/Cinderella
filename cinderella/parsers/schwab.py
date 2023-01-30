@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
-from cinderella.datatypes import Transactions, StatementCategory
+from cinderella.datatypes import Transactions, StatementType
 from cinderella.parsers.base import StatementParser
 
 
@@ -12,8 +12,8 @@ class Schwab(StatementParser):
     def __init__(self):
         super().__init__()
         self.default_source_accounts = {
-            StatementCategory.stock: "Assets:Stock:Schwab",
-            StatementCategory.bank: "Assets:Bank:Schwab",
+            StatementType.stock: "Assets:Stock:Schwab",
+            StatementType.bank: "Assets:Bank:Schwab",
             "pnl_account": "Income:Stock:Schwab:PnL",
             "fees_account": "Expenses:Stock:Schwab:Fees",
         }
@@ -35,9 +35,9 @@ class Schwab(StatementParser):
         raise NotImplementedError
 
     def _parse_stock_statement(self, records: pd.DataFrame) -> Transactions:
-        transactions = Transactions(StatementCategory.stock, self.identifier)
-        stock_account = self.default_source_accounts[StatementCategory.stock]
-        bank_account = self.default_source_accounts[StatementCategory.bank]
+        transactions = Transactions(StatementType.stock, self.identifier)
+        stock_account = self.default_source_accounts[StatementType.stock]
+        bank_account = self.default_source_accounts[StatementType.bank]
         pnl_account = self.default_source_accounts["pnl_account"]
         fees_account = self.default_source_accounts["fees_account"]
 

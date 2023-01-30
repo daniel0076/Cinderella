@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
-from cinderella.datatypes import Transactions, StatementCategory
+from cinderella.datatypes import Transactions, StatementType
 from cinderella.parsers.base import StatementParser
 
 
@@ -12,16 +12,16 @@ class Cathay(StatementParser):
     def __init__(self):
         super().__init__()
         self.default_source_accounts = {
-            StatementCategory.card: "Liabilities:CreditCard:Cathay",
-            StatementCategory.bank: "Assets:Bank:Cathay",
+            StatementType.creditcard: "Liabilities:CreditCard:Cathay",
+            StatementType.bank: "Assets:Bank:Cathay",
         }
 
     def _read_statement(self, filepath: str) -> pd.DataFrame:
-        if StatementCategory.bank.name in filepath:
+        if StatementType.bank.name in filepath:
             df = pd.read_csv(
                 filepath, encoding="big5", skiprows=1, encoding_errors="replace"
             )
-        elif StatementCategory.card.name in filepath:
+        elif StatementType.creditcard.name in filepath:
             # 國泰帳單沒有提供年份，需由帳單第一行標題取得。可能有跨年份的問題
             with open(filepath, "r", encoding="big5") as f:
                 title = f.readline()
@@ -35,7 +35,7 @@ class Cathay(StatementParser):
         return df
 
     def _parse_card_statement(self, records: pd.DataFrame) -> Transactions:
-        category = StatementCategory.card
+        category = StatementType.creditcard
         transactions = Transactions(category, self.identifier)
 
         for _, record in records.iterrows():
@@ -74,7 +74,7 @@ class Cathay(StatementParser):
         return transactions
 
     def _parse_bank_statement(self, records: pd.DataFrame) -> Transactions:
-        category = StatementCategory.bank
+        category = StatementType.bank
         transactions = Transactions(category, self.identifier)
         for _, record in records.iterrows():
             date = datetime.strptime(str(record[0]), "%Y%m%d")

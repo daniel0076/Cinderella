@@ -1,7 +1,7 @@
 import pandas as pd
 from decimal import Decimal
 
-from cinderella.datatypes import Transactions, StatementCategory
+from cinderella.datatypes import Transactions, StatementType
 from cinderella.parsers.base import StatementParser
 
 
@@ -11,14 +11,14 @@ class ESun(StatementParser):
     def __init__(self, config: dict = {}):
         super().__init__()
         self.default_source_accounts = {
-            StatementCategory.bank: "Assets:Bank:ESun",
+            StatementType.bank: "Assets:Bank:ESun",
         }
 
     def _parse_card_statement(self, records: pd.DataFrame) -> Transactions:
         raise NotImplementedError
 
     def _parse_bank_statement(self, records: pd.DataFrame) -> Transactions:
-        category = StatementCategory.bank
+        category = StatementType.bank
         transactions = Transactions(category, self.identifier)
 
         for _, record in records.iterrows():

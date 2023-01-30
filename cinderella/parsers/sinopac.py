@@ -4,7 +4,7 @@ from decimal import Decimal
 import re
 import logging
 
-from cinderella.datatypes import Transactions, StatementCategory
+from cinderella.datatypes import Transactions, StatementType
 from cinderella.parsers.base import StatementParser
 from cinderella.settings import LOG_NAME
 
@@ -17,8 +17,8 @@ class Sinopac(StatementParser):
     def __init__(self):
         super().__init__()
         self.default_source_accounts = {
-            StatementCategory.card: "Liabilities:CreditCard:Sinopac",
-            StatementCategory.bank: "Assets:Bank:Sinopac",
+            StatementType.creditcard: "Liabilities:CreditCard:Sinopac",
+            StatementType.bank: "Assets:Bank:Sinopac",
             "exchange_diff_pnl": "Income:Bank:Sinopac:ExchangeDiffPnL",
         }
 
@@ -35,7 +35,7 @@ class Sinopac(StatementParser):
         return df
 
     def _parse_card_statement(self, records: list) -> Transactions:
-        category = StatementCategory.card
+        category = StatementType.creditcard
         transactions = Transactions(category, self.identifier)
 
         for _, record in records.iterrows():
@@ -53,7 +53,7 @@ class Sinopac(StatementParser):
         return transactions
 
     def _parse_bank_statement(self, records: list) -> Transactions:
-        category = StatementCategory.bank
+        category = StatementType.bank
         transactions = Transactions(category, self.identifier)
 
         for _, record in records.iterrows():

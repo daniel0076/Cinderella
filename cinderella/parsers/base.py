@@ -2,7 +2,7 @@ import pandas as pd
 from abc import ABC, abstractmethod
 
 from cinderella.beanlayer import BeanCountAPI
-from cinderella.datatypes import Transactions, StatementCategory
+from cinderella.datatypes import Transactions, StatementType
 
 
 class StatementParser(ABC):
@@ -12,13 +12,13 @@ class StatementParser(ABC):
         self.default_source_accounts = {}
         self.beancount_api = BeanCountAPI()
 
-    def parse(self, category: StatementCategory, filepath: str) -> Transactions:
+    def parse(self, category: StatementType, filepath: str) -> Transactions:
         df = self._read_statement(filepath)
-        if category == StatementCategory.bank:
+        if category == StatementType.bank:
             return self._parse_bank_statement(df)
-        elif category == StatementCategory.card:
+        elif category == StatementType.creditcard:
             return self._parse_card_statement(df)
-        elif category == StatementCategory.stock:
+        elif category == StatementType.stock:
             return self._parse_stock_statement(df)
         else:
             raise NotImplementedError

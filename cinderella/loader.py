@@ -5,7 +5,7 @@ from pathlib import Path
 from collections import defaultdict
 
 from cinderella.parsers.base import StatementParser
-from cinderella.datatypes import Transactions, StatementCategory
+from cinderella.datatypes import Transactions, StatementType
 from cinderella.beanlayer import BeanCountAPI
 from cinderella.settings import CinderellaSettings, LOG_NAME
 
@@ -17,9 +17,7 @@ class StatementLoader:
     def __init__(self, root: str, parsers: list):
         self.root = root
         self.categories = [
-            category
-            for category in StatementCategory
-            if category != StatementCategory.custom
+            category for category in StatementType if category != StatementType.custom
         ]
         self.parsers = parsers
         self.beancount_api = BeanCountAPI()
@@ -31,7 +29,7 @@ class StatementLoader:
                 found = parser
         return found
 
-    def _find_category(self, path: str) -> Union[StatementCategory, None]:
+    def _find_category(self, path: str) -> Union[StatementType, None]:
         for category in self.categories:
             if category.name in path:
                 return category
@@ -64,7 +62,7 @@ class StatementLoader:
 
                 yield transactions
 
-    def load(self) -> dict[StatementCategory, list[Transactions]]:
+    def load(self) -> dict[StatementType, list[Transactions]]:
         category_trans_map = dict()
         for category in self.categories:
             category_trans_map[category] = {}
@@ -91,7 +89,7 @@ class BeanLoader:
         self.beancount_api = BeanCountAPI()
 
     def load_beanfile_as_transactions(
-        self, path: Path | str, category: StatementCategory
+        self, path: Path | str, category: StatementType
     ) -> Transactions:
         transactions = Transactions(category, category.name)
         logger.debug(f"===Loading beanfiles: {category.name}===")

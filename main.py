@@ -4,6 +4,7 @@ import logging
 
 from cinderella.cinderella import Cinderella
 from cinderella.settings import CinderellaSettings, LOG_NAME
+from cinderella.preprocessor import StatementPreprocessor
 
 PROJECT_ROOT = os.path.dirname(__file__)
 CURRENT_DIR = os.getcwd()
@@ -51,7 +52,9 @@ if __name__ == "__main__":
     logger.info(
         f"Output beanfiles to: {settings.beancount_settings.output_beanfiles_folder}"
     )
-    print()
+
+    # create statement preprocessor
+    statement_preprocessor = StatementPreprocessor(settings.statement_settings)
 
     cinderella = Cinderella(settings)
     print("Processing transactions...", end="")

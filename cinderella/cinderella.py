@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from cinderella.datatypes import StatementCategory
+from cinderella.datatypes import StatementType
 from cinderella.parsers import get_parsers
 from cinderella.settings import CinderellaSettings
 from cinderella.classifier import AccountClassifier
@@ -61,8 +61,8 @@ class Cinderella:
 
         # merge trans in receipt and card with same date and amount
         self.processor.merge_same_date_amount(
-            transactions_group[StatementCategory.receipt],
-            transactions_group[StatementCategory.card],
+            transactions_group[StatementType.receipt],
+            transactions_group[StatementType.creditcard],
             lookback_days=3,
         )
 
@@ -73,11 +73,11 @@ class Cinderella:
         # remove transactions listed in custom and ignored bean files
         custom_transactions = self.bean_loader.load_beanfile_as_transactions(
             self.settings.beancount_settings.overwrite_beanfiles_folder,
-            StatementCategory.custom,
+            StatementType.custom,
         )
         ignored_transactions = self.bean_loader.load_beanfile_as_transactions(
             self.settings.beancount_settings.ignored_beanfiles_folder,
-            StatementCategory.ignored,
+            StatementType.ignored,
         )
         pre_defined_trans_list = [custom_transactions, ignored_transactions]
         self.processor.dedup_by_title_and_amount(

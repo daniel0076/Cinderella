@@ -5,12 +5,12 @@ from dacite.core import from_dict
 from dacite.config import Config
 from enum import Enum
 
-from datatypes import StatementCategory, AfterProcessedAction
+from datatypes import StatementType, AfterProcessedAction
 
 
 @dataclass
 class StatementSettings:
-    type: StatementCategory = StatementCategory.invalid
+    type: StatementType = StatementType.invalid
     password: str = ""
     after_processed: AfterProcessedAction = AfterProcessedAction.keep
 
