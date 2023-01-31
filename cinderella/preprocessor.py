@@ -5,7 +5,6 @@ import os
 from cinderella.settings import LOG_NAME, StatementSettings
 from cinderella.preprocessors import get_preprocessor_classes
 
-
 logger = logging.getLogger(LOG_NAME)
 
 

@@ -55,6 +55,8 @@ if __name__ == "__main__":
 
     # create statement preprocessor
     statement_preprocessor = StatementPreprocessor(settings.statement_settings)
+    statement_preprocessor.process()
+    print("Preprocessing raw statements")
 
     cinderella = Cinderella(settings)
     print("Processing transactions...", end="")

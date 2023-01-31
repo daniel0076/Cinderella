@@ -48,28 +48,28 @@ class ProcessorBase(ABC):
                     statement_type, "", AfterProcessedAction.move
                 )
 
-            result: ProcessedResult = self.process_functions[statement_type](file)
+            result: ProcessedResult = self.process_functions[statement_type](file, process_settings)
             if result.success:
                 # execute action after processed
-                self.post_process(file, statement_type)
+                self.post_process(file, process_settings)
 
             return result
 
         return ProcessedResult(False, f"No process function for {file}")
 
-    def post_process(self, file: Path, statement_type: StatementType):
+    def post_process(self, file: Path, settings: RawStatementProcessSettings):
         """
         post process operations, like moving the files
         """
         if not file.exists():
             return
 
-        after_processed = self.settings_by_type[statement_type].after_processed
+        after_processed = settings.after_processed
         if after_processed == AfterProcessedAction.move:
             dst_directory = Path(
                 self.move_dir_format.format(
                     source_name=type(self).source_name,
-                    statement_type=statement_type.value,
+                    statement_type=settings.statement_type.value
                 )
             )
             os.makedirs(dst_directory, exist_ok=True)
