@@ -4,7 +4,7 @@ from typing import List, Optional, Union
 from dacite.core import from_dict
 from dacite.config import Config
 from enum import Enum
-from cinderella.datatypes import StatementType
+from datatypes import StatementType
 
 
 @dataclass
