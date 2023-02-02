@@ -48,7 +48,9 @@ class ProcessorBase(ABC):
                     statement_type, "", AfterProcessedAction.move
                 )
 
-            result: ProcessedResult = self.process_functions[statement_type](file, process_settings)
+            result: ProcessedResult = self.process_functions[statement_type](
+                file, process_settings
+            )
             if result.success:
                 # execute action after processed
                 self.post_process(file, process_settings)
@@ -69,7 +71,7 @@ class ProcessorBase(ABC):
             dst_directory = Path(
                 self.move_dir_format.format(
                     source_name=type(self).source_name,
-                    statement_type=settings.statement_type.value
+                    statement_type=settings.statement_type.value,
                 )
             )
             os.makedirs(dst_directory, exist_ok=True)
