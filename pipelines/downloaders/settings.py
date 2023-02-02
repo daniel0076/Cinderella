@@ -4,13 +4,12 @@ from typing import List, Optional, Union
 from dacite.core import from_dict
 from dacite.config import Config
 from enum import Enum
-
-from datatypes import StatementCategory
+from cinderella.datatypes import StatementType
 
 
 @dataclass
 class StatementDetails:
-    type: StatementCategory = StatementCategory.invalid
+    type: StatementType = StatementType.invalid
     subject_keyword: str = ".*"  # regex supported
     attachment_keyword: str = ".*"  # regex supported
     valid_senders: List[str] = field(default_factory=list)
