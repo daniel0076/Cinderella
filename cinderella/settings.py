@@ -1,5 +1,4 @@
 from __future__ import annotations
-from collections import defaultdict  # for typing
 from dataclasses import dataclass
 from cinderella.datatypes import AfterProcessedAction, StatementType
 from typing import Dict

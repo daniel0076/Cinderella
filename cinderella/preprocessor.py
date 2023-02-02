@@ -30,7 +30,7 @@ class StatementPreprocessor:
                 if not filename.startswith(".")
             ]
 
-            # We have a N^2 complexity here to allow putting source_name at any part of the file path
+            # N^2 complexity here to allow putting source_name at any part of the file path
             for file in files:
                 for source_name, processor in self.preprocessors.items():
                     if source_name not in file.as_posix():

@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 
 from cinderella.preprocessors.base import ProcessorBase, ProcessedResult
-from cinderella.settings import RawStatementProcessSettings, LOG_NAME
+from cinderella.settings import LOG_NAME
 from cinderella.datatypes import StatementType
 
 logger = logging.getLogger(LOG_NAME)
