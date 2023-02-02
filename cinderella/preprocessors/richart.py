@@ -65,10 +65,7 @@ class Richart(ProcessorBase):
     ) -> ProcessedResult:
         # ensure the directory exists
         output_dir = Path(
-            self.output_dir_format.format(
-                source_name=type(self).source_name,
-                statement_type=settings.statement_type.value,
-            )
+            self.output_dir, StatementType.receipt.value, type(self).source_name
         )
         os.makedirs(output_dir, exist_ok=True)
 

@@ -26,10 +26,7 @@ class ESun(ProcessorBase):
     def process_bank(self, file: Path, _) -> ProcessedResult:
         # ensure the directory exists
         output_dir = Path(
-            self.output_dir_format.format(
-                source_name=type(self).source_name,
-                statement_type=StatementType.bank.value,
-            )
+            self.output_dir, StatementType.receipt.value, type(self).source_name
         )
         os.makedirs(output_dir, exist_ok=True)
 

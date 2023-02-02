@@ -7,6 +7,7 @@ from pathlib import Path
 
 from cinderella.preprocessors.base import ProcessorBase, ProcessedResult
 from cinderella.settings import RawStatementProcessSettings
+from cinderella.datatypes import StatementType
 
 LOGGER = logging.getLogger(__name__)
 
@@ -19,10 +20,9 @@ class Einvoice(ProcessorBase):
     ) -> ProcessedResult:
         # ensure the directory exists
         output_dir = Path(
-            self.output_dir_format.format(
-                source_name=type(self).source_name, statement_type="receipt"
-            )
+            self.output_dir, StatementType.receipt.value, type(self).source_name
         )
+
         os.makedirs(output_dir, exist_ok=True)
 
         # read the file

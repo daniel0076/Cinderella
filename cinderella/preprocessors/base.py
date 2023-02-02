@@ -17,8 +17,8 @@ class ProcessorBase(ABC):
     source_name = "ProcessorBase"
 
     def __init__(self, settings: StatementSettings):
-        self.output_dir_format = settings.ready_statement_folder
-        self.move_dir_format = settings.backup_statement_folder
+        self.output_dir = settings.ready_statement_folder
+        self.move_dir = settings.backup_statement_folder
         self.settings = settings
 
         settings_by_type: dict[StatementType, RawStatementProcessSettings] = {}
@@ -69,10 +69,7 @@ class ProcessorBase(ABC):
         after_processed = settings.after_processed
         if after_processed == AfterProcessedAction.move:
             dst_directory = Path(
-                self.move_dir_format.format(
-                    source_name=type(self).source_name,
-                    statement_type=settings.statement_type.value,
-                )
+                self.move_dir, settings.statement_type.value, type(self).source_name
             )
             os.makedirs(dst_directory, exist_ok=True)
 
