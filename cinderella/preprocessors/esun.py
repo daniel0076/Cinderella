@@ -4,8 +4,7 @@ import logging
 from pathlib import Path
 
 from cinderella.preprocessors.base import ProcessorBase, ProcessedResult
-from cinderella.settings import LOG_NAME
-from cinderella.datatypes import StatementType
+from cinderella.settings import LOG_NAME, RawStatementProcessSettings
 
 logger = logging.getLogger(LOG_NAME)
 
@@ -23,10 +22,12 @@ class ESun(ProcessorBase):
             False, f"{file} not supported by {type(self).source_name}"
         )
 
-    def process_bank(self, file: Path, _) -> ProcessedResult:
+    def process_bank(
+        self, file: Path, settings: RawStatementProcessSettings
+    ) -> ProcessedResult:
         # ensure the directory exists
         output_dir = Path(
-            self.output_dir, StatementType.receipt.value, type(self).source_name
+            self.output_dir, settings.statement_type.value, type(self).source_name
         )
         os.makedirs(output_dir, exist_ok=True)
 

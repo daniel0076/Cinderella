@@ -6,10 +6,10 @@ from datetime import datetime
 from pathlib import Path
 
 from cinderella.preprocessors.base import ProcessorBase, ProcessedResult
-from cinderella.settings import RawStatementProcessSettings
+from cinderella.settings import RawStatementProcessSettings, LOG_NAME
 from cinderella.datatypes import StatementType
 
-LOGGER = logging.getLogger(__name__)
+logger = logging.getLogger(LOG_NAME)
 
 
 class Einvoice(ProcessorBase):
@@ -42,7 +42,7 @@ class Einvoice(ProcessorBase):
         year = datetime.strptime(one_date, "%Y%m%d").year
 
         # marshal the filename
-        filename = f"{type(self).source_name}_{year}{''.join(months)}.csv"
+        filename = f"{year}{''.join(months)}.csv"
         file_output = output_dir / filename
 
         # find the receipt ids and remove duplicated csv
@@ -53,7 +53,7 @@ class Einvoice(ProcessorBase):
         if not file_output.exists():
             shutil.copy2(file, file_output)
         else:
-            LOGGER.warning(
+            logger.warning(
                 f"{file_output} exists, and might containts current file content, skipping"
             )
 

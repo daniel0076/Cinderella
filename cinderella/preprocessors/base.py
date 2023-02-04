@@ -2,9 +2,11 @@ import os
 from dataclasses import dataclass
 from abc import abstractmethod, ABC
 from pathlib import Path
+import logging
 
 from cinderella.settings import StatementSettings, RawStatementProcessSettings
 from cinderella.datatypes import StatementType, AfterProcessedAction
+from cinderella.settings import LOG_NAME
 
 
 @dataclass
@@ -36,6 +38,7 @@ class ProcessorBase(ABC):
         """
         Process the file using a source processor based on the type hint from the file name
         """
+        logger = logging.getLogger(LOG_NAME)
 
         file_str = file.as_posix()
         for statement_type in self.process_functions.keys():
@@ -44,6 +47,10 @@ class ProcessorBase(ABC):
 
             process_settings = self.settings_by_type.get(statement_type, None)
             if not process_settings:
+                relative_filename = file.relative_to(
+                    self.settings.raw_statement_folder
+                ).as_posix()
+                logger.warning(f"Using default settings for {relative_filename}")
                 process_settings = RawStatementProcessSettings(
                     statement_type, "", AfterProcessedAction.move
                 )

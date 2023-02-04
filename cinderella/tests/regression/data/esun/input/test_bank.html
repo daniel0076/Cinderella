@@ -1,0 +1,447 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>玉山銀行 E.SUN BANK | 個人網路銀行</title>
+
+    <style type="text/css">
+      /*for IE9 - 微軟正黑體*/
+      :root body,
+      div,
+      dl,
+      dt,
+      dd,
+      ul,
+      ol,
+      li,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      pre,
+      form,
+      fieldset,
+      input,
+      select,
+      textarea,
+      p,
+      blockquote,
+      th,
+      td {
+        font-family: Arial, Helvetica, sans-serif, \5FAE\8EDF\6B63\9ED1\9AD4 \9 !important;
+      }
+      /*for IE7 - 新細明體*/
+      body,
+      div,
+      dl,
+      dt,
+      dd,
+      ul,
+      ol,
+      li,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      pre,
+      form,
+      fieldset,
+      input,
+      select,
+      textarea,
+      p,
+      blockquote,
+      th,
+      td {
+        *font-family: Arial, Helvetica, sans-serif, \65B0\7D30\660E\9AD4 !important;
+      }
+      /*for 所有瀏覽器 - 新細明體*/
+      body,
+      div,
+      dl,
+      dt,
+      dd,
+      ul,
+      ol,
+      li,
+      h1,
+      h2,
+      h3,
+      h4,
+      h5,
+      h6,
+      pre,
+      form,
+      fieldset,
+      input,
+      select,
+      textarea,
+      p,
+      blockquote,
+      th,
+      td {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, Helvetica, sans-serif, \65B0\7D30\660E\9AD4;
+        color: #4c5141;
+        font-size: 12px;
+        line-height: 20px;
+        -webkit-text-size-adjust: none; /*解決Chrome 12px以下字級*/
+      }
+      body {
+        cursor: default;
+      }
+      table {
+        border-collapse: collapse;
+        border-spacing: 0;
+      }
+      table .hd {
+        padding: 4px;
+      }
+      .remind_box .olist {
+        margin: 5px 0 20px 20px;
+        list-style-type: decimal;
+        padding-left: 20px;
+      }
+      .remind_box .olist li {
+        color: #666;
+        line-height: 20px;
+        margin-bottom: 3px;
+      }
+      .remind_box .ulist {
+        margin-left: 20px;
+        list-style-type: square;
+      }
+      .remind_box .ulist li {
+        color: #666;
+        line-height: 20px;
+        margin-bottom: 0;
+      }
+      .winpop_print {
+        background-color: #000;
+        padding: 10px;
+      }
+      .winpop_content {
+        background: #fff;
+        padding: 15px;
+        font-size: 12px;
+        color: #555;
+        line-height: 18px;
+      }
+      .winpop_content .col_1 {
+        width: 8%;
+        background: #f9f9f9;
+        padding: 5px 0;
+      }
+      .winpop_content .b_logo {
+        margin-bottom: 5px;
+        background: url(../images/list/winopop_default_header.png) no-repeat !important;
+        width: 430px;
+        height: 50px;
+        display: block;
+      }
+      .winpop_content table {
+        table-layout: inherit;
+        word-break: break-all;
+      }
+      .winpop_content h1 {
+        font-size: 15px;
+        line-height: 26px;
+        padding: 0;
+        color: #358b9f;
+        margin: 0 0 5px 0;
+      }
+      .winpop_content p {
+        font-size: 13px;
+        color: #333;
+        line-height: 20px;
+        margin: 0 0 5px 0;
+      }
+      .winpop_content .pop_title {
+        font-size: 13px;
+        color: #003366;
+        line-height: 15px;
+        background: url(../images/icon/icon_popTitle.gif) no-repeat 0 4px;
+        padding: 5px 0 0 16px;
+        *+padding: 8px 0 0 16px; /*IE7*/
+        padding: 6px 0 0 16px \0/; /*IE8.9*/
+        margin: 0 0 5px 0;
+      }
+      .winpop_content .pop_subtitle {
+        font-size: 13px;
+        color: #333;
+        font-weight: bold;
+        line-height: 22px;
+        padding: 5px 0;
+      }
+      .winpop_content .remind_box {
+        margin: 10px 0;
+        padding: 0;
+      }
+      .winpop_content .boxlink {
+        border: 1px solid #f1d8a5;
+        border-bottom: 2px solid #f1d8a5;
+        border-right: 2px solid #f1d8a5;
+        padding: 3px 10px;
+        text-decoration: none;
+        background: #fff5e0;
+        color: #333;
+      }
+      .winpop_content .boxlink:hover {
+        border: 1px solid #f1d8a5;
+        background: #ffe1a7;
+        text-decoration: none;
+      }
+      .winpop_print div,
+      .winpop_print a,
+      .winpop_print td,
+      .winpop_print .hd,
+      .winpop_print h1,
+      .winpop_print h6,
+      .winpop_print li,
+      .winpop_print .red,
+      .winpop_print .green,
+      .winpop_print .plus,
+      .winpop_print .minus,
+      .winpop_print .plus_fund,
+      .winpop_print .minus_fund,
+      .winpop_paper div,
+      .winpop_paper p,
+      .winpop_paper a,
+      .winpop_paper td,
+      .winpop_paper .hd,
+      .winpop_paper h1,
+      .winpop_paper h6,
+      .winpop_paper li,
+      .winpop_paper p,
+      .winpop_print .td_ps_imp,
+      .winpop_print .list_menu,
+      .winpop_print .text_imp {
+        color: #000 !important;
+        background: #fff !important;
+      }
+      .winpop_print .btn_block {
+        margin: 20px 0;
+        text-align: center;
+        display: block;
+        font-size: 12px;
+      }
+      .winpop_print h6,
+      .winpop_paper h6 {
+        padding: 8px 0 0 0 !important;
+      }
+      .winpop_print .result_rem {
+        font-size: 13px;
+        color: #000;
+        padding: 30px 10px;
+        margin: 5px 0;
+        border: 1px solid #000;
+        border-bottom: 2px solid #000;
+        background-color: #000;
+        line-height: 22px;
+      }
+      .winpop_print .remind_title {
+        padding: 0;
+      }
+      .winpop_print .b_logo {
+        margin-bottom: 5px;
+        background: url(../images/list/winopop_print_header.gif) no-repeat !important;
+        width: 430px;
+        height: 50px;
+        display: block;
+      }
+      .winpop_print .ext_title {
+        font-size: 24px;
+        font-weight: bold;
+        line-height: 28px;
+        margin: 5px 0 10px 0;
+        text-align: center;
+        display: block;
+      }
+      /* 0903 del mark
+.winpop_print table td{
+	text-align:center;
+}
+*/
+      .winpop_print .table_ver,
+      .winpop_print .table_hor,
+      .winpop_print .table_ver_f {
+        width: 100%;
+        word-wrap: break-word;
+        border-bottom: 2px solid #000;
+      }
+      .winpop_print .table_hor {
+        margin: 0 0 5px 0;
+      }
+      .winpop_print .table_ver .hd,
+      .winpop_print .table_ver_f .hd {
+        border: #000 1px solid;
+        border-bottom: #000 2px solid;
+        text-align: center;
+        font-weight: bold;
+        padding: 2px 0;
+      }
+      .winpop_print .table_hor .hd {
+        border: #000 1px solid;
+        font-weight: bold;
+        text-align: right;
+        padding: 2px 4px;
+      }
+      .winpop_print .table_ver td,
+      .winpop_print .table_ver_f td {
+        border: #000 1px solid;
+        text-align: center;
+        padding: 2px 4px;
+      }
+      .winpop_print .table_hor td {
+        border: #000 1px solid;
+        text-align: left;
+        padding: 2px 4px;
+      }
+      .winpop_print td {
+        text-align: center;
+        padding: 0;
+      }
+      .winpop_print .basket_top td {
+        border-top: #000 2px solid !important;
+        border: #000 1px solid !important;
+      }
+      .winpop_print .basket td {
+        border-top: #000 2px solid !important;
+        border: #000 1px solid !important;
+      }
+      .winpop_print .sum_basket td {
+        background: #fff !important;
+        border: #000 1px solid !important;
+        border-bottom: #000 2px solid !important;
+      }
+
+      .winpop_print .tdline {
+        border-bottom: 1px solid #000;
+      }
+      .winpop_print a.btn_submit {
+        background: #000 !important;
+        font-size: 12px;
+        padding: 7px 18px;
+        color: #fff !important;
+        text-decoration: none;
+        display: inline-block;
+        *display: inline;
+        *zoom: 1;
+        text-align: center;
+        margin: 0 3px;
+      }
+      .winpop_print a.btn_submit:hover {
+        background: #000;
+        text-decoration: none;
+      }
+      .winpop_print a.btn_search {
+        background: #000 !important;
+        font-size: 12px;
+        padding: 3px;
+        color: #fff !important;
+        text-decoration: none;
+        display: inline-block;
+        *display: inline;
+        *zoom: 1;
+        text-align: center;
+        margin: 3px 0;
+      }
+      .winpop_print a.btn_search:hover {
+        text-decoration: none;
+      }
+      .winpop_print input {
+        border: none;
+        border-bottom: 1px solid #000;
+        font-family: Arial, Helvetica, sans-serif;
+        font-size: 12px;
+        color: #000;
+      }
+      .winpop_print .trans_succ,
+      .winpop_print .trans_fail {
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="winpop_print">
+      <div class="winpop_content">
+        <h1>交易明細查詢下載</h1>
+        <div class="trade_date">查詢時間 : 2022/09/24 02:41:22</div>
+        <table class="table_hor">
+          <tr>
+            <td class="hd" width="20%">帳號</td>
+            <td>0141979137701 臺幣綜存</td>
+          </tr>
+          <tr>
+            <td class="hd">查詢期間</td>
+            <td>2021/10/01 ~ 2022/09/24</td>
+          </tr>
+          <tr>
+            <td class="hd" width="20%">查詢幣別</td>
+            <td>全部</td>
+          </tr>
+          <tr>
+            <td class="hd">作業項目</td>
+            <td>全部下載</td>
+          </tr>
+          <tr>
+            <td class="hd">資料排序</td>
+            <td>交易時間由新到舊</td>
+          </tr>
+          <tr>
+            <td class="hd">關鍵字</td>
+            <td></td>
+          </tr>
+        </table>
+        <br />
+        <table class="table_ver">
+          <tr>
+            <td width="12%" class="hd">
+              交易日期
+              <div class="tdline"></div>
+              時間
+            </td>
+            <td width="12%" class="hd">摘要</td>
+            <td width="14%" class="hd">提</td>
+            <td width="14%" class="hd">存</td>
+            <td width="14%" class="hd">帳戶餘額</td>
+            <td width="16%" class="hd">
+              存摺備註
+              <div class="tdline"></div>
+              對方銀行代碼/帳號
+            </td>
+            <td width="18%" class="hd">轉帳留言</td>
+          </tr>
+          <tr>
+            <td>*2022/10/10<br />18:05:16</td>
+            <td class="lt">Test</td>
+            <td class="td_money">100</td>
+            <td class="td_money"></td>
+            <td class="td_money">100</td>
+            <td class="lt">TestComment<br /></td>
+            <td class="lt"></td>
+          </tr>
+        </table>
+        <div class="remind_box">
+          <div class="sitecore">
+            <div class="remind_title">提醒您：</div>
+            <ul class="list_num">
+              <li>
+                交易日期註記「*」係指該筆交易屬平日下午五時後或假日進行之交易。
+              </li>
+              <li>
+                轉帳留言係指他行顧客進行跨行轉帳交易至本行帳戶時，或本行顧客執行本行/跨行任一轉帳交易時，所填寫之附言內容。
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+

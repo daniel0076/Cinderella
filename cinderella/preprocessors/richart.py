@@ -16,75 +16,66 @@ class Richart(ProcessorBase):
 
     def process(self, file: Path) -> ProcessedResult:
         """
+        Richart has bank and creditcard in the same file
         Overrides the default process
-        Richart has bank and creditcard in the same file, process them together
         """
-        supported_types = [StatementType.bank, StatementType.creditcard]
-        all_success = True
-        for statement_type in supported_types:
-            settings = self.settings_by_type.get(
-                statement_type,
-                RawStatementProcessSettings(
-                    statement_type, "", AfterProcessedAction.move
-                ),
-            )
-            result = self._process_combined_file(file, settings)
-            if not result.success:
-                all_success = False
-                logger.error(result.message)
-
-        if all_success:
-            # Richart has bank and creditcard in the same file, process them together
-            self.post_process(file, StatementType.bank)
-
-        return ProcessedResult(True, "")  # Supress warning outside
-
-    def process_receipt(
-        self, file: Path, settings: RawStatementProcessSettings
-    ) -> ProcessedResult:
-        return ProcessedResult(False, f"{file} not supported by {self.source_name}")
-
-    def process_creditcard(
-        self, file: Path, settings: RawStatementProcessSettings
-    ) -> ProcessedResult:
-        """
-        Richart has bank and creditcard in the same file, process them together
-        """
-        return self._process_combined_file(file, settings)
-
-    def process_bank(
-        self, file: Path, settings: RawStatementProcessSettings
-    ) -> ProcessedResult:
-        """
-        Richart has bank and creditcard in the same file, process them together
-        """
-        return self._process_combined_file(file, settings)
-
-    def _process_combined_file(
-        self, file: Path, settings: RawStatementProcessSettings
-    ) -> ProcessedResult:
-        # ensure the directory exists
-        output_dir = Path(
-            self.output_dir, StatementType.receipt.value, type(self).source_name
+        default_settings = RawStatementProcessSettings(
+            StatementType.bank, "", AfterProcessedAction.move
         )
-        os.makedirs(output_dir, exist_ok=True)
+        settings = self.settings_by_type.get(StatementType.bank, None)
+        if not settings:
+            settings = self.settings_by_type.get(
+                StatementType.creditcard, default_settings
+            )
 
         with zipfile.ZipFile(file) as zipfp:
             filename = zipfp.namelist()[0]  # only contains one file
             with zipfp.open(filename, pwd=settings.password.encode()) as fp:
                 # 0 for creditcard, 1 for bank
-                if settings.statement_type == StatementType.creditcard:
-                    df = pd.read_excel(fp, sheet_name=0)
-                elif settings.statement_type == StatementType.bank:
-                    df = pd.read_excel(fp, sheet_name=1)
-                else:
-                    return ProcessedResult(
-                        False,
-                        f"{settings.statement_type} not supported by {type(self).source_name}",
-                    )
+                creditcard_df = pd.read_excel(fp, sheet_name=0)
+                bank_df = pd.read_excel(fp, sheet_name=1)
 
-        df.iloc[:, 0] = pd.to_datetime(df.iloc[:, 0])
-        df.iloc[:, 1] = pd.to_datetime(df.iloc[:, 1])
+        bank_result = self._split_by_year_month(bank_df, StatementType.bank)
+        creditcard_result = self._split_by_year_month(
+            creditcard_df, StatementType.creditcard
+        )
+
+        if bank_result.success and creditcard_result.success:
+            self.post_process(file, settings)
+            return ProcessedResult(True, "")  # Supress warning outside
+
+        if not bank_result.success:
+            logger.error(bank_result.message)
+        if not creditcard_result.success:
+            logger.error(creditcard_result.message)
+
+        # Supress warning outside
+        return ProcessedResult(False, f"{self.source_name} preprocess failed")
+
+    def process_receipt(
+        self, file: Path, settings: RawStatementProcessSettings
+    ) -> ProcessedResult:
+        raise NotImplementedError
+
+    def process_creditcard(
+        self, file: Path, settings: RawStatementProcessSettings
+    ) -> ProcessedResult:
+        raise NotImplementedError
+
+    def process_bank(
+        self, file: Path, settings: RawStatementProcessSettings
+    ) -> ProcessedResult:
+        raise NotImplementedError
+
+    def _split_by_year_month(
+        self, df: pd.DataFrame, statement_type: StatementType
+    ) -> ProcessedResult:
+        # ensure the directory exists
+        output_dir = Path(self.output_dir, statement_type.value, type(self).source_name)
+        os.makedirs(output_dir, exist_ok=True)
+
+        df[df.columns[0]] = pd.to_datetime(df.iloc[:, 0])
+        df[df.columns[1]] = pd.to_datetime(df.iloc[:, 1])
         years = df.iloc[:, 0].dt.year.unique()
         months = df.iloc[:, 0].dt.month.unique()
         for year in years:
@@ -102,7 +93,7 @@ class Richart(ProcessorBase):
                     else:
                         logger.warning(f"Replace {output_file} with newer records")
 
-                print(f"output {output_file}")
+                print(f"{self.source_name} preprocessor: output to {output_file}")
                 result_df.to_csv(output_file, index=False)
 
         return ProcessedResult(True, "")
