@@ -50,7 +50,9 @@ class ProcessorBase(ABC):
                 relative_filename = file.relative_to(
                     self.settings.raw_statement_folder
                 ).as_posix()
-                logger.warning(f"Using default settings for {relative_filename}")
+                logger.info(
+                    f"Using default preprocessing settings for {relative_filename}"
+                )
                 process_settings = RawStatementProcessSettings(
                     statement_type, "", AfterProcessedAction.move
                 )

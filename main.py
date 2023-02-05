@@ -45,20 +45,22 @@ if __name__ == "__main__":
         exit(1)
     settings: CinderellaSettings = value
 
-    logger.debug(f"Cinderella configurations:\n{settings}")
-    logger.info(
+    logger.debug(f"Configurations details:\n{settings}")
+    print("Configurations: ")
+    print(
+        f"Preprocessing statements from: {settings.statement_settings.raw_statement_folder}"
+    )
+    print(
         f"Reading statements from: {settings.statement_settings.ready_statement_folder}"
     )
-    logger.info(
-        f"Output beanfiles to: {settings.beancount_settings.output_beanfiles_folder}"
-    )
+    print(f"Output beanfiles to: {settings.beancount_settings.output_beanfiles_folder}")
 
     # create statement preprocessor
+    print("Preprocessing raw statements")
     statement_preprocessor = StatementPreprocessor(settings.statement_settings)
     statement_preprocessor.process()
-    print("Preprocessing raw statements")
 
+    print("Processing statements to transactions...", end="")
     cinderella = Cinderella(settings)
-    print("Processing transactions...", end="")
     cinderella.count_beans()
     print("done")

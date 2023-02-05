@@ -37,7 +37,7 @@ class StatementPreprocessor:
                         continue
 
                     print(
-                        f"\n{source_name}: processing {file.relative_to(input_folder)}"
+                        f"preprocessor[{source_name}]: {file.relative_to(input_folder)}"
                     )
                     result = processor.process(file)
                     if not result.success:

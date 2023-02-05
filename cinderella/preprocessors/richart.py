@@ -91,9 +91,9 @@ class Richart(ProcessorBase):
                     if not self._should_replace(output_file, result_df):
                         continue
                     else:
-                        logger.warning(f"Replace {output_file} with newer records")
+                        print(f"Update {output_file} with newer records")
 
-                print(f"{self.source_name} preprocessor: output to {output_file}")
+                print(f"preprocessor[{self.source_name}]: output to {output_file}")
                 result_df.to_csv(output_file, index=False)
 
         return ProcessedResult(True, "")

@@ -20,7 +20,7 @@ class Receipt(StatementParser):
 
     def parse(self, _: str, filepath: str) -> Transactions:
         if "invos" in filepath and "csv" in filepath:
-            logger.warning("Using Invos specification")
+            logger.info(f"Using Invos specification: {filepath}")
             df = pd.read_csv(filepath)
             return self._parse_receipt_invos(df)
 
