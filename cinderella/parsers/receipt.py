@@ -1,5 +1,6 @@
 import logging
 import pandas as pd
+import csv
 from datetime import datetime
 from decimal import Decimal
 
@@ -24,7 +25,9 @@ class Receipt(StatementParser):
             return self._parse_receipt_invos(df)
 
         elif "csv" in filepath:
-            df = pd.read_csv(filepath, delimiter="|", skiprows=2, header=None)
+            df = pd.read_csv(
+                filepath, delimiter="|", skiprows=2, header=None, quoting=csv.QUOTE_NONE
+            )
             return self._parse_receipt(df)
 
         else:

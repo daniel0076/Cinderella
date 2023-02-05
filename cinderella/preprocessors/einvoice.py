@@ -2,6 +2,7 @@ import os
 import shutil
 import pandas as pd
 import logging
+import csv
 from datetime import datetime
 from pathlib import Path
 
@@ -25,8 +26,10 @@ class Einvoice(ProcessorBase):
 
         os.makedirs(output_dir, exist_ok=True)
 
-        # read the file
-        df: pd.DataFrame = pd.read_csv(file, delimiter="|", skiprows=2, header=None)
+        # read the file, use | as delimiter and no quoting
+        df: pd.DataFrame = pd.read_csv(
+            file, delimiter="|", skiprows=2, header=None, quoting=csv.QUOTE_NONE
+        )
 
         # the rows of receipt titles
         title_df = df[df[0] == "M"]
