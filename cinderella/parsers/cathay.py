@@ -79,10 +79,10 @@ class Cathay(StatementParser):
         for _, record in records.iterrows():
             date = datetime.strptime(str(record[0]), "%Y%m%d")
 
-            if record[2].strip():  # 轉出
+            if str(record[2]).strip():  # 轉出
                 price = Decimal(record[2])
                 price *= -1
-            elif record[3].strip():  # 轉入
+            elif str(record[3]).strip():  # 轉入
                 price = Decimal(record[3])
             else:
                 raise RuntimeError(
