@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from cinderella.datatypes import AfterProcessedAction, StatementType
 from typing import Dict
 from dacite.core import from_dict
@@ -47,7 +47,8 @@ class StatementSettings(SettingsBase):
     raw_statement_folder: str
     ready_statement_folder: str
     backup_statement_folder: str
-    raw_statement_processing: dict[str, list[RawStatementProcessSettings]]
+    raw_statement_processing: list[RawStatementProcessSettings] = field(
+        default_factory=list)
 
 
 @dataclass

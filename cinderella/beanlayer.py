@@ -4,6 +4,7 @@ import re
 from copy import deepcopy
 from decimal import Decimal
 from typing import Union, Any, Dict, Set, List, Optional
+from pathlib import Path
 
 from beancount.loader import load_file
 from beancount.parser import printer
@@ -25,12 +26,16 @@ class BeanCountAPI:
     def write_account_bean(self, accounts: list, output_path: str):
         accounts = sorted(list(set(accounts)))
 
+        path = Path(output_path)
+        path.parent.mkdir(exist_ok=True, parents=True)
         with open(output_path, "w") as f:
             for account in accounts:
                 line = f"2020-01-01 open {account}\n"
                 f.write(line)
 
-    def write_bean(self, directives: Transactions, path: str):
+    def write_bean(self, directives: Transactions, output_path: str):
+        path = Path(output_path)
+        path.parent.mkdir(exist_ok=True, parents=True)
         with open(path, "a") as f:
             for directive in directives:
                 f.write(directive.to_bean())
