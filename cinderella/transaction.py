@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Callable
 from collections import defaultdict
 from datetime import timedelta
 
@@ -12,11 +12,11 @@ class TransactionProcessor:
 
     def dedup_bank_transfer(
         self,
-        transactions_list: list,
+        transactions_list: list[Transactions],
         lookback_days: int = 0,
     ):
         """
-        Remove duplicated Transaction in one or two groups of Transaction.
+        Remove duplicated Transaction in N > 1 groups of Transaction.
         Transactions with identical account in the given time period are deemed duplicated
 
             Parameters:
@@ -26,42 +26,51 @@ class TransactionProcessor:
             Returns:
                 None, modified in-place
         """
-        lookback_days_perm = range(-lookback_days, lookback_days + 1)
 
-        bucket = defaultdict(list)
+        if len(transactions_list) < 2:
+            return
+
+        # use list as there might be multiple transactions with common date and postings
+        unique_transactions_bucket = defaultdict(list)
+        # a transaction have at most one duplicated item,
+        # use a list of bool to record if a dup item has been found
+        transaction_deduped_record = defaultdict(list)
+
+        lookback_days_perm = range(-lookback_days, 1)
+
         for transactions in transactions_list:
             if transactions.category != StatementType.bank:
                 continue
 
-            unique = []
-            for t in transactions:
+            unique_transactions = []
+            for current_transaction in transactions:
+                postings = frozenset([(posting.account, posting.units)
+                                     for posting in current_transaction.postings])
+                transaction_lookback_keys = [(current_transaction.date + timedelta(delta), postings)
+                                             for delta in lookback_days_perm]
                 duplicated = False
-                for i in lookback_days_perm:
-                    delta = timedelta(days=i)
-                    postings_key = frozenset([(p.account, p.units) for p in t.postings])
-                    key = (t.date + delta, postings_key)
-
-                    if len(bucket[key]) == 0:
-                        continue
-
-                    for existing_t in bucket[key]:
-                        if t.postings[0] == existing_t.postings[0]:
-                            # do not dedup transactions from the same source
+                for key in transaction_lookback_keys:
+                    for index, existing_transaction in enumerate(unique_transactions_bucket.get(key, [])):
+                        if current_transaction.postings[0] == existing_transaction.postings[0]:
+                            continue  # do not dedup transactions from the same source
+                        if transaction_deduped_record[key][index]:
                             continue
                         duplicated = True
-                        bucket[key].remove(existing_t)
+                        transaction_deduped_record[key][index] = True
                         break
 
-                if duplicated:
+                    if duplicated:  # stop looking back after a dup item is found
+                        break
+                if duplicated:  # early return on dup item
                     continue
 
-                postings_key = frozenset([(p.account, p.units) for p in t.postings])
-                key = (t.date, postings_key)
-                unique.append(t)
-                bucket[key].append(t)
+                key = (current_transaction.date, postings)
+                unique_transactions.append(current_transaction)
+                unique_transactions_bucket[key].append(current_transaction)
+                transaction_deduped_record[key].append(False)
 
             transactions.clear()
-            transactions.extend(unique)
+            transactions.extend(unique_transactions)
 
     def dedup_by_title_and_amount(
         self,

@@ -1,6 +1,6 @@
 import pytest
 from decimal import Decimal
-from datetime import datetime
+from datetime import datetime, timedelta
 from copy import deepcopy
 
 from cinderella.transaction import TransactionProcessor
@@ -59,7 +59,9 @@ class TestDedupByTitleAndAmount:
 
 
 class TestDedupBankTransfer:
-    def test_dedup(self, beancount_api, transaction_processor):
+
+    @pytest.mark.parametrize("lookback_days, result_len", [(0, 1), (1, 0), (2, 0)])
+    def test_lookback_days(self, beancount_api, transaction_processor, lookback_days, result_len):
         # Arrange
         trans1 = Transactions(category=StatementType.bank, source="bank1")
         trans2 = Transactions(category=StatementType.bank, source="bank2")
@@ -71,20 +73,22 @@ class TestDedupBankTransfer:
         )
 
         today = datetime.today()
+        tomorrow = datetime.today() + timedelta(days=1)
         t1 = beancount_api.make_transaction(
             today, "bank1", [postings_from, postings_to]
         )
         t2 = beancount_api.make_transaction(
-            today, "bank2", [postings_to, postings_from]
+            tomorrow, "bank2", [postings_to, postings_from]
         )
         trans1.append(t1)
         trans2.append(t2)
 
-        transaction_processor.dedup_bank_transfer([trans1, trans2])
+        transaction_processor.dedup_bank_transfer([trans1, trans2], lookback_days=lookback_days)
         assert len(trans1) == 1
-        assert len(trans2) == 0
+        assert len(trans2) == result_len
 
-    def test_dedup_same_source(self, beancount_api, transaction_processor):
+    @pytest.mark.parametrize("identical_items", [1, 2, 3])
+    def test_dedup_at_most_once(self, beancount_api, transaction_processor, identical_items):
         # Arrange
         trans1 = Transactions(category=StatementType.bank, source="bank1")
         trans2 = Transactions(category=StatementType.bank, source="bank2")
@@ -103,9 +107,9 @@ class TestDedupBankTransfer:
             today, "bank2", [postings_to, postings_from]
         )
         trans1.append(t1)
-        trans2.append(deepcopy(t2))  # only this should be deduped
-        trans2.append(deepcopy(t2))
+        for _ in range(identical_items):
+            trans2.append(deepcopy(t2))  # only one of them should be deduped
 
         transaction_processor.dedup_bank_transfer([trans1, trans2])
         assert len(trans1) == 1
-        assert len(trans2) == 1
+        assert len(trans2) == identical_items - 1
