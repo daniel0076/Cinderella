@@ -48,7 +48,8 @@ class StatementSettings(SettingsBase):
     ready_statement_folder: str
     backup_statement_folder: str
     raw_statement_processing: list[RawStatementProcessSettings] = field(
-        default_factory=list)
+        default_factory=list
+    )
 
 
 @dataclass

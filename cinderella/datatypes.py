@@ -12,9 +12,9 @@ class StatementType(Enum):
 
 
 class Transactions(list):
-    def __init__(self, category=StatementType.custom, source=""):
+    def __init__(self, category=StatementType.custom, source: str = ""):
         self.category: StatementType = category
-        self.source = source
+        self.source: str = source
         super().__init__()
 
 
