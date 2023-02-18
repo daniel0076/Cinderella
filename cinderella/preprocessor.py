@@ -19,6 +19,9 @@ class StatementPreprocessor:
             self.preprocessors[source] = processor_class(settings)
 
     def process(self):
+        if self.settings.raw_statement_folder == "":
+            return
+
         input_folder = Path(self.settings.raw_statement_folder)
 
         # walk the directory tree and find all statements

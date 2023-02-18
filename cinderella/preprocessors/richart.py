@@ -28,6 +28,9 @@ class Richart(ProcessorBase):
                 StatementType.creditcard, default_settings
             )
 
+        if not zipfile.is_zipfile(file):
+            return ProcessedResult(False, f"{file} is not a valid zip file")
+
         with zipfile.ZipFile(file) as zipfp:
             filename = zipfp.namelist()[0]  # only contains one file
             with zipfp.open(filename, pwd=settings.password.encode()) as fp:
