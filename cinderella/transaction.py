@@ -1,4 +1,4 @@
-from typing import Dict, List, Union, Callable
+from typing import Dict, List, Callable
 from collections import defaultdict
 from datetime import timedelta
 from dataclasses import dataclass
