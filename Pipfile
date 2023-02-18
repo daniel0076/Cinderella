@@ -12,6 +12,7 @@ xlrd = "*"
 openpyxl = "*"
 dacite = "*"
 lxml = "*"
+html5lib = "*"
 
 [dev-packages]
 flake8 = "*"
