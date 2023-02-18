@@ -47,7 +47,7 @@ class StatementSettings(SettingsBase):
     raw_statement_folder: str
     ready_statement_folder: str
     backup_statement_folder: str
-    raw_statement_processing: dict[str, RawStatementProcessSettings] = field(
+    raw_statement_processing: dict[str, list[RawStatementProcessSettings]] = field(
         default_factory=dict
     )
 
