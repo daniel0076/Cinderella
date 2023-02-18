@@ -137,7 +137,7 @@ class TestSpecifiedTransactionProcessor:
         trans1.append(deepcopy(sample_transaction))
         trans2.append(deepcopy(sample_transaction))
 
-        transaction_processor.dedup_by_title_and_amount(trans1, trans2)
+        transaction_processor.dedup_by_title_and_amount([trans1, trans2])
         assert len(trans1) == 1
         assert len(trans2) == 0
 

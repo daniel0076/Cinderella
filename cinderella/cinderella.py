@@ -61,8 +61,8 @@ class Cinderella:
 
         # merge trans in receipt and card with same date and amount
         self.processor.merge_same_date_amount(
-            transactions_group[StatementType.receipt],
-            transactions_group[StatementType.creditcard],
+            transactions_group[StatementType.receipt]
+            + transactions_group[StatementType.creditcard],
             lookback_days=3,
         )
 
@@ -81,7 +81,7 @@ class Cinderella:
         )
         pre_defined_trans_list = [custom_transactions, ignored_transactions]
         self.processor.dedup_by_title_and_amount(
-            pre_defined_trans_list, autogen_trans_list
+            pre_defined_trans_list + autogen_trans_list
         )
 
         # classify

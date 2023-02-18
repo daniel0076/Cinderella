@@ -29,8 +29,7 @@ class TransactionProcessor:
 
     def dedup_by_title_and_amount(
         self,
-        lhs: Union[Transactions, list[Transactions]],
-        rhs: Union[Transactions, list[Transactions]],
+        transactions_list: list[Transactions],
         lookback_days: int = 0,
     ):
         """
@@ -49,12 +48,11 @@ class TransactionProcessor:
             )
             return result
 
-        self.dedup([lhs, rhs], hash_function, lookback_days)
+        self.dedup(transactions_list, hash_function, lookback_days)
 
     def merge_same_date_amount(
         self,
-        lhs: Union[Transactions, list[Transactions]],
-        rhs: Union[Transactions, list[Transactions]],
+        transactions_list: list[Transactions],
         lookback_days: int = 0,
     ) -> None:
         """
@@ -68,7 +66,9 @@ class TransactionProcessor:
                 transaction.postings[0].units,
             )
 
-        self.dedup([lhs, rhs], hash_function, lookback_days, merge_duplicates=True)
+        self.dedup(
+            transactions_list, hash_function, lookback_days, merge_duplicates=True
+        )
 
     def dedup(
         self,
