@@ -90,7 +90,10 @@ class Cinderella:
                 self.classifier.classify_account(transactions)
 
         # remove duplicated transfer transactions between banks
-        self.processor.dedup_bank_transfer(autogen_trans_list, lookback_days=5)
+        self.processor.dedup_bank_transfer(
+            autogen_trans_list,
+            lookback_days=self.settings.ledger_processing_settings.transfer_matching_days,
+        )
 
         # output
         path = (

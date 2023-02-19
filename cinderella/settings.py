@@ -60,9 +60,15 @@ class BeancountSettings(SettingsBase):
 
 
 @dataclass
+class LedgerProcessingSettings(SettingsBase):
+    transfer_matching_days: int = 1
+
+
+@dataclass
 class CinderellaSettings(SettingsBase):
     statement_settings: StatementSettings
     beancount_settings: BeancountSettings
+    ledger_processing_settings: LedgerProcessingSettings
     default_accounts: Dict
     mappings: Dict
 
