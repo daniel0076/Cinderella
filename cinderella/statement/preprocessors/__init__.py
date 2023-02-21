@@ -3,20 +3,22 @@ from pathlib import Path
 import os
 
 from cinderella.settings import LOG_NAME, StatementSettings
-from cinderella.preprocessors import get_preprocessor_classes
-
-logger = logging.getLogger(LOG_NAME)
+from .einvoice import Einvoice
+from .richart import Richart
+from .esun import ESun
 
 
 class StatementPreprocessor:
     def __init__(self, settings: StatementSettings):
+        self.logger = logging.getLogger(LOG_NAME)
         self.settings = settings
-        logger.debug(f"Preprocessor settings:\n{settings}")
+        self.logger.debug(f"Preprocessor settings:\n{settings}")
 
         # create processor objects according to config
+        preprocessor_cls = [Einvoice, Richart, ESun]
         self.preprocessors = {}
-        for source, processor_class in get_preprocessor_classes().items():
-            self.preprocessors[source] = processor_class(settings)
+        for c in preprocessor_cls:
+            self.preprocessors[c.source_name] = c(settings)
 
     def process(self):
         if self.settings.raw_statement_folder == "":
@@ -44,4 +46,4 @@ class StatementPreprocessor:
                     )
                     result = processor.process(file)
                     if not result.success:
-                        logger.error(result.message)
+                        self.logger.error(result.message)

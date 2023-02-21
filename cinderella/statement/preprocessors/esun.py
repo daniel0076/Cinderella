@@ -3,7 +3,7 @@ import pandas as pd
 import logging
 from pathlib import Path
 
-from cinderella.preprocessors.base import ProcessorBase, ProcessedResult
+from cinderella.statement.preprocessors.base import ProcessorBase, ProcessedResult
 from cinderella.settings import LOG_NAME, RawStatementProcessSettings
 
 logger = logging.getLogger(LOG_NAME)

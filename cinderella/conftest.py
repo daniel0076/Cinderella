@@ -2,8 +2,8 @@ import pytest
 from decimal import Decimal
 from datetime import datetime, timedelta
 
-from cinderella.beanlayer import BeanCountAPI
-from cinderella.datatypes import Transaction, Posting, Amount
+from cinderella.external.beancount.utils import BeanCountAPI
+from cinderella.ledger.datatypes import Transaction, Posting, Amount
 
 
 @pytest.fixture

@@ -4,8 +4,8 @@ import logging
 import zipfile
 from pathlib import Path
 
-from cinderella.preprocessors.base import ProcessorBase, ProcessedResult
-from cinderella.datatypes import AfterProcessedAction, StatementType
+from cinderella.statement.preprocessors.base import ProcessorBase, ProcessedResult
+from cinderella.statement.datatypes import AfterProcessedAction, StatementType
 from cinderella.settings import LOG_NAME, RawStatementProcessSettings
 
 logger = logging.getLogger(LOG_NAME)

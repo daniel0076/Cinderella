@@ -3,10 +3,10 @@ from pathlib import Path
 import pytest
 from unittest.mock import patch, MagicMock
 
-from cinderella.preprocessor import StatementPreprocessor
-from cinderella.preprocessors.base import ProcessorBase, ProcessedResult
+from cinderella.statement.preprocessors import StatementPreprocessor
+from cinderella.statement.preprocessors.base import ProcessorBase, ProcessedResult
+from cinderella.statement.datatypes import AfterProcessedAction, StatementType
 from cinderella.settings import StatementSettings, RawStatementProcessSettings
-from cinderella.datatypes import AfterProcessedAction, StatementType
 
 
 @pytest.fixture
@@ -56,23 +56,6 @@ def settings(statement_dir, source_name) -> StatementSettings:
     )
 
     return settings
-
-
-class TestStatementProcessor:
-    @patch("cinderella.preprocessor.get_preprocessor_classes")
-    def test_statement_processor(
-        self, mock_method, source_name, statement_dir, settings
-    ):
-        # prepare
-        mock_method.return_value = {source_name: MagicMock()}
-
-        # test
-        statement_processor = StatementPreprocessor(settings)
-        statement_processor.process()
-
-        # assert
-        mock_preprocessor = statement_processor.preprocessors[source_name]
-        mock_preprocessor.process.assert_called_once_with(statement_dir.mock_statement)
 
 
 class TestProcessorBase:

@@ -13,7 +13,7 @@ from beancount.core.amount import Amount
 from beancount.core.position import Cost
 from beancount.core.position import CostSpec
 
-from cinderella.datatypes import Transactions
+from cinderella.ledger.datatypes import Ledger
 from cinderella.settings import LOG_NAME
 
 logger = logging.getLogger(LOG_NAME)
@@ -33,7 +33,7 @@ class BeanCountAPI:
                 line = f"2020-01-01 open {account}\n"
                 f.write(line)
 
-    def write_bean(self, directives: Transactions, output_path: str):
+    def write_bean(self, directives: Ledger, output_path: str):
         path = Path(output_path)
         path.parent.mkdir(exist_ok=True, parents=True)
         with open(path, "a") as f:
@@ -167,14 +167,12 @@ class BeanCountAPI:
         # return index
         return len(transaction.postings) - 1
 
-    def print_beans(
-        self, transactions: Transactions, filepath: str = None, mode: str = "a"
-    ):
+    def print_beans(self, Ledger: Ledger, filepath: str = None, mode: str = "a"):
         if filepath:
             with open(filepath, mode) as f:
-                printer.print_entries(transactions, file=f)
+                printer.print_entries(Ledger, file=f)
         else:
-            printer.print_entries(transactions)
+            printer.print_entries(Ledger)
 
     def print_bean(self, transaction: Transaction):
         printer.print_entry(transaction)
@@ -206,7 +204,7 @@ class BeanCountAPI:
 
         return False
 
-    def merge_transactions(
+    def merge_Ledger(
         self, dest: Transaction, source: Transaction, keep_dest_accounts: bool
     ) -> Transaction:
         """

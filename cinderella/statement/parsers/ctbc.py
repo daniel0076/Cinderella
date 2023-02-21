@@ -4,7 +4,7 @@ from datetime import datetime
 from decimal import Decimal
 import logging
 
-from cinderella.datatypes import Transactions, StatementType
+from cinderella.statement.datatypes import Transactions, StatementType
 from cinderella.parsers.base import StatementParser
 
 # Turn off logs from pdfminer used by camelot

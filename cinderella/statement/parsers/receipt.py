@@ -5,7 +5,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Union
 
-from cinderella.datatypes import Ledger, StatementType, Transaction
+from cinderella.statement.datatypes import Ledger, StatementType, Transaction
 from cinderella.parsers.base import StatementParser
 from cinderella.settings import LOG_NAME
 

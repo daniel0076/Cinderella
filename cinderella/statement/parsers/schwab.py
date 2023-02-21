@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
-from cinderella.datatypes import Transactions, StatementType
+from cinderella.statement.datatypes import Transactions, StatementType
 from cinderella.parsers.base import StatementParser
 
 

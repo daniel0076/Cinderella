@@ -6,15 +6,7 @@ from typing import Any
 from datetime import datetime
 import hashlib
 
-
-class StatementType(Enum):
-    invalid = "invalid"
-    ignored = "ignored"
-    custom = "custom"
-    bank = "bank"
-    creditcard = "creditcard"
-    receipt = "receipt"
-    stock = "stock"
+from cinderella.statement.datatypes import StatementType
 
 
 class TransactionFlag(Enum):
@@ -116,13 +108,6 @@ class Transaction:
             self.postings.extend(source.postings)
 
 
-class Transactions(list):
-    def __init__(self, category=StatementType.custom, source: str = ""):
-        self.category: StatementType = category
-        self.source: str = source
-        super().__init__()
-
-
 @dataclass
 class Ledger:
     source: str
@@ -134,14 +119,3 @@ class Ledger:
 
     def append_txn(self, txn: Transaction):
         self.transactions.append(txn)
-
-    def to_deprecated_transactions(self) -> Transactions:
-        txns = Transactions(self.typ, self.source)
-        txns.extend(self.transactions)
-        return txns
-
-
-class AfterProcessedAction(Enum):
-    keep = "keep"
-    move = "move"
-    delete = "delete"

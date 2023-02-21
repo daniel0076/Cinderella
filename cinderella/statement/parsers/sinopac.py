@@ -4,7 +4,7 @@ from decimal import Decimal
 import re
 import logging
 
-from cinderella.datatypes import Transactions, StatementType
+from cinderella.statement.datatypes import Transactions, StatementType
 from cinderella.parsers.base import StatementParser
 from cinderella.settings import LOG_NAME
 

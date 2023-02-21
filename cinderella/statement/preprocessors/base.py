@@ -5,7 +5,7 @@ from pathlib import Path
 import logging
 
 from cinderella.settings import StatementSettings, RawStatementProcessSettings
-from cinderella.datatypes import StatementType, AfterProcessedAction
+from cinderella.statement.datatypes import StatementType, AfterProcessedAction
 from cinderella.settings import LOG_NAME
 
 

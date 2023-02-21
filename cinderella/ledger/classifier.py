@@ -1,5 +1,5 @@
-from cinderella.beanlayer import BeanCountAPI
-from cinderella.datatypes import Transactions
+from cinderella.external.beancount.utils import BeanCountAPI
+from .datatypes import Ledger
 from cinderella.settings import CinderellaSettings
 
 
@@ -15,19 +15,19 @@ class AccountClassifier:
         # load mappings
         self.general_map = self.settings.get_mapping("general")
 
-    def classify_account(self, transactions: Transactions) -> None:
-        specific_map = self.settings.get_mapping(transactions.source)
+    def classify_account(self, ledger: Ledger) -> None:
+        specific_map = self.settings.get_mapping(ledger.source)
         pattern_maps = [specific_map, self.general_map]  # former has higher priority
 
-        for transaction in transactions:
+        for transaction in ledger.transactions:
             if len(transaction.postings) >= 2:
                 continue
             account = self._match_patterns(
                 transaction, pattern_maps, self.default_expense_account
             )
-            amount = transaction.postings[0].units
+            amount = transaction.postings[0].amount
             self.beancount_api.create_and_add_transaction_posting(
-                transaction, account, -amount.number, amount.currency
+                transaction, account, -amount.quantity, amount.currency
             )
 
     def _match_patterns(

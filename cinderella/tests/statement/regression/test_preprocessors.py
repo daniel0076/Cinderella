@@ -1,11 +1,11 @@
 import filecmp
 import pytest
 from pathlib import Path
-from cinderella.preprocessors.richart import Richart as RichartPreprocessor
-from cinderella.preprocessors.esun import ESun as ESunPreprocessor
-from cinderella.preprocessors.einvoice import Einvoice as EinvoicePreprocessor
+from cinderella.statement.preprocessors.richart import Richart as RichartPreprocessor
+from cinderella.statement.preprocessors.esun import ESun as ESunPreprocessor
+from cinderella.statement.preprocessors.einvoice import Einvoice as EinvoicePreprocessor
+from cinderella.statement.datatypes import StatementType, AfterProcessedAction
 from cinderella.settings import StatementSettings, RawStatementProcessSettings
-from cinderella.datatypes import StatementType, AfterProcessedAction
 
 
 @pytest.fixture

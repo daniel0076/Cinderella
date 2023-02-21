@@ -1,8 +1,8 @@
 import pandas as pd
 from abc import ABC, abstractmethod
 
-from cinderella.beanlayer import BeanCountAPI
-from cinderella.datatypes import Transactions, StatementType
+from cinderella.external.beancount.utils import BeanCountAPI
+from cinderella.statement.datatypes import Transactions, StatementType
 
 
 class StatementParser(ABC):

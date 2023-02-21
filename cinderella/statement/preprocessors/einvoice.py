@@ -6,9 +6,9 @@ import csv
 from datetime import datetime
 from pathlib import Path
 
-from cinderella.preprocessors.base import ProcessorBase, ProcessedResult
+from cinderella.statement.preprocessors.base import ProcessorBase, ProcessedResult
+from cinderella.statement.datatypes import StatementType
 from cinderella.settings import RawStatementProcessSettings, LOG_NAME
-from cinderella.datatypes import StatementType
 
 logger = logging.getLogger(LOG_NAME)
 

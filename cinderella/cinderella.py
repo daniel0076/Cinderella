@@ -1,10 +1,10 @@
 from pathlib import Path
 
-from cinderella.datatypes import StatementType
+from cinderella.statement.datatypes import StatementType
 from cinderella.parsers import get_parsers
 from cinderella.settings import CinderellaSettings
 from cinderella.classifier import AccountClassifier
-from cinderella.beanlayer import BeanCountAPI
+from cinderella.external.beancount.utils import BeanCountAPI
 from cinderella.loader import StatementLoader, BeanLoader
 from cinderella.transaction import TransactionProcessor
 
