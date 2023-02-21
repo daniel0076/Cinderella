@@ -2,10 +2,8 @@ import pytest
 from decimal import Decimal
 from datetime import datetime, timedelta
 
-from beancount.core.amount import Amount
-from beancount.core.data import Transaction, Posting
-
 from cinderella.beanlayer import BeanCountAPI
+from cinderella.datatypes import Transaction, Posting, Amount
 
 
 @pytest.fixture
@@ -45,57 +43,33 @@ def another_amount():
 
 @pytest.fixture
 def sample_posting(sample_account, sample_amount):
-    yield Posting(sample_account, sample_amount, None, None, None, {})
+    yield Posting(sample_account, sample_amount, meta={})
 
 
 @pytest.fixture
 def another_posting(another_account, another_amount):
-    yield Posting(another_account, another_amount, None, None, None, {})
+    yield Posting(another_account, another_amount, meta={})
 
 
 @pytest.fixture
 def sample_transaction(sample_posting, sample_transaction_narration):
-    date = datetime.now().date()
-    meta = {}
-    yield Transaction(  # type: ignore
-        meta,
-        date,
-        None,
-        None,
-        sample_transaction_narration,
-        set(),
-        set(),
-        [sample_posting],
+    yield Transaction(
+        datetime.now(), sample_transaction_narration, [sample_posting], {}
     )
 
 
 @pytest.fixture
 def another_transaction(another_posting, another_transaction_narration):
-    date = datetime.now().date()
-    meta = {}
-    yield Transaction(  # type: ignore
-        meta,
-        date,
-        None,
-        None,
-        another_transaction_narration,
-        set(),
-        set(),
-        [another_posting],
+    yield Transaction(
+        datetime.now(), another_transaction_narration, [another_posting], {}
     )
 
 
 @pytest.fixture
 def sample_transaction_past(sample_posting, sample_transaction_narration):
-    date = datetime.now().date()
-    meta = {}
-    yield Transaction(  # type: ignore
-        meta,
-        date + timedelta(days=-2),
-        None,
-        None,
+    yield Transaction(
+        datetime.now() + timedelta(days=-2),
         sample_transaction_narration,
-        set(),
-        set(),
         [sample_posting],
+        {},
     )

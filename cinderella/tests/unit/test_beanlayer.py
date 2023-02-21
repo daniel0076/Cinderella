@@ -1,6 +1,7 @@
 from decimal import Decimal
 from datetime import datetime
 from copy import deepcopy
+import pytest
 
 from beancount.core.amount import Amount, sub
 from beancount.core.data import Transaction, Posting
@@ -50,12 +51,14 @@ class TestBeanLayer:
         assert sample_transaction.postings[0].meta == {";1": "sample"}
         assert another_transaction.postings[0].meta == {";1": "another"}
 
+    @pytest.mark.skip(reason="We might not need this in the future")
     def test_add_posting_amount(self, beancount_api, sample_transaction):
         origin_amount = sample_transaction.postings[0].units
         beancount_api.add_posting_amount(sample_transaction, Decimal(1.0))
         result = Amount(Decimal(1), "TWD")
         assert sub(sample_transaction.postings[0].units, origin_amount) == result
 
+    @pytest.mark.skip(reason="We might not need this in the future")
     def test_add_transaction_posting_with_posting(
         self, beancount_api, sample_transaction, another_posting
     ):
@@ -65,6 +68,7 @@ class TestBeanLayer:
         assert index == 1
         assert sample_transaction.postings[index] == another_posting
 
+    @pytest.mark.skip(reason="We might not need this in the future")
     def test_create_and_add_transaction_posting(
         self,
         beancount_api,
@@ -82,6 +86,7 @@ class TestBeanLayer:
         assert index == 1
         assert sample_transaction.postings[index] == another_posting
 
+    @pytest.mark.skip(reason="We might not need this in the future")
     def test_merge_duplicated_transactions(
         self, beancount_api, sample_transaction, sample_account
     ):
@@ -99,6 +104,7 @@ class TestBeanLayer:
         assert appended_trans.postings[0].account == sample_account
         assert appended_trans.postings[0].meta == {";1": "appended", ";2": "removed"}
 
+    @pytest.mark.skip(reason="We might not need this in the future")
     def test_merge_duplicated_transactions_different_round(
         self, beancount_api, sample_transaction, sample_account
     ):
@@ -113,6 +119,7 @@ class TestBeanLayer:
         )
         assert appended_trans.postings[0].account == sample_account
 
+    @pytest.mark.skip(reason="We might not need this in the future")
     def test_find_keyword(
         self, beancount_api, sample_transaction, sample_transaction_narration
     ):

@@ -3,34 +3,42 @@ from collections import defaultdict
 from datetime import timedelta
 from dataclasses import dataclass
 
-from beancount.core.data import Transaction
-
-from cinderella.datatypes import Transactions, StatementType
-from cinderella.beanlayer import BeanCountAPI
+from cinderella.datatypes import StatementType, Transaction, Ledger, OnExistence
 
 
 class TransactionProcessor:
     def __init__(self):
-        self.beancount_api = BeanCountAPI()
+        pass
 
     def dedup_bank_transfer(
         self,
-        transactions_list: list[Transactions],
-        lookback_days: int = 0,
+        ledgers: list[Ledger],
+        tolerance_days: int = 0,
     ):
+        # same postings, with tolerance
+        # different postings, same date
         def hash_function(transaction: Transaction, date_delta: int):
             postings = frozenset(
-                [(posting.account, posting.units) for posting in transaction.postings]
+                [(posting.account, posting.amount) for posting in transaction.postings]
             )
-            result = (transaction.date + timedelta(days=date_delta), postings)
+            result = (
+                transaction.datetime_.date() + timedelta(days=date_delta),
+                postings,
+            )
             return result
 
-        self.dedup(transactions_list, hash_function, lookback_days, StatementType.bank)
+        self.dedup(
+            ledgers,
+            hash_function,
+            tolerance_days,
+            ignore_same_source=True,
+            specify_statement_types=[StatementType.bank],
+        )
 
     def dedup_by_title_and_amount(
         self,
-        transactions_list: list[Transactions],
-        lookback_days: int = 0,
+        ledgers: list[Ledger],
+        tolerance_days: int = 0,
     ):
         """
         Remove duplicated Transaction in  rhs against lhs.
@@ -42,17 +50,17 @@ class TransactionProcessor:
 
         def hash_function(transaction: Transaction, date_delta: int):
             result = (
-                transaction.date + timedelta(days=date_delta),
-                transaction.postings[0].units,
-                transaction.narration,
+                transaction.datetime_.date() + timedelta(days=date_delta),
+                transaction.postings[0].amount,
+                transaction.title,
             )
             return result
 
-        self.dedup(transactions_list, hash_function, lookback_days)
+        self.dedup(ledgers, hash_function, tolerance_days)
 
     def merge_same_date_amount(
         self,
-        transactions_list: list[Transactions],
+        ledgers: list[Ledger],
         lookback_days: int = 0,
     ) -> None:
         """
@@ -62,71 +70,63 @@ class TransactionProcessor:
 
         def hash_function(transaction: Transaction, lookback_days: int):
             return (
-                transaction.date + timedelta(days=lookback_days),
-                transaction.postings[0].units,
+                transaction.datetime_.date() + timedelta(days=lookback_days),
+                transaction.postings[0].amount,
             )
 
-        self.dedup(
-            transactions_list, hash_function, lookback_days, merge_duplicates=True
-        )
+        self.dedup(ledgers, hash_function, lookback_days, merge_dup_txns=True)
 
     def dedup(
         self,
-        transactions_list: list[Transactions],
+        ledgers: list[Ledger],
         hash_function: Callable,
-        lookback_days: int = 0,
+        tolerance_days: int = 0,
         ignore_same_source: bool = True,
-        merge_duplicates: bool = False,
-        specify_statement_type: StatementType = StatementType.invalid,
-    ):
+        merge_dup_txns: bool = False,
+        merge_txn_postings: bool = False,
+        specify_statement_types: list[StatementType] = [],
+    ) -> None:
         """
-        Remove duplicated Transaction in N > 1 groups of Transaction with the hash function
-            Parameters:
-                transactions_list: list of Transactions to be deduped
-            Returns:
-                None, modified in-place
+        Remove duplicated Transaction in N > 1 Ledgers with the hash function
         """
-        if len(transactions_list) < 2:
+
+        if len(ledgers) < 2:
             return
 
         @dataclass
         class DedupRecord:
             source: str
-            transaction: Transaction
+            txn: Transaction
             found_dup: bool = False
 
         # use list as there might be multiple transactions with common date and postings
         dedup_map: Dict[str, List[DedupRecord]] = defaultdict(list)
-        lookback_days_perm = self._gen_lookback_perm(lookback_days)
+        tolerance_days_perm = self._gen_lookback_perm(tolerance_days)
 
-        for transactions in transactions_list:
-            if specify_statement_type != StatementType.invalid:
-                if transactions.category != specify_statement_type:
-                    continue
+        for ledger in ledgers:
+            if specify_statement_types and ledger.typ not in specify_statement_types:
+                continue
 
             unique_transactions = []
-            for current_transaction in transactions:
-                transaction_lookback_keys = [
-                    hash_function(current_transaction, date_delta)
-                    for date_delta in lookback_days_perm
+            for curr_txn in ledger.transactions:
+                tolerance_keys = [
+                    hash_function(curr_txn, date_delta)
+                    for date_delta in tolerance_days_perm
                 ]
                 duplicated = False
-                for key in transaction_lookback_keys:
+                for key in tolerance_keys:
                     for dedup_record in dedup_map.get(key, []):
                         if dedup_record.found_dup:
                             continue
-                        if (
-                            ignore_same_source
-                            and transactions.source == dedup_record.source
-                        ):
+                        if ignore_same_source and ledger.source == dedup_record.source:
                             continue
                         duplicated = True
                         dedup_record.found_dup = True
-                        if merge_duplicates:
-                            self.beancount_api.merge_transactions(
-                                dedup_record.transaction,
-                                current_transaction,
-                                keep_dest_accounts=False,
+                        if merge_dup_txns:
+                            dedup_record.txn.merge(
+                                curr_txn,
+                                comment_exists=OnExistence.RENAME,
+                                merge_postings=merge_txn_postings,
                             )
                         break
 
@@ -135,14 +135,12 @@ class TransactionProcessor:
                 if duplicated:  # early return on dup item
                     continue
 
-                key = hash_function(current_transaction, 0)
-                unique_transactions.append(current_transaction)
-                dedup_map[key].append(
-                    DedupRecord(transactions.source, current_transaction, False)
-                )
+                key = hash_function(curr_txn, 0)
+                unique_transactions.append(curr_txn)
+                dedup_map[key].append(DedupRecord(ledger.source, curr_txn, False))
 
-            transactions.clear()
-            transactions.extend(unique_transactions)
+            ledger.transactions.clear()
+            ledger.transactions.extend(unique_transactions)
 
     def _gen_lookback_perm(self, n: int) -> List:
         if n < 0:
