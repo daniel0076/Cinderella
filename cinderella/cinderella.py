@@ -1,7 +1,6 @@
 from pathlib import Path
 
 from cinderella.statement.datatypes import StatementType
-from cinderella.parsers import get_parsers
 from cinderella.settings import CinderellaSettings
 from cinderella.classifier import AccountClassifier
 from cinderella.external.beancount.utils import BeanCountAPI
@@ -48,12 +47,6 @@ class Cinderella:
             )
         )
         self.bean_api.write_account_bean(accounts, account_bean_path)
-
-    def _setup_parsers(self) -> list:
-        parsers = []
-        for parser_cls in get_parsers():
-            parsers.append(parser_cls())
-        return parsers
 
     def count_beans(self):
         # load all the transactions group

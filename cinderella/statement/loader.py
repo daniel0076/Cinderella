@@ -1,83 +1,77 @@
+from __future__ import annotations  # required for TYPE_CHECKING
 import logging
-from typing import Iterator, Union
-from os import walk, getcwd
-from pathlib import Path
+from typing import Iterator, Union, Iterable
+from copy import deepcopy
 from collections import defaultdict
+from pathlib import Path
+from typing import TYPE_CHECKING
+from .parsers import get_parsers
+from cinderella.settings import LOG_NAME
+from cinderella.utils import iterate_files
 
-from cinderella.parsers.base import StatementParser
-from cinderella.statement.datatypes import Transactions, StatementType
-from cinderella.external.beancount.utils import BeanCountAPI
-from cinderella.settings import CinderellaSettings, LOG_NAME
+if TYPE_CHECKING:
+    from cinderella.statement.datatypes import StatementType
+    from cinderella.ledger.datatypes import Ledger
+    from .parsers.base import StatementParser
+
 
 logger = logging.getLogger(LOG_NAME)
-CURRENT_DIR = getcwd()
 
 
 class StatementLoader:
-    def __init__(self, root: str, parsers: list):
-        self.root = root
-        self.categories = [
-            category for category in StatementType if category != StatementType.custom
-        ]
-        self.parsers = parsers
-        self.beancount_api = BeanCountAPI()
+    def __init__(self):
+        self.parsers = []
+        for parser_cls in get_parsers():
+            self.parsers.append(parser_cls())
 
     def _find_parser(self, path: str) -> Union[StatementParser, None]:
-        found = None
         for parser in self.parsers:
             if parser.identifier in path:
-                found = parser
-        return found
-
-    def _find_category(self, path: str) -> Union[StatementType, None]:
-        for category in self.categories:
-            if category.name in path:
-                return category
+                return parser
         return None
 
-    def _load_file(self) -> Iterator[Transactions]:
+    def _load_file_to_ledgers(self, path: Path) -> Iterator[Ledger]:
         logger.debug("Loading statement files")
-        for dirpath, _, filenames in walk(self.root):
-            logger.debug(f"Current directory: {dirpath}")
-            for filename in filenames:
-                if filename.startswith("."):
-                    continue
-                filepath = str(Path(dirpath, filename))
-                parser = self._find_parser(filepath)
-                category = self._find_category(filepath)
+        for file in iterate_files(path):
+            logger.debug(f"Current file: {file.as_posix()}")
+            parser = self._find_parser(file.as_posix())
 
-                if not parser or not category:
-                    logger.warn(
-                        "Load fail: %s, Category: %s, Parser: %s",
-                        filepath,
-                        "Unknown" if not category else category,
-                        getattr(parser, "identifier", "Unknown"),
-                    )
-                    continue
+            if not parser:
+                logger.debug(f"No parser found for file: {file.as_posix()}")
+                continue
 
-                logger.debug(
-                    f"File: {filename}, Category: {category}, Parser: {parser.identifier}"
-                )
-                transactions = parser.parse(category, filepath)
+            logger.debug(f"File: {file.as_posix()}, Parser: {parser.identifier}")
+            ledger = parser.parse(file)
 
-                yield transactions
+            yield ledger
 
-    def load(self) -> dict[StatementType, list[Transactions]]:
-        category_trans_map = dict()
-        for category in self.categories:
-            category_trans_map[category] = {}
+    def _tailor_type_to_ledgers(
+        self, ledgers: Iterable[Ledger]
+    ) -> dict[StatementType, list[Ledger]]:
+        """
+        Tailor the statements and return {StatementType: [Ledger]},
+        each ledger holds the transactions of a source
+        """
+        # collect all ledger one by one files
+        source_type_to_ledger: dict[frozenset, Ledger] = dict()
+        for ledger in ledgers:
+            key = frozenset((ledger.source, ledger.typ))
+            try:
+                source_type_to_ledger[key] += ledger
+            except KeyError:
+                # don't modify the input for better testibility, and its not costy
+                source_type_to_ledger[key] = deepcopy(ledger)
 
-        for trans in self._load_file():
-            existing_trans = category_trans_map[trans.category].get(trans.source, None)
-            if not existing_trans:
-                category_trans_map[trans.category][trans.source] = trans
-            else:
-                existing_trans.extend(trans)
+        # tailor the dict from {(source_name, type): Ledger} to {type: [Ledger]}
+        typed_ledgers: dict[StatementType, list[Ledger]] = defaultdict(list)
+        for ledger in source_type_to_ledger.values():
+            typed_ledgers[ledger.typ].append(ledger)
 
-        # flatten the dict
-        category_transactions = defaultdict(list)
-        for category, trans_dict in category_trans_map.items():
-            for trans in trans_dict.values():
-                category_transactions[category].append(trans)
+        return typed_ledgers
 
-        return category_transactions
+    def load(self, path: Path) -> dict[StatementType, list[Ledger]]:
+        """
+        Load the statements and return {StatementType: [Ledger]},
+        """
+        ledgers = self._load_file_to_ledgers(path)
+        return self._tailor_type_to_ledgers(ledgers)

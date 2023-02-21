@@ -114,8 +114,26 @@ class Ledger:
     typ: StatementType
     transactions: list[Transaction] = field(default_factory=list)
 
+    def __str__(self) -> str:
+        return f"=== Ledger source: {self.source}, type: {self.typ} ===\n{self.transactions}"
+
     def __len__(self) -> int:
         return len(self.transactions)
+
+    def __add__(self, other: Ledger) -> Ledger:
+        if self.typ != other.typ or self.source != other.source:
+            raise TypeError(
+                f'Can not add "{other}" to "{self}", type or source mismatch'
+            )
+        return Ledger(self.source, self.typ, self.transactions + other.transactions)
+
+    def __iadd__(self, other: Ledger) -> Ledger:
+        if self.typ != other.typ or self.source != other.source:
+            raise TypeError(
+                f'Can not add "{other}" to "{self}", type or source mismatch'
+            )
+        self.transactions.extend(other.transactions)
+        return self
 
     def append_txn(self, txn: Transaction):
         self.transactions.append(txn)
