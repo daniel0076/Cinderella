@@ -2,7 +2,7 @@ import pytest
 from decimal import Decimal
 from datetime import datetime, timedelta
 
-from cinderella.external.beancount.utils import BeanCountAPI
+from cinderella.external.beancountapi import BeanCountAPI
 from cinderella.ledger.datatypes import Transaction, Posting, Amount
 
 

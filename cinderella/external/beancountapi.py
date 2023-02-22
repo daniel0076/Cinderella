@@ -14,6 +14,7 @@ from beancount.core.position import Cost
 from beancount.core.position import CostSpec
 
 from cinderella.ledger.datatypes import Ledger
+from cinderella.statement.datatypes import StatementType
 from cinderella.settings import LOG_NAME
 
 logger = logging.getLogger(LOG_NAME)
@@ -101,6 +102,20 @@ class BeanCountAPI:
     def _load_bean(self, path: str) -> list:
         entries, _, _ = load_file(path)
         return [transaction for transaction in filter_txns(entries)]
+
+    # def load_beanfile_as_transactions(self, path: Path | str, category: StatementType):
+    #    transactions = Transactions(category, category.name)
+    #    logger.debug(f"===Loading beanfiles: {category.name}===")
+    #    for dirpath, _, filenames in walk(path):
+    #        logger.debug(f"Current directory {dirpath}")
+    #        for filename in filenames:
+    #            path = Path(dirpath, filename)
+    #            logger.debug(f"Loading beanfile: {filename}")
+
+    #            entries = self.beancount_api._load_bean(path.as_posix())
+    #            transactions.extend(entries)
+
+    #    return transactions
 
     def make_simple_transaction(
         self,
