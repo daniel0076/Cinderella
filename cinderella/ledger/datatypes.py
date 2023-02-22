@@ -5,6 +5,7 @@ from decimal import Decimal
 from typing import Any
 from datetime import datetime
 import hashlib
+import re
 
 from cinderella.statement.datatypes import StatementType
 
@@ -74,6 +75,9 @@ class Transaction:
         txn.append_postings(Posting.create_simple(account, quantity, currency))
         return txn
 
+    def create_and_append_posting(self, account: str, quantity: Decimal, currency: str):
+        self.postings.append(Posting(account, Amount(quantity, currency)))
+
     def append_postings(self, *postings: Posting):
         for posting in postings:
             self.postings.append(posting)
@@ -106,6 +110,17 @@ class Transaction:
 
         if merge_postings:
             self.postings.extend(source.postings)
+
+    def grep(self, keyword: str) -> bool:
+        if re.search(keyword, self.title):
+            return True
+
+        # search transaction meta
+        for comment in self.meta.values():
+            if re.search(keyword, comment):
+                return True
+
+        return False
 
 
 @dataclass

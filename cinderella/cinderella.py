@@ -2,21 +2,19 @@ from pathlib import Path
 
 from cinderella.statement.datatypes import StatementType
 from cinderella.settings import CinderellaSettings
-from cinderella.classifier import AccountClassifier
+from cinderella.ledger import utils
+from cinderella.ledger.classifier import AccountClassifier
 from cinderella.external.beancount.utils import BeanCountAPI
-from cinderella.loader import StatementLoader, BeanLoader
-from cinderella.transaction import TransactionProcessor
+from cinderella.statement.loader import StatementLoader
+from cinderella.external.beancount.loader import, BeanLoader
 
 
 class Cinderella:
     def __init__(self, settings: CinderellaSettings):
-        self.parsers = self._setup_parsers()
         self.bean_api = BeanCountAPI()
         self.classifier = AccountClassifier(settings)
         self.processor = TransactionProcessor()
-        self.statement_loader = StatementLoader(
-            settings.statement_settings.ready_statement_folder, self.parsers
-        )
+        self.statement_loader = StatementLoader()
         self.bean_loader = BeanLoader(settings)
         self.settings = settings
 
@@ -30,11 +28,6 @@ class Cinderella:
         accounts = []
 
         # Collect accounts from each parser
-        for parser in self.parsers:
-            # accounts created by each source
-            accounts += parser.default_source_accounts.values()
-            # accounts created by mappings of each source
-            accounts += self.settings.get_mapping(parser.identifier).keys()
 
         # accounts created as default accounts, used when not mapping is found
         accounts += self.settings.default_accounts.values()

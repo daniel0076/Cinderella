@@ -70,7 +70,7 @@ class CinderellaSettings(SettingsBase):
     beancount_settings: BeancountSettings
     ledger_processing_settings: LedgerProcessingSettings
     default_accounts: Dict
-    mappings: Dict
+    mappings: Dict[str, Dict[str, list[str]]]
 
     def get_mapping(self, source_name: str):
         return self.mappings.get(source_name, {})
