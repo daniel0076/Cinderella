@@ -150,5 +150,8 @@ class Ledger:
         self.transactions.extend(other.transactions)
         return self
 
+    def sort(self):
+        pass
+
     def append_txn(self, txn: Transaction):
         self.transactions.append(txn)

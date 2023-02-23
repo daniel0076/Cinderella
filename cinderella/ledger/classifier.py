@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from .datatypes import Ledger, Transaction
 
 
-class AccountClassifier:
+class TransactionClassifier:
     def __init__(self, settings: CinderellaSettings):
         self.settings = settings
         # setup default accounts

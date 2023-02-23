@@ -1,3 +1,4 @@
+from __future__ import annotations
 import datetime
 import logging
 import re
@@ -8,13 +9,13 @@ from pathlib import Path
 
 from beancount.loader import load_file
 from beancount.parser import printer
-from beancount.core.data import Transaction, Posting, filter_txns
+from beancount.core.data import Transaction as BeanTransaction, Posting, filter_txns
 from beancount.core.amount import Amount
 from beancount.core.position import Cost
 from beancount.core.position import CostSpec
 
-from cinderella.ledger.datatypes import Ledger
-from cinderella.statement.datatypes import StatementType
+from cinderella.utils import iterate_files
+from cinderella.ledger.datatypes import Ledger, Transaction as InternalTransaction
 from cinderella.settings import LOG_NAME
 
 logger = logging.getLogger(LOG_NAME)
@@ -96,26 +97,39 @@ class BeanCountAPI:
         if not links:
             links = set()
 
-        transaction = Transaction(meta, date, flag, payee, title, tags, links, postings)
+        transaction = BeanTransaction(
+            meta, date, flag, payee, title, tags, links, postings
+        )
         return transaction
 
-    def _load_bean(self, path: str) -> list:
-        entries, _, _ = load_file(path)
-        return [transaction for transaction in filter_txns(entries)]
+    def load_beanfile_to_internal_transactions(
+        self, path: Union[Path, str]
+    ) -> list[InternalTransaction]:
+        if isinstance(path, str):
+            path = Path(path)
 
-    # def load_beanfile_as_transactions(self, path: Path | str, category: StatementType):
-    #    transactions = Transactions(category, category.name)
-    #    logger.debug(f"===Loading beanfiles: {category.name}===")
-    #    for dirpath, _, filenames in walk(path):
-    #        logger.debug(f"Current directory {dirpath}")
-    #        for filename in filenames:
-    #            path = Path(dirpath, filename)
-    #            logger.debug(f"Loading beanfile: {filename}")
+        transactions = []
+        logger.debug(f"===Loading beanfiles: {path.as_posix()}===")
+        for file in iterate_files(path):
+            entries, _, _ = load_file(file.as_posix())
+            transactions.extend(filter_txns(entries))
 
-    #            entries = self.beancount_api._load_bean(path.as_posix())
-    #            transactions.extend(entries)
+        return self.convert_to_internal_transactions(transactions)
 
-    #    return transactions
+    def convert_to_internal_transactions(
+        self, transactions: list[BeanTransaction]
+    ) -> list[InternalTransaction]:
+        result = []
+
+        for bean_txn in transactions:
+            c_txn = InternalTransaction(bean_txn.date, bean_txn.narration)
+            for posting in bean_txn.postings:
+                c_txn.create_and_append_posting(
+                    posting.account, posting.units.number, posting.units.currency
+                )
+            result.append(c_txn)
+
+        return result
 
     def make_simple_transaction(
         self,
@@ -124,20 +138,20 @@ class BeanCountAPI:
         account: str,
         amount: Decimal,
         currency: str,
-    ) -> Transaction:
+    ) -> BeanTransaction:
         bean_amount = self.make_amount(amount, currency)
         posting = self.make_posting(account, bean_amount)
 
         return self.make_transaction(date, title, [posting])
 
-    def add_transaction_comment(self, transaction: Transaction, value: str) -> None:
+    def add_transaction_comment(self, transaction: BeanTransaction, value: str) -> None:
         count = len(transaction.meta.keys())
         key = f";{count+1}"
 
         transaction.meta[key] = value
 
     def add_posting_comment(
-        self, transaction: Transaction, value: str, index: int = 0
+        self, transaction: BeanTransaction, value: str, index: int = 0
     ) -> None:
         count = len(transaction.postings[index].meta.keys())
         key = f";{count+1}"
@@ -149,7 +163,7 @@ class BeanCountAPI:
                 transaction.postings[index].meta = {key: value}
 
     def add_posting_amount(
-        self, transaction: Transaction, number: Decimal, index: int = 0
+        self, transaction: BeanTransaction, number: Decimal, index: int = 0
     ) -> None:
         # https://github.com/beancount/beancount/blob/master/beancount/core/amount.py#L33
         posting = transaction.postings[index]
@@ -159,7 +173,7 @@ class BeanCountAPI:
         transaction.postings[index] = posting
 
     def add_transaction_posting(
-        self, transaction: Transaction, posting: Posting
+        self, transaction: BeanTransaction, posting: Posting
     ) -> int:
         transaction.postings.append(posting)
         # return index
@@ -167,7 +181,7 @@ class BeanCountAPI:
 
     def create_and_add_transaction_posting(
         self,
-        transaction: Transaction,
+        transaction: BeanTransaction,
         account: str,
         price: Decimal = None,
         currency: str = None,
@@ -189,10 +203,10 @@ class BeanCountAPI:
         else:
             printer.print_entries(Ledger)
 
-    def print_bean(self, transaction: Transaction):
+    def print_bean(self, transaction: BeanTransaction):
         printer.print_entry(transaction)
 
-    def find_keywords(self, transaction: Transaction, keywords: list[str]) -> bool:
+    def find_keywords(self, transaction: BeanTransaction, keywords: list[str]) -> bool:
         for keyword in keywords:
             found = self.find_keyword(transaction, keyword)
             if found:
@@ -200,7 +214,7 @@ class BeanCountAPI:
 
         return False
 
-    def find_keyword(self, transaction: Transaction, keyword: str) -> bool:
+    def find_keyword(self, transaction: BeanTransaction, keyword: str) -> bool:
         # search transaction title
         regex = re.compile(keyword)
         if bool(re.search(regex, transaction.narration)):
@@ -220,8 +234,8 @@ class BeanCountAPI:
         return False
 
     def merge_Ledger(
-        self, dest: Transaction, source: Transaction, keep_dest_accounts: bool
-    ) -> Transaction:
+        self, dest: BeanTransaction, source: BeanTransaction, keep_dest_accounts: bool
+    ) -> BeanTransaction:
         """
         merge source first posting to dest
         """

@@ -2,33 +2,23 @@ from pathlib import Path
 
 from cinderella.statement.datatypes import StatementType
 from cinderella.settings import CinderellaSettings
-from cinderella.ledger import utils
-from cinderella.ledger.classifier import AccountClassifier
-from cinderella.external.beancount.utils import BeanCountAPI
+from cinderella.ledger import utils as ledger_util
+from cinderella.ledger.classifier import TransactionClassifier
+from cinderella.ledger.datatypes import Ledger
 from cinderella.statement.loader import StatementLoader
-from cinderella.external.beancount.loader import, BeanLoader
+from cinderella.external.beancountapi import BeanCountAPI
 
 
 class Cinderella:
     def __init__(self, settings: CinderellaSettings):
-        self.bean_api = BeanCountAPI()
-        self.classifier = AccountClassifier(settings)
-        self.processor = TransactionProcessor()
-        self.statement_loader = StatementLoader()
-        self.bean_loader = BeanLoader(settings)
         self.settings = settings
+        self.bean_api = BeanCountAPI()
+        self.statement_loader = StatementLoader()
+        self.classifier = TransactionClassifier(settings)
 
         self._setup_accounts()
 
     def _setup_accounts(self):
-        """
-        Beancount requires accounts to be declared in the bean files first.
-        So we have to collect all the accounts used in Cinderella
-        """
-        accounts = []
-
-        # Collect accounts from each parser
-
         # accounts created as default accounts, used when not mapping is found
         accounts += self.settings.default_accounts.values()
         # accounts created for general mapping
@@ -42,43 +32,52 @@ class Cinderella:
         self.bean_api.write_account_bean(accounts, account_bean_path)
 
     def count_beans(self):
-        # load all the transactions group
-        transactions_group = self.statement_loader.load()
+        # load all the ledgers by statment type
+        ledgers_by_type = self.statement_loader.load(
+            self.settings.statement_settings.ready_statement_folder
+        )
 
         # merge trans in receipt and card with same date and amount
-        self.processor.merge_same_date_amount(
-            transactions_group[StatementType.receipt]
-            + transactions_group[StatementType.creditcard],
-            lookback_days=3,
+        ledger_util.merge_same_date_amount(
+            ledgers_by_type[StatementType.receipt]
+            + ledgers_by_type[StatementType.creditcard],
+            tolerance_days=3,
         )
 
-        # collect autogen list of transactions
-        autogen_trans_list = [
-            ts for ts_list in transactions_group.values() for ts in ts_list
-        ]
-        # remove transactions listed in custom and ignored bean files
-        custom_transactions = self.bean_loader.load_beanfile_as_transactions(
-            self.settings.beancount_settings.overwrite_beanfiles_folder,
-            StatementType.custom,
+        # remove transactions found ledgers marked ignored and overwrite
+        overwritten_ledger = Ledger("overwritten_ledger", StatementType.custom)
+        overwritten_ledger.transactions = (
+            self.bean_api.load_beanfile_to_internal_transactions(
+                self.settings.beancount_settings.overwrite_beanfiles_folder,
+            )
         )
-        ignored_transactions = self.bean_loader.load_beanfile_as_transactions(
-            self.settings.beancount_settings.ignored_beanfiles_folder,
-            StatementType.ignored,
+        ignored_ledger = Ledger("ignored_ledger", StatementType.custom)
+        ignored_ledger.transactions = (
+            self.bean_api.load_beanfile_to_internal_transactions(
+                self.settings.beancount_settings.ignored_beanfiles_folder
+            )
         )
-        pre_defined_trans_list = [custom_transactions, ignored_transactions]
-        self.processor.dedup_by_title_and_amount(
-            pre_defined_trans_list + autogen_trans_list
+
+        all_parsed_ledgers = []
+        for ledgers in ledgers_by_type.values():
+            all_parsed_ledgers.extend(ledgers)
+
+        ledger_util.dedup_by_title_and_amount(
+            [*all_parsed_ledgers, overwritten_ledger, ignored_ledger]
         )
 
         # classify
-        for transactions_list in transactions_group.values():
-            for transactions in transactions_list:
-                self.classifier.classify_account(transactions)
+        for ledgers in ledgers_by_type.values():
+            for ledger in ledgers:
+                self.classifier.classify_account(ledger)
 
-        # remove duplicated transfer transactions between banks
-        self.processor.dedup_bank_transfer(
-            autogen_trans_list,
-            lookback_days=self.settings.ledger_processing_settings.transfer_matching_days,
+        """
+        remove duplicated transfer transactions between banks,
+        this can only be done after classification
+        """
+        ledger_util.dedup_bank_transfer(
+            ledgers_by_type[StatementType.bank],
+            tolerance_days=self.settings.ledger_processing_settings.transfer_matching_days,
         )
 
         # output
@@ -88,6 +87,15 @@ class Cinderella:
         )
         # remove existing files
         path.unlink(missing_ok=True)
-        for transactions_list in transactions_group.values():
-            for transactions in transactions_list:
-                self.bean_api.print_beans(transactions, path.as_posix())
+
+        """
+        Beancount requires accounts to be declared in the bean files first.
+        So we have to collect all the accounts used in Cinderella
+        """
+        accounts = []
+
+        # Collect accounts from each parser
+
+        for ledgers in ledgers_by_type.values():
+            for transaction in ledgers:
+                self.bean_api.print_beans(transaction, path.as_posix())

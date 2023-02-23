@@ -69,9 +69,12 @@ class StatementLoader:
 
         return typed_ledgers
 
-    def load(self, path: Path) -> dict[StatementType, list[Ledger]]:
+    def load(self, path: Union[Path, str]) -> dict[StatementType, list[Ledger]]:
         """
         Load the statements and return {StatementType: [Ledger]},
         """
+        if isinstance(path, str):
+            path = Path(path)
+
         ledgers = self._load_file_to_ledgers(path)
         return self._tailor_type_to_ledgers(ledgers)

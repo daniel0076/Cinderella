@@ -132,7 +132,7 @@ def dedup_by_title_and_amount(
 
 def merge_same_date_amount(
     ledgers: list[Ledger],
-    lookback_days: int = 0,
+    tolerance_days: int = 0,
 ) -> None:
     """
     merge identical transactions from rhs to lhs
@@ -145,4 +145,4 @@ def merge_same_date_amount(
             transaction.postings[0].amount,
         )
 
-    dedup(ledgers, hash_function, lookback_days, merge_dup_txns=True)
+    dedup(ledgers, hash_function, tolerance_days, merge_dup_txns=True)
