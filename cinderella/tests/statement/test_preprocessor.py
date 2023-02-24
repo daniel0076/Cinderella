@@ -4,7 +4,8 @@ import pytest
 from unittest.mock import patch
 
 from cinderella.statement.preprocessors.base import ProcessorBase, ProcessedResult
-from cinderella.statement.datatypes import AfterProcessedAction, StatementType
+from cinderella.statement.datatypes import AfterProcessedAction
+from cinderella.ledger.datatypes import StatementType
 from cinderella.settings import StatementSettings, RawStatementProcessSettings
 
 

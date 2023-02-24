@@ -2,8 +2,7 @@ import pytest
 from unittest.mock import patch
 from datetime import datetime
 from cinderella.statement.loader import StatementLoader
-from cinderella.ledger.datatypes import Ledger, Transaction
-from cinderella.statement.datatypes import StatementType
+from cinderella.ledger.datatypes import Ledger, Transaction, StatementType
 
 
 @pytest.fixture

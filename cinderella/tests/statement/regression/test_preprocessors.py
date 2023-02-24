@@ -4,7 +4,8 @@ from pathlib import Path
 from cinderella.statement.preprocessors.richart import Richart as RichartPreprocessor
 from cinderella.statement.preprocessors.esun import ESun as ESunPreprocessor
 from cinderella.statement.preprocessors.einvoice import Einvoice as EinvoicePreprocessor
-from cinderella.statement.datatypes import StatementType, AfterProcessedAction
+from cinderella.statement.datatypes import AfterProcessedAction
+from cinderella.ledger.datatypes import StatementType
 from cinderella.settings import StatementSettings, RawStatementProcessSettings
 
 

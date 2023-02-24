@@ -1,10 +1,9 @@
 from pathlib import Path
 
-from cinderella.statement.datatypes import StatementType
 from cinderella.settings import CinderellaSettings
 from cinderella.ledger import utils as ledger_util
 from cinderella.ledger.classifier import TransactionClassifier
-from cinderella.ledger.datatypes import Ledger
+from cinderella.ledger.datatypes import Ledger, StatementType
 from cinderella.statement.loader import StatementLoader
 from cinderella.external.beancountapi import BeanCountAPI
 

@@ -5,21 +5,22 @@ from typing import TYPE_CHECKING
 from pathlib import Path
 
 from cinderella.settings import LOG_NAME
-from cinderella.statement.datatypes import StatementType
+from cinderella.ledger.datatypes import StatementType
 
 if TYPE_CHECKING:
     from cinderella.ledger.datatypes import Ledger
 
 
 class StatementParser(ABC):
-    identifier = ""
+    source_name = ""
+    display_name = ""
 
     def __init__(self):
-        self.default_source_accounts = {}
         self.logger = logging.getLogger(LOG_NAME)
+        self.supported_types = [StatementType.invalid]
 
     def parse(self, path: Path) -> Ledger:
-        df = self._read_statement(path)
+        df = self._read_csv(path)
         if StatementType.bank.value in path.as_posix():
             return self._parse_bank_statement(df)
         elif StatementType.creditcard.value in path.as_posix():
@@ -32,7 +33,7 @@ class StatementParser(ABC):
             )
             return Ledger("Invalid", StatementType.invalid)
 
-    def _read_statement(self, path: Path) -> pd.DataFrame:
+    def _read_csv(self, path: Path) -> pd.DataFrame:
         return pd.read_csv(path.as_posix())
 
     @abstractmethod

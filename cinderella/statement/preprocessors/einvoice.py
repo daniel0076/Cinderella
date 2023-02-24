@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 from cinderella.statement.preprocessors.base import ProcessorBase, ProcessedResult
-from cinderella.statement.datatypes import StatementType
+from cinderella.ledger.datatypes import StatementType
 from cinderella.settings import RawStatementProcessSettings, LOG_NAME
 
 logger = logging.getLogger(LOG_NAME)

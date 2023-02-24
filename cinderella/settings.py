@@ -1,6 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from cinderella.statement.datatypes import AfterProcessedAction, StatementType
+from cinderella.statement.datatypes import AfterProcessedAction
+from cinderella.ledger.datatypes import StatementType
 from typing import Dict
 from dacite.core import from_dict
 from dacite.config import Config

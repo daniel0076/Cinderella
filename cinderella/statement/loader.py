@@ -10,8 +10,7 @@ from cinderella.settings import LOG_NAME
 from cinderella.utils import iterate_files
 
 if TYPE_CHECKING:
-    from cinderella.statement.datatypes import StatementType
-    from cinderella.ledger.datatypes import Ledger
+    from cinderella.ledger.datatypes import Ledger, StatementType
     from .parsers.base import StatementParser
 
 

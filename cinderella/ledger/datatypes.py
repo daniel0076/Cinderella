@@ -7,7 +7,15 @@ from datetime import datetime
 import hashlib
 import re
 
-from cinderella.statement.datatypes import StatementType
+
+class StatementType(Enum):
+    invalid = "invalid"
+    ignored = "ignored"
+    custom = "custom"
+    bank = "bank"
+    creditcard = "creditcard"
+    receipt = "receipt"
+    stock = "stock"
 
 
 class TransactionFlag(Enum):
