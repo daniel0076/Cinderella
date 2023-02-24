@@ -15,7 +15,11 @@ from beancount.core.position import Cost
 from beancount.core.position import CostSpec
 
 from cinderella.utils import iterate_files
-from cinderella.ledger.datatypes import Ledger, Transaction as InternalTransaction
+from cinderella.ledger.datatypes import (
+    Ledger,
+    Transaction as InternalTransaction,
+    StatementType,
+)
 from cinderella.settings import LOG_NAME
 
 logger = logging.getLogger(LOG_NAME)
@@ -258,6 +262,22 @@ class BeanCountAPI:
         for comment in source.meta.values():
             self.add_transaction_comment(dest, comment)
         return dest
+
+
+def make_statement_accounts(statement_types: list[StatementType], display_name: str):
+    common_prefix = {
+        StatementType.bank: "Assets:Bank:",
+        StatementType.creditcard: "Liabilities:CreditCard:",
+        StatementType.receipt: "Assets:Cash:",
+    }
+
+    result = {}
+    for typ in statement_types:
+        if not common_prefix.get(typ, None):
+            continue
+        result[typ] = common_prefix[typ] + display_name
+
+    return result
 
 
 if __name__ == "__main__":
