@@ -2,7 +2,7 @@ from __future__ import annotations
 from enum import Enum, auto
 from dataclasses import dataclass, field
 from decimal import Decimal
-from typing import Any
+from typing import Any, Union
 from datetime import datetime
 import hashlib
 import re
@@ -60,7 +60,7 @@ class Amount:
 class Posting:
     account: str
     amount: Amount
-    meta: dict[str, Any] = field(default_factory=dict)
+    price: Union[Amount, None] = None
 
     @classmethod
     def create_simple(cls, account: str, quantity: Decimal, currency: str):

@@ -2,27 +2,27 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 import re
-import logging
 
-from cinderella.statement.datatypes import Transactions, StatementType
-from cinderella.parsers.base import StatementParser
-from cinderella.settings import LOG_NAME
-
-logger = logging.getLogger(LOG_NAME)
+from cinderella.ledger.datatypes import (
+    Ledger,
+    Amount,
+    Posting,
+    StatementType,
+    Transaction,
+    TransactionFlag,
+)
+from .base import StatementParser
 
 
 class Sinopac(StatementParser):
-    identifier = "sinopac"
+    source_name = "sinopac"
+    display_name = "SinoPac"
 
     def __init__(self):
-        super().__init__()
-        self.default_source_accounts = {
-            StatementType.creditcard: "Liabilities:CreditCard:Sinopac",
-            StatementType.bank: "Assets:Bank:Sinopac",
-            "exchange_diff_pnl": "Income:Bank:Sinopac:ExchangeDiffPnL",
-        }
+        supported_types = [StatementType.bank, StatementType.creditcard]
+        super().__init__(supported_types)
 
-    def _read_statement(self, filepath: str) -> pd.DataFrame:
+    def _read_csv(self, filepath: str) -> pd.DataFrame:
         if "bank" in filepath:
             try:
                 df = pd.read_csv(filepath, encoding="big5", skiprows=2)
@@ -34,84 +34,74 @@ class Sinopac(StatementParser):
         df = df.replace({"\t": ""}, regex=True)
         return df
 
-    def _parse_card_statement(self, records: list) -> Transactions:
+    def parse_creditcard_statement(self, records: pd.DataFrame) -> Ledger:
+        records = records.astype(str)
         category = StatementType.creditcard
-        transactions = Transactions(category, self.identifier)
+        ledger = Ledger(self.source_name, StatementType.creditcard)
 
         for _, record in records.iterrows():
             date = datetime.strptime(record[0], "%Y/%m/%d")
             title = record[3]
-            price = Decimal(record[4].replace(",", ""))
+            quantity = Decimal(record[4].replace(",", ""))
             currency = "TWD"
-            account = self.default_source_accounts[category]
+            account = self.statement_accounts[category]
+            ledger.create_and_append_txn(date, title, account, quantity, currency)
 
-            transaction = self.beancount_api.make_simple_transaction(
-                date, title, account, -price, currency
-            )
-            transactions.append(transaction)
+        return ledger
 
-        return transactions
-
-    def _parse_bank_statement(self, records: list) -> Transactions:
+    def parse_bank_statement(self, records: pd.DataFrame) -> Ledger:
+        records = records.astype(str)
         category = StatementType.bank
-        transactions = Transactions(category, self.identifier)
+        ledger = Ledger(self.source_name, StatementType.bank)
 
         for _, record in records.iterrows():
-            date = datetime.strptime(record[0].lstrip().split(" ")[0], "%Y/%m/%d")
+            datetime_ = datetime.strptime(record[0].lstrip(), "%Y/%m/%d %H:%M")
             title = record[2]
-            if record[3] == " ":
-                price = Decimal(record[4])
-            elif record[4] == " ":
-                price = -Decimal(record[3])
+            if record[3].strip() != "":  # expense
+                quantity = -Decimal(record[3])
+            elif record[4].strip() != "":  # income
+                quantity = Decimal(record[4])
             else:
-                raise RuntimeError(
-                    f"Can not parse {self.identifier} {category.name} statement {record}"
-                )
+                self.logger.error(f"{self.display_name}: fail to parse {record}")
+                continue
 
             currency = "TWD"
-            account = self.default_source_accounts[category]
+            account = self.statement_accounts[category]
 
             # check currency exchange
-            rate = Decimal(str(record[6])) if not pd.isna(record[6]) else None
+            rate = Decimal(record[6]) if record[6].strip() != "" else None
             if rate:
                 # xxxxxx(USD)
-                try:
-                    foreign_currency = re.search(r"\(([A-Z]*)\)", str(record[7])).group(
-                        1
-                    )
-                except IndexError:
-                    logger.error(
-                        f"{self.identifier}: Can not determine currency for row: {record}"
+                result = re.search(r"\(([A-Z]{3,})\)", record[7])
+                if result:
+                    foreign_currency = result.group(1)
+                else:
+                    self.logger.error(
+                        f"{self.display_name}: fail to get currency {record}"
                     )
                     continue
 
-                foreign_price = self.beancount_api.make_amount(rate, currency)
-                local_amount = self.beancount_api.make_amount(price, currency)
-                foreign_amount = self.beancount_api.make_amount(
-                    Decimal(-price / rate), foreign_currency
-                )
+                price = Amount(rate, foreign_currency)
+                amount = Amount(quantity, currency)
 
-                local_posting = self.beancount_api.make_posting(
-                    account, amount=local_amount
+                posting = Posting(account, amount, price)
+                txn = Transaction(
+                    datetime_,
+                    title,
+                    [posting],
+                    meta={},
+                    flag=TransactionFlag.CONVERSIONS,
                 )
-                foreign_posting = self.beancount_api.make_posting(
-                    account, foreign_amount, price=foreign_price
-                )
-                pnl_posting = self.beancount_api.make_posting(
-                    self.default_source_accounts["exchange_diff_pnl"], None
-                )
-
-                transaction = self.beancount_api.make_transaction(
-                    date, title, [local_posting, foreign_posting, pnl_posting]
-                )
+                ledger.append_txn(txn)
 
             else:
-                transaction = self.beancount_api.make_simple_transaction(
-                    date, title, account, price, currency
+                txn = ledger.create_and_append_txn(
+                    datetime_, title, account, quantity, currency
                 )
 
-            self.beancount_api.add_transaction_comment(transaction, str(record[7]))
+            txn.insert_comment(self.display_name, record[7])
 
-            transactions.append(transaction)
+        return ledger
 
-        return transactions
+    def parse_receipt_statement(self, _) -> Ledger:
+        raise NotImplementedError(f"Receipt is not supported by {self.display_name}")
