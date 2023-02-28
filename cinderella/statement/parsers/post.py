@@ -1,71 +1,78 @@
+from pathlib import Path
 import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
-from cinderella.statement.datatypes import Transactions, StatementType
-from cinderella.parsers.base import StatementParser
+from cinderella.ledger.datatypes import Ledger, OnExistence, StatementType
+from .base import StatementParser
 
 
 class TaiwanPost(StatementParser):
-    identifier = "post"
+    source_name = "post"
+    display_name = "TaiwanPost"
 
     def __init__(self):
-        super().__init__()
-        self.default_source_accounts = {StatementType.bank: "Assets:Bank:Post"}
+        supported_types = [StatementType.bank]
+        super().__init__(supported_types)
 
-    def _read_statement(self, filepath: str) -> pd.DataFrame:
+    def _read_csv(self, filepath: Path) -> pd.DataFrame:
         df = pd.read_csv(
-            filepath, skipfooter=2, skiprows=1, thousands=",", engine="python"
+            filepath.as_posix(),
+            skipfooter=2,
+            skiprows=1,
+            thousands=",",
+            engine="python",
         )
         df = df.replace({"=": "", '"': ""}, regex=True)
         return df
 
-    def _parse_bank_statement(self, records: pd.DataFrame) -> Transactions:
-        category = StatementType.bank
-        transactions = Transactions(category, self.identifier)
+    def parse_bank_statement(self, records: pd.DataFrame) -> Ledger:
+        records = records.astype(str)
+        typ = StatementType.bank
+        ledger = Ledger(self.source_name, typ)
 
-        prev_transaction = None
+        prev_txn = None
         for _, record in records.iterrows():
-            date_tw = str(record[0])
+            date_tw = record[0]
             date_to_ce = date_tw.replace(date_tw[0:3], str(int(date_tw[0:3]) + 1911))
-            date = datetime.strptime(date_to_ce, "%Y/%m/%d %H:%M:%S")
+            datetime_ = datetime.strptime(date_to_ce, "%Y/%m/%d %H:%M:%S")
             title = record[1]
             if not pd.isna(record[3]):
-                price = -Decimal(record[3])
+                quantity = -Decimal(record[3])
             elif not pd.isna(record[4]):
-                price = Decimal(record[4])
+                quantity = Decimal(record[4])
             else:
-                raise RuntimeError(
-                    f"Can not parse {self.identifier} {category.name} statement {record}"
+                self.logger.error(
+                    f"Can not parse {self.source_name} {typ.name} statement {record}"
                 )
+                continue
+
             currency = "TWD"
-            account = self.default_source_accounts[category]
+            account = self.statement_accounts[typ]
 
             if (
-                prev_transaction and date == prev_transaction.date and price == 0
+                prev_txn and datetime_ == prev_txn.datetime_ and quantity == 0
             ):  # duplicated record
-                transaction = prev_transaction
-                self.beancount_api.add_transaction_comment(
-                    transaction, f"{title}-{price}"
-                )
+                txn = prev_txn
             else:
-                transaction = self.beancount_api.make_simple_transaction(
-                    date, title, account, price, currency
+                txn = ledger.create_and_append_txn(
+                    datetime_, title, account, quantity, currency
                 )
-                transactions.append(transaction)
 
             # comments
             if not pd.isna(record[6]):
-                self.beancount_api.add_transaction_comment(transaction, str(record[6]))
+                txn.insert_comment(
+                    f"{self.display_name}-Remarks", str(record[6]), OnExistence.CONCAT
+                )
             if not pd.isna(record[7]):
-                self.beancount_api.add_transaction_comment(transaction, str(record[7]))
+                txn.insert_comment(f"{self.display_name}-Notes", str(record[7]))
 
-            prev_transaction = transaction
+            prev_txn = txn
 
-        return transactions
+        return ledger
 
-    def _parse_card_statement(self, records: list) -> Transactions:
+    def parse_creditcard_statement(self, _) -> Ledger:
         raise NotImplementedError
 
-    def _parse_stock_statement(self, records: list) -> Transactions:
-        raise NotImplementedError
+    def parse_receipt_statement(self, _) -> Ledger:
+        raise NotImplementedError(f"Receipt is not supported by {self.display_name}")

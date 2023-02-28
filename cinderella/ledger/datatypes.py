@@ -29,6 +29,7 @@ class OnExistence(Enum):
     SKIP = auto()
     RENAME = auto()
     REPLACE = auto()
+    CONCAT = auto()
 
 
 @dataclass
@@ -99,14 +100,17 @@ class Transaction:
     def insert_comment(
         self, key: str, value: Any, comment_exists: OnExistence = OnExistence.REPLACE
     ):
-        if self.meta.get(key):
+        if self.meta.get(key, None):
             if comment_exists == OnExistence.SKIP:
                 return
             elif comment_exists == OnExistence.RENAME:
                 key_hash = hashlib.sha256(key.encode()).hexdigest()[:5]
                 self.meta[key_hash] = value
-
-        self.meta[key] = value
+            elif comment_exists == OnExistence.CONCAT:
+                self.meta[key] += value
+            else:
+                self.meta[key] = value
+        return
 
     def merge(
         self, source: Transaction, comment_exists: OnExistence, merge_postings: bool
