@@ -29,7 +29,7 @@ class BeanCountAPI:
     def __init__(self):
         pass
 
-    def write_account_bean(self, accounts: list, output_path: str):
+    def write_accounts_to_beanfile(self, accounts: list, output_path: str):
         accounts = sorted(list(set(accounts)))
 
         path = Path(output_path)
@@ -110,6 +110,8 @@ class BeanCountAPI:
         self, path: Union[Path, str]
     ) -> list[InternalTransaction]:
         if isinstance(path, str):
+            if not path:
+                return []
             path = Path(path)
 
         transactions = []

@@ -1,3 +1,4 @@
+from pathlib import Path
 import pandas as pd
 import csv
 from datetime import datetime
@@ -16,8 +17,8 @@ class Einvoice(StatementParser):
         supported_types = [StatementType.receipt]
         super().__init__(supported_types)
 
-    def parse(self, _: str, filepath: str) -> Ledger:
-        if "csv" in filepath:
+    def parse(self, filepath: Path) -> Ledger:
+        if "csv" in filepath.name:
             df = pd.read_csv(
                 filepath, delimiter="|", skiprows=2, header=None, quoting=csv.QUOTE_NONE
             )

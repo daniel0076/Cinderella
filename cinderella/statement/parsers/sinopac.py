@@ -1,3 +1,4 @@
+from pathlib import Path
 import pandas as pd
 from datetime import datetime
 from decimal import Decimal
@@ -22,8 +23,8 @@ class Sinopac(StatementParser):
         supported_types = [StatementType.bank, StatementType.creditcard]
         super().__init__(supported_types)
 
-    def _read_csv(self, filepath: str) -> pd.DataFrame:
-        if "bank" in filepath:
+    def _read_csv(self, filepath: Path) -> pd.DataFrame:
+        if "bank" in filepath.as_posix():
             try:
                 df = pd.read_csv(filepath, encoding="big5", skiprows=2)
             except UnicodeDecodeError:
@@ -32,10 +33,11 @@ class Sinopac(StatementParser):
             df = pd.read_csv(filepath)
 
         df = df.replace({"\t": ""}, regex=True)
+        df = df.fillna("")
+        df = df.astype(str)
         return df
 
     def parse_creditcard_statement(self, records: pd.DataFrame) -> Ledger:
-        records = records.astype(str)
         category = StatementType.creditcard
         ledger = Ledger(self.source_name, StatementType.creditcard)
 
@@ -50,7 +52,6 @@ class Sinopac(StatementParser):
         return ledger
 
     def parse_bank_statement(self, records: pd.DataFrame) -> Ledger:
-        records = records.astype(str)
         category = StatementType.bank
         ledger = Ledger(self.source_name, StatementType.bank)
 
@@ -69,7 +70,7 @@ class Sinopac(StatementParser):
             account = self.statement_accounts[category]
 
             # check currency exchange
-            rate = Decimal(record[6]) if record[6].strip() != "" else None
+            rate = Decimal(record[6]) if record[6] else None
             if rate:
                 # xxxxxx(USD)
                 result = re.search(r"\(([A-Z]{3,})\)", record[7])

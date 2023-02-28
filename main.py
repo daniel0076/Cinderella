@@ -4,7 +4,7 @@ import logging
 
 from cinderella.cinderella import Cinderella
 from cinderella.settings import CinderellaSettings, LOG_NAME
-from cinderella.preprocessor import StatementPreprocessor
+from cinderella.statement.preprocessors import StatementPreprocessor
 
 PROJECT_ROOT = os.path.dirname(__file__)
 CURRENT_DIR = os.getcwd()

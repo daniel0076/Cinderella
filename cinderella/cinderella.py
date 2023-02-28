@@ -11,25 +11,20 @@ from cinderella.external.beancountapi import BeanCountAPI
 class Cinderella:
     def __init__(self, settings: CinderellaSettings):
         self.settings = settings
-        self.bean_api = BeanCountAPI()
+        self.beancount_api = BeanCountAPI()
         self.statement_loader = StatementLoader()
         self.classifier = TransactionClassifier(settings)
 
-        self._setup_accounts()
-
-    def _setup_accounts(self):
-        # accounts created as default accounts, used when not mapping is found
+    def _collect_accounts(self) -> list:
         accounts = []
+        # accounts created as default accounts, used when not mapping is found
         accounts += self.settings.default_accounts.values()
         # accounts created for general mapping
         accounts += self.settings.get_mapping("general").keys()
+        # accounts created from each statement parsers
+        accounts += self.statement_loader.get_all_statement_accounts()
 
-        account_bean_path = str(
-            Path(
-                self.settings.beancount_settings.output_beanfiles_folder, "account.bean"
-            )
-        )
-        self.bean_api.write_account_bean(accounts, account_bean_path)
+        return accounts
 
     def count_beans(self):
         # load all the ledgers by statment type
@@ -47,13 +42,13 @@ class Cinderella:
         # remove transactions found ledgers marked ignored and overwrite
         overwritten_ledger = Ledger("overwritten_ledger", StatementType.custom)
         overwritten_ledger.transactions = (
-            self.bean_api.load_beanfile_to_internal_transactions(
+            self.beancount_api.load_beanfile_to_internal_transactions(
                 self.settings.beancount_settings.overwrite_beanfiles_folder,
             )
         )
         ignored_ledger = Ledger("ignored_ledger", StatementType.custom)
         ignored_ledger.transactions = (
-            self.bean_api.load_beanfile_to_internal_transactions(
+            self.beancount_api.load_beanfile_to_internal_transactions(
                 self.settings.beancount_settings.ignored_beanfiles_folder
             )
         )
@@ -80,22 +75,26 @@ class Cinderella:
             tolerance_days=self.settings.ledger_processing_settings.transfer_matching_days,
         )
 
-        # output
-        path = (
-            Path(self.settings.beancount_settings.output_beanfiles_folder)
-            / "result.bean"
-        )
-        # remove existing files
-        path.unlink(missing_ok=True)
-
         """
         Beancount requires accounts to be declared in the bean files first.
         So we have to collect all the accounts used in Cinderella
         """
-        accounts = []
+        accounts_beanfile = Path(
+            self.settings.beancount_settings.output_beanfiles_folder, "account.bean"
+        )
+        accounts = self._collect_accounts()
+        self.beancount_api.write_accounts_to_beanfile(
+            accounts, accounts_beanfile.as_posix()
+        )
 
-        # Collect accounts from each parser
+        # output
+        # path = (
+        #    Path(self.settings.beancount_settings.output_beanfiles_folder)
+        #    / "result.bean"
+        # )
+        ## remove existing files
+        # path.unlink(missing_ok=True)
 
-        for ledgers in ledgers_by_type.values():
-            for transaction in ledgers:
-                self.bean_api.print_beans(transaction, path.as_posix())
+        # for ledgers in ledgers_by_type.values():
+        #    for transaction in ledgers:
+        #        self.beancount_api.print_beans(transaction, path.as_posix())

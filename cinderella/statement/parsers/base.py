@@ -13,9 +13,9 @@ class StatementParser(ABC):
     source_name = ""
     display_name = ""
 
-    def __init__(self, supported_types: list[StatementType]):
+    def __init__(self, supported_types: list[StatementType] = []):
+        assert supported_types != []
         self.logger = logging.getLogger(LOG_NAME)
-        self.supported_types = [StatementType.invalid]
         self.statement_accounts: dict[StatementType, str] = make_statement_accounts(
             supported_types, self.display_name
         )
@@ -37,7 +37,11 @@ class StatementParser(ABC):
             return Ledger("Invalid", StatementType.invalid)
 
     def _read_csv(self, path: Path) -> pd.DataFrame:
-        return pd.read_csv(path.as_posix())
+        df = pd.read_csv(path.as_posix())
+        return df
+
+    def get_statement_accounts(self) -> dict:
+        return self.statement_accounts
 
     @abstractmethod
     def parse_creditcard_statement(self, df: pd.DataFrame) -> Ledger:

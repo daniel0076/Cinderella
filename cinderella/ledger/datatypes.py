@@ -124,14 +124,15 @@ class Transaction:
         if merge_postings:
             self.postings.extend(source.postings)
 
-    def grep(self, keyword: str) -> bool:
-        if re.search(keyword, self.title):
-            return True
-
-        # search transaction meta
-        for comment in self.meta.values():
-            if re.search(keyword, comment):
+    def grep(self, keywords: list[str]) -> bool:
+        for keyword in keywords:
+            if re.search(keyword, self.title):
                 return True
+
+            # search transaction meta
+            for comment in self.meta.values():
+                if re.search(keyword, comment):
+                    return True
 
         return False
 

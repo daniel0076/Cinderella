@@ -1,3 +1,4 @@
+from pathlib import Path
 import pandas as pd
 from datetime import datetime
 from decimal import Decimal
@@ -15,8 +16,8 @@ class Invos(StatementParser):
         supported_types = [StatementType.receipt]
         super().__init__(supported_types)
 
-    def parse(self, _: str, filepath: str):
-        if "invos" in filepath and "csv" in filepath:
+    def parse(self, filepath: Path):
+        if "invos" in filepath.as_posix() and "csv" in filepath.name:
             df = pd.read_csv(filepath)
             return self.parse_receipt_statement(df)
         else:

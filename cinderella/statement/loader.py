@@ -19,13 +19,19 @@ logger = logging.getLogger(LOG_NAME)
 
 class StatementLoader:
     def __init__(self):
-        self.parsers = []
+        self.parsers: list[StatementParser] = []
         for parser_cls in get_parsers():
             self.parsers.append(parser_cls())
 
+    def get_all_statement_accounts(self) -> list:
+        accounts = []
+        for parser in self.parsers:
+            accounts += parser.get_statement_accounts().values()
+        return accounts
+
     def _find_parser(self, path: str) -> Union[StatementParser, None]:
         for parser in self.parsers:
-            if parser.identifier in path:
+            if parser.source_name in path:
                 return parser
         return None
 
@@ -39,7 +45,7 @@ class StatementLoader:
                 logger.debug(f"No parser found for file: {file.as_posix()}")
                 continue
 
-            logger.debug(f"File: {file.as_posix()}, Parser: {parser.identifier}")
+            logger.debug(f"File: {file.as_posix()}, Parser: {parser.source_name}")
             ledger = parser.parse(file)
 
             yield ledger
