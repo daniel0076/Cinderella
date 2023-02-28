@@ -2,13 +2,7 @@ import pytest
 from decimal import Decimal
 from datetime import datetime, timedelta
 
-from cinderella.external.beancountapi import BeanCountAPI
 from cinderella.ledger.datatypes import Transaction, Posting, Amount
-
-
-@pytest.fixture
-def beancount_api():
-    yield BeanCountAPI()
 
 
 @pytest.fixture

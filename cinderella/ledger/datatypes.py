@@ -105,7 +105,7 @@ class Transaction:
                 return
             elif comment_exists == OnExistence.RENAME:
                 key_hash = hashlib.sha256(key.encode()).hexdigest()[:5]
-                self.meta[key_hash] = value
+                self.meta[f"{key}_{key_hash}"] = value
             elif comment_exists == OnExistence.CONCAT:
                 self.meta[key] += value
             elif comment_exists == OnExistence.REPLACE:

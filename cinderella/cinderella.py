@@ -5,13 +5,12 @@ from cinderella.ledger import utils as ledger_util
 from cinderella.ledger.classifier import TransactionClassifier
 from cinderella.ledger.datatypes import Ledger, StatementType
 from cinderella.statement.loader import StatementLoader
-from cinderella.external.beancountapi import BeanCountAPI
+from cinderella.external import beancountapi
 
 
 class Cinderella:
     def __init__(self, settings: CinderellaSettings):
         self.settings = settings
-        self.beancount_api = BeanCountAPI()
         self.statement_loader = StatementLoader()
         self.classifier = TransactionClassifier(settings)
 
@@ -42,13 +41,13 @@ class Cinderella:
         # remove transactions found ledgers marked ignored and overwrite
         overwritten_ledger = Ledger("overwritten_ledger", StatementType.custom)
         overwritten_ledger.transactions = (
-            self.beancount_api.load_beanfile_to_internal_transactions(
+            beancountapi.load_beanfile_to_internal_transactions(
                 self.settings.beancount_settings.overwrite_beanfiles_folder,
             )
         )
         ignored_ledger = Ledger("ignored_ledger", StatementType.custom)
         ignored_ledger.transactions = (
-            self.beancount_api.load_beanfile_to_internal_transactions(
+            beancountapi.load_beanfile_to_internal_transactions(
                 self.settings.beancount_settings.ignored_beanfiles_folder
             )
         )
@@ -83,18 +82,16 @@ class Cinderella:
             self.settings.beancount_settings.output_beanfiles_folder, "account.bean"
         )
         accounts = self._collect_accounts()
-        self.beancount_api.write_accounts_to_beanfile(
-            accounts, accounts_beanfile.as_posix()
-        )
+        beancountapi.write_accounts_to_beanfile(accounts, accounts_beanfile.as_posix())
 
         # output
-        # path = (
-        #    Path(self.settings.beancount_settings.output_beanfiles_folder)
-        #    / "result.bean"
-        # )
-        ## remove existing files
-        # path.unlink(missing_ok=True)
+        path = (
+            Path(self.settings.beancount_settings.output_beanfiles_folder)
+            / "result.bean"
+        )
+        # remove existing files
+        path.unlink(missing_ok=True)
 
-        # for ledgers in ledgers_by_type.values():
-        #    for transaction in ledgers:
-        #        self.beancount_api.print_beans(transaction, path.as_posix())
+        for ledgers in ledgers_by_type.values():
+            for transaction in ledgers:
+                beancountapi.print_beans(transaction, path.as_posix())

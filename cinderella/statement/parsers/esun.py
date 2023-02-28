@@ -14,7 +14,7 @@ class ESun(StatementParser):
         super().__init__(supported_types)
 
     def parse_bank_statement(self, records: pd.DataFrame) -> Ledger:
-        records = records.astype(str)
+        records = records.fillna("")
         typ = StatementType.bank
         ledger = Ledger(self.source_name, typ)
 
