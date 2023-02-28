@@ -1,57 +1,50 @@
 import pandas as pd
 from decimal import Decimal
 
-from cinderella.statement.datatypes import Transactions, StatementType
-from cinderella.parsers.base import StatementParser
+from cinderella.ledger.datatypes import Ledger, StatementType
+from .base import StatementParser
 
 
 class ESun(StatementParser):
-    identifier = "esun"
+    source_name = "esun"
+    display_name = "ESun"
 
-    def __init__(self, config: dict = {}):
-        super().__init__()
-        self.default_source_accounts = {
-            StatementType.bank: "Assets:Bank:ESun",
-        }
+    def __init__(self):
+        supported_types = [StatementType.bank]
+        super().__init__(supported_types)
 
-    def _parse_card_statement(self, records: pd.DataFrame) -> Transactions:
-        raise NotImplementedError
-
-    def _parse_bank_statement(self, records: pd.DataFrame) -> Transactions:
-        category = StatementType.bank
-        transactions = Transactions(category, self.identifier)
+    def parse_bank_statement(self, records: pd.DataFrame) -> Ledger:
+        records = records.astype(str)
+        typ = StatementType.bank
+        ledger = Ledger(self.source_name, typ)
 
         for _, record in records.iterrows():
             date = pd.to_datetime(record[0])
 
-            if not pd.isna(record[2]):
-                price = Decimal(record[2])
-                price *= -1
-            elif not pd.isna(record[3]):
-                price = Decimal(record[3])
+            if record[2]:
+                quantity = Decimal(record[2])
+                quantity *= -1
+            elif record[3]:
+                quantity = Decimal(record[3])
             else:
-                raise RuntimeError(
-                    f"Can not parse {self.identifier} {category.name} statement {record}"
+                self.logger.error(
+                    f"Can not parse {self.source_name} {typ.name} statement {record}"
                 )
+                continue
 
-            title = str(record[1])
+            title = record[1]
             currency = "TWD"
-            account = self.default_source_accounts[category]
+            account = self.statement_accounts[typ]
 
-            transaction = self.beancount_api.make_simple_transaction(
-                date, title, account, price, currency
-            )
+            txn = ledger.create_and_append_txn(date, title, account, quantity, currency)
 
-            comment = ""
-            if not pd.isna(record[5]):
-                comment += str(record[5])
+            if record[5]:
+                txn.insert_comment(self.display_name, record[5])
 
-            if comment:
-                self.beancount_api.add_transaction_comment(transaction, comment)
+        return ledger
 
-            transactions.append(transaction)
+    def parse_receipt_statement(self, _) -> Ledger:
+        raise NotImplementedError
 
-        return transactions
-
-    def _parse_stock_statement(self, records: list) -> Transactions:
+    def parse_creditcard_statement(self, _) -> Ledger:
         raise NotImplementedError

@@ -19,6 +19,8 @@ class StatementParser(ABC):
         self.statement_accounts: dict[StatementType, str] = make_statement_accounts(
             supported_types, self.display_name
         )
+        assert self.source_name != ""
+        assert self.display_name != ""
 
     def parse(self, path: Path) -> Ledger:
         df = self._read_csv(path)

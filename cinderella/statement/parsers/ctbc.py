@@ -1,68 +1,65 @@
+from pathlib import Path
 import pandas as pd
 import numpy as np
 from datetime import datetime
 from decimal import Decimal
 import logging
 
-from cinderella.statement.datatypes import Transactions, StatementType
-from cinderella.parsers.base import StatementParser
+from cinderella.ledger.datatypes import Ledger, StatementType
+from .base import StatementParser
 
 # Turn off logs from pdfminer used by camelot
 logging.getLogger("pdfminer").setLevel(logging.ERROR)
 
 
 class CTBC(StatementParser):
-    identifier = "ctbc"
+    source_name = "ctbc"
+    display_name = "CTBC"
 
     def __init__(self):
-        super().__init__()
-        self.default_source_accounts = {
-            StatementType.creditcard: "Liabilities:CreditCard:CTBC",
-            StatementType.bank: "Assets:Bank:CTBC",
-        }
+        supported_types = [StatementType.bank, StatementType.creditcard]
+        super().__init__(supported_types)
 
-    def _read_statement(self, filepath: str) -> pd.DataFrame:
-        df = pd.read_csv(filepath, encoding="big5", skiprows=2, thousands=",")
+    def _read_csv(self, filepath: Path) -> pd.DataFrame:
+        df = pd.read_csv(
+            filepath.as_posix(), encoding="big5", skiprows=2, thousands=","
+        )
         return df
 
-    def _parse_card_statement(self, records: pd.DataFrame) -> Transactions:
-        category = StatementType.bank
-        transactions = Transactions(category, self.identifier)
-        return transactions
+    def parse_creditcard_statement(self, records: pd.DataFrame) -> Ledger:
+        raise NotImplementedError
 
-    def _parse_bank_statement(self, records: pd.DataFrame) -> Transactions:
-        category = StatementType.bank
-        transactions = Transactions(category, self.identifier)
+    def parse_bank_statement(self, records: pd.DataFrame) -> Ledger:
+        records = records.astype(str)
+        typ = StatementType.bank
+        ledger = Ledger(self.source_name, typ)
 
         for _, record in records.iterrows():
             date = datetime.strptime(record["日期"], "%Y/%m/%d")
             title = record["摘要"]
-            if not np.isnan(record["支出"]):  # spend
-                price = -Decimal(record["支出"])
-            elif not np.isnan(record["存入"]):  # income
-                price = Decimal(record["存入"])
+            if record["支出"]:  # spend
+                quantity = -Decimal(record["支出"])
+            elif record["存入"]:  # income
+                quantity = Decimal(record["存入"])
             else:
-                raise RuntimeError(
-                    f"Can not parse {self.identifier} {category.name} statement {record}"
+                self.logger.error(
+                    f"Can not parse {self.source_name} {typ.name} statement {record}"
                 )
+                continue
 
             currency = "TWD"
-            account = self.default_source_accounts[category]
+            account = self.statement_accounts[typ]
 
-            transaction = self.beancount_api.make_simple_transaction(
-                date, title, account, price, currency
-            )
-            comment = ""
+            txn = ledger.create_and_append_txn(date, title, account, quantity, currency)
+
             if not pd.isna(record["備註"]):
-                comment += str(record["備註"])
+                txn.insert_comment(f"{self.display_name}-Remarks", record["備註"])
             if not pd.isna(record["轉出入帳號"]):
-                comment += str(record["轉出入帳號"])
+                txn.insert_comment(f"{self.display_name}-Acc.", record["轉出入帳號"])
             if not pd.isna(record["註記"]):
-                comment += str(record["註記"])
+                txn.insert_comment(f"{self.display_name}-Notes", record["註記"])
 
-            if comment:
-                self.beancount_api.add_transaction_comment(transaction, comment)
+        return ledger
 
-            transactions.append(transaction)
-
-        return transactions
+    def parse_receipt_statement(self, _) -> Ledger:
+        raise NotImplementedError(f"Receipt is not supported by {self.display_name}")

@@ -108,9 +108,10 @@ class Transaction:
                 self.meta[key_hash] = value
             elif comment_exists == OnExistence.CONCAT:
                 self.meta[key] += value
-            else:
+            elif comment_exists == OnExistence.REPLACE:
                 self.meta[key] = value
-        return
+        else:
+            self.meta[key] = value
 
     def merge(
         self, source: Transaction, comment_exists: OnExistence, merge_postings: bool
