@@ -1,7 +1,6 @@
 import logging
 import pandas as pd
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
 from pathlib import Path
 
 from cinderella.settings import LOG_NAME

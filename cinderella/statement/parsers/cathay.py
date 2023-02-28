@@ -1,42 +1,50 @@
 import pandas as pd
 from datetime import datetime
 from decimal import Decimal
+from pathlib import Path
 
-from cinderella.statement.datatypes import Transactions, StatementType
-from cinderella.parsers.base import StatementParser
+from cinderella.ledger.datatypes import Ledger, StatementType
+from .base import StatementParser
 
 
 class Cathay(StatementParser):
-    identifier = "cathay"
+    source_name = "cathay"
+    display_name = "Cathay"
 
     def __init__(self):
-        super().__init__()
-        self.default_source_accounts = {
-            StatementType.creditcard: "Liabilities:CreditCard:Cathay",
-            StatementType.bank: "Assets:Bank:Cathay",
-        }
+        supported_types = [StatementType.bank, StatementType.creditcard]
+        super().__init__(supported_types)
 
-    def _read_statement(self, filepath: str) -> pd.DataFrame:
-        if StatementType.bank.name in filepath:
+    def parse(self, path: Path) -> Ledger:
+        if StatementType.bank.name in path.as_posix():
             df = pd.read_csv(
-                filepath, encoding="big5", skiprows=1, encoding_errors="replace"
+                path, encoding="big5", skiprows=1, encoding_errors="replace"
             )
-        elif StatementType.creditcard.name in filepath:
-            # 國泰帳單沒有提供年份，需由帳單第一行標題取得。可能有跨年份的問題
-            with open(filepath, "r", encoding="big5") as f:
+            return self.parse_bank_statement(df)
+
+        elif StatementType.creditcard.name in path.as_posix():
+            # No year info in creditcard statement
+            with open(path, "r", encoding="big5") as f:
                 title = f.readline()
-            self.statement_year = int(title[0:3]) + 1911
-            self.statement_month = str(title.split("年")[1][0:2])
-
+            year = int(title[0:3]) + 1911
+            month = int(title.split("年")[1][0:2])
             df = pd.read_csv(
-                filepath, encoding="big5", skiprows=20, encoding_errors="replace"
+                path, encoding="big5", skiprows=20, encoding_errors="replace"
             )
+            return self._parse_creditcard_statement(df, year, month)
 
-        return df
+        else:
+            self.logger.warning(
+                f"No StatementType found for {path.as_posix()}, skipping"
+            )
+            return Ledger("Invalid", StatementType.invalid)
 
-    def _parse_card_statement(self, records: pd.DataFrame) -> Transactions:
-        category = StatementType.creditcard
-        transactions = Transactions(category, self.identifier)
+    def _parse_creditcard_statement(
+        self, records: pd.DataFrame, year: int, month: int
+    ) -> Ledger:
+        records = records.astype(str)
+        typ = StatementType.creditcard
+        ledger = Ledger(self.source_name, typ)
 
         for _, record in records.iterrows():
             indicator = record["卡號末四碼"]
@@ -44,69 +52,76 @@ class Cathay(StatementParser):
                 continue
 
             item_month, item_day = record[0].split("/", maxsplit=1)
+            item_month = int(item_month)
+            item_day = int(item_day)
             # 處理可能有跨年份的問題，1月帳單可能有去年12月的帳
-            if self.statement_month == "01" and item_month == "12":
+            if month == 1 and item_month == 12:
                 date = datetime(
-                    year=self.statement_year - 1,
-                    month=int(item_month),
-                    day=int(item_day),
+                    year=year - 1,
+                    month=item_month,
+                    day=item_day,
                 )
             else:
-                date = datetime(
-                    year=self.statement_year, month=int(item_month), day=int(item_day)
-                )
+                date = datetime(year, item_month, item_day)
 
             title = record["交易說明"].strip()
             currency = "TWD"
-            price = Decimal(record["臺幣金額"])
-            account = self.default_source_accounts[category]
+            quantity = -1 * Decimal(record["臺幣金額"])
+            account = self.statement_accounts[typ]
 
-            transaction = self.beancount_api.make_simple_transaction(
-                date, title, account, -price, currency
-            )
-            transactions.append(transaction)
+            txn = ledger.create_and_append_txn(date, title, account, quantity, currency)
 
             if record["外幣金額"].strip():
-                self.beancount_api.add_transaction_comment(
-                    transaction, f"{record['幣別']}-{record['外幣金額']}"
+                txn.insert_comment(
+                    self.display_name, f"{record['幣別']}-{record['外幣金額']}"
                 )
 
-        return transactions
+        return ledger
 
-    def _parse_bank_statement(self, records: pd.DataFrame) -> Transactions:
-        category = StatementType.bank
-        transactions = Transactions(category, self.identifier)
+    def parse_bank_statement(self, records: pd.DataFrame) -> Ledger:
+        records = records.astype(str)
+        typ = StatementType.bank
+        ledger = Ledger(self.source_name, typ)
+
         for _, record in records.iterrows():
-            date = datetime.strptime(str(record[0]), "%Y%m%d")
+            datetime_ = datetime.strptime(record[0] + record[1], "%Y%m%d%H%M%S")
 
-            if str(record[2]).strip():  # 轉出
-                price = Decimal(record[2])
-                price *= -1
-            elif str(record[3]).strip():  # 轉入
-                price = Decimal(record[3])
+            if record[2].strip():  # 轉出
+                quantity = Decimal(record[2])
+                quantity *= -1
+            elif record[3].strip():  # 轉入
+                quantity = Decimal(record[3])
             else:
-                raise RuntimeError(
-                    f"Can not parse {self.identifier} {category.name} statement {record}"
+                self.logger.error(
+                    f"Can not parse {self.source_name} {typ.name} statement {record}"
                 )
+                continue
 
-            comment = str(record["備註"]).lstrip() if not pd.isna(record["備註"]) else ""
-            explanation = str(record["說明"])
-            info = str(record["交易資訊"]).lstrip()
+            remarks = record[7].lstrip() if not pd.isna(record[7]) else ""
+            info = record[6].lstrip()
+            explanation = record[5]
 
-            if comment:
-                title = comment
-                extra = f"{explanation} {info}"
+            if remarks:
+                title = remarks
+                extra = f"{explanation}-{info}"
             else:
                 title = info
                 extra = explanation
 
             currency = "TWD"
-            account = self.default_source_accounts[category]
-            transaction = self.beancount_api.make_simple_transaction(
-                date, title, account, price, currency
+            account = self.statement_accounts[typ]
+
+            txn = ledger.create_and_append_txn(
+                datetime_, title, account, quantity, currency
             )
-            self.beancount_api.add_transaction_comment(transaction, extra)
+            txn.insert_comment(self.display_name, extra)
 
-            transactions.append(transaction)
+        return ledger
 
-        return transactions
+    def parse_creditcard_statement(self, _) -> Ledger:
+        raise NotImplementedError(
+            f"{self.display_name} has specialized creditcard parser"
+        )
+
+    def parse_receipt_statement(self, _) -> Ledger:
+        raise NotImplementedError(f"Receipt is not supported by {self.display_name}")

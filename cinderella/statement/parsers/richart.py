@@ -2,7 +2,7 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
-from cinderella.ledger.datatypes import Transaction, Ledger, StatementType
+from cinderella.ledger.datatypes import Ledger, StatementType
 from .base import StatementParser
 
 
@@ -24,10 +24,7 @@ class Richart(StatementParser):
             title = record[4]
             quantity, currency = self._parse_price(record[3])
             account = self.statement_accounts[typ]
-
-            txn = Transaction(date, title)
-            txn.create_and_append_posting(account, quantity, currency)
-            ledger.append_txn(txn)
+            ledger.create_and_append_txn(date, title, account, quantity, currency)
 
         return ledger
 
@@ -42,10 +39,8 @@ class Richart(StatementParser):
             quantity, currency = self._parse_price(record["金額"])
             account = self.statement_accounts[typ]
 
-            txn = Transaction(date, title)
-            txn.create_and_append_posting(account, quantity, currency)
+            txn = ledger.create_and_append_txn(date, title, account, quantity, currency)
             txn.insert_comment(self.display_name, record["摘要"])
-            ledger.append_txn(txn)
 
         return ledger
 

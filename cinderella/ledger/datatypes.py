@@ -161,5 +161,13 @@ class Ledger:
     def sort(self):
         pass
 
+    def create_and_append_txn(
+        self, date, title, account, quantity, currency
+    ) -> Transaction:
+        txn = Transaction(date, title)
+        txn.create_and_append_posting(account, quantity, currency)
+        self.transactions.append(txn)
+        return txn
+
     def append_txn(self, txn: Transaction):
         self.transactions.append(txn)
