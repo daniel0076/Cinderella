@@ -19,6 +19,7 @@ class Cinderella:
 
     def _setup_accounts(self):
         # accounts created as default accounts, used when not mapping is found
+        accounts = []
         accounts += self.settings.default_accounts.values()
         # accounts created for general mapping
         accounts += self.settings.get_mapping("general").keys()

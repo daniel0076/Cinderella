@@ -43,12 +43,12 @@ def another_amount():
 
 @pytest.fixture
 def sample_posting(sample_account, sample_amount):
-    yield Posting(sample_account, sample_amount, meta={})
+    yield Posting(sample_account, sample_amount)
 
 
 @pytest.fixture
 def another_posting(another_account, another_amount):
-    yield Posting(another_account, another_amount, meta={})
+    yield Posting(another_account, another_amount)
 
 
 @pytest.fixture

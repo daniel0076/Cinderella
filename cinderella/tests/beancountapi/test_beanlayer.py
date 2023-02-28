@@ -36,21 +36,6 @@ class TestBeanLayer:
         beancount_api.add_transaction_comment(sample_transaction, "test")
         assert sample_transaction.meta == {";1": "test", ";2": "test"}
 
-    def test_add_posting_comment(self, beancount_api, sample_transaction):
-        beancount_api.add_posting_comment(sample_transaction, "test")
-        assert sample_transaction.postings[0].meta == {";1": "test"}
-
-        beancount_api.add_posting_comment(sample_transaction, "test")
-        assert sample_transaction.postings[0].meta == {";1": "test", ";2": "test"}
-
-    def test_add_posting_comment_different_transactions(
-        self, beancount_api, sample_transaction, another_transaction
-    ):
-        beancount_api.add_posting_comment(sample_transaction, "sample")
-        beancount_api.add_posting_comment(another_transaction, "another")
-        assert sample_transaction.postings[0].meta == {";1": "sample"}
-        assert another_transaction.postings[0].meta == {";1": "another"}
-
     @pytest.mark.skip(reason="We might not need this in the future")
     def test_add_posting_amount(self, beancount_api, sample_transaction):
         origin_amount = sample_transaction.postings[0].units

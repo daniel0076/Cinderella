@@ -60,7 +60,7 @@ class TestCathay:
             Decimal("100"),
             "TWD",
         )
-        txn.insert_comment(parser.display_name, f"Description-Info")
+        txn.insert_comment(parser.display_name, "Description-Info")
         expected.append_txn(txn)
 
         result = parser.parse_bank_statement(df)
