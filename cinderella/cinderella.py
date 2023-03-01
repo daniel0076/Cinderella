@@ -18,8 +18,9 @@ class Cinderella:
         accounts = []
         # accounts created as default accounts, used when not mapping is found
         accounts += self.settings.default_accounts.values()
-        # accounts created for general mapping
-        accounts += self.settings.get_mapping("general").keys()
+        # accounts created for mapping
+        for mapping in self.settings.mappings.values():
+            accounts += mapping.keys()  # keys are the accounts
         # accounts created from each statement parsers
         accounts += self.statement_loader.get_all_statement_accounts()
 
