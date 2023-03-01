@@ -70,9 +70,3 @@ class TaiwanPost(StatementParser):
             prev_txn = txn
 
         return ledger
-
-    def parse_creditcard_statement(self, _) -> Ledger:
-        raise NotImplementedError
-
-    def parse_receipt_statement(self, _) -> Ledger:
-        raise NotImplementedError(f"Receipt is not supported by {self.display_name}")

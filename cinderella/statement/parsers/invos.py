@@ -60,9 +60,3 @@ class Invos(StatementParser):
             )
 
         return ledger
-
-    def parse_creditcard_statement(self, _) -> Ledger:
-        raise NotImplementedError
-
-    def parse_bank_statement(self, _) -> Ledger:
-        raise NotImplementedError

@@ -44,9 +44,6 @@ class Richart(StatementParser):
 
         return ledger
 
-    def parse_receipt_statement(self, _) -> Ledger:
-        raise NotImplementedError(f"Receipt is not supported by {self.display_name}")
-
     def _parse_price(self, raw_str: str) -> tuple:
         premise, amount_str = raw_str.split("$", maxsplit=1)
         amount = Decimal(amount_str.replace(",", ""))

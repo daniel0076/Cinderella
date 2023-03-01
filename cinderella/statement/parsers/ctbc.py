@@ -25,9 +25,6 @@ class CTBC(StatementParser):
         )
         return df
 
-    def parse_creditcard_statement(self, records: pd.DataFrame) -> Ledger:
-        raise NotImplementedError
-
     def parse_bank_statement(self, records: pd.DataFrame) -> Ledger:
         records = records.astype(str)
         typ = StatementType.bank
@@ -59,6 +56,3 @@ class CTBC(StatementParser):
                 txn.insert_comment(f"{self.display_name}-Notes", record["註記"])
 
         return ledger
-
-    def parse_receipt_statement(self, _) -> Ledger:
-        raise NotImplementedError(f"Receipt is not supported by {self.display_name}")

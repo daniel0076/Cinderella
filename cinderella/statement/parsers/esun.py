@@ -42,9 +42,3 @@ class ESun(StatementParser):
                 txn.insert_comment(self.display_name, record[5])
 
         return ledger
-
-    def parse_receipt_statement(self, _) -> Ledger:
-        raise NotImplementedError
-
-    def parse_creditcard_statement(self, _) -> Ledger:
-        raise NotImplementedError

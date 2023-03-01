@@ -1,6 +1,6 @@
 import logging
 import pandas as pd
-from abc import ABC, abstractmethod
+from abc import ABC
 from pathlib import Path
 
 from cinderella.settings import LOG_NAME
@@ -43,14 +43,14 @@ class StatementParser(ABC):
     def get_statement_accounts(self) -> dict:
         return self.statement_accounts
 
-    @abstractmethod
     def parse_creditcard_statement(self, df: pd.DataFrame) -> Ledger:
-        pass
+        self.logger.warning(f"CreditCard is not supported by {self.display_name}")
+        return Ledger(self.source_name, StatementType.invalid)
 
-    @abstractmethod
     def parse_bank_statement(self, df: pd.DataFrame) -> Ledger:
-        pass
+        self.logger.warning(f"Bank is not supported by {self.display_name}")
+        return Ledger(self.source_name, StatementType.invalid)
 
-    @abstractmethod
     def parse_receipt_statement(self, df: pd.DataFrame) -> Ledger:
-        pass
+        self.logger.warning(f"Receipt is not supported by {self.display_name}")
+        return Ledger(self.source_name, StatementType.invalid)

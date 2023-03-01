@@ -119,9 +119,5 @@ class Cathay(StatementParser):
         return ledger
 
     def parse_creditcard_statement(self, _) -> Ledger:
-        raise NotImplementedError(
-            f"{self.display_name} has specialized creditcard parser"
-        )
-
-    def parse_receipt_statement(self, _) -> Ledger:
-        raise NotImplementedError(f"Receipt is not supported by {self.display_name}")
+        self.logger.warning(f"{self.display_name} has specialized creditcard parser")
+        return Ledger(self.source_name, StatementType.invalid)

@@ -8,9 +8,10 @@ from typing import TYPE_CHECKING
 from .parsers import get_parsers
 from cinderella.settings import LOG_NAME
 from cinderella.utils import iterate_files
+from cinderella.ledger.datatypes import StatementType
 
 if TYPE_CHECKING:
-    from cinderella.ledger.datatypes import Ledger, StatementType
+    from cinderella.ledger.datatypes import Ledger
     from .parsers.base import StatementParser
 
 
@@ -47,6 +48,8 @@ class StatementLoader:
 
             logger.debug(f"File: {file.as_posix()}, Parser: {parser.source_name}")
             ledger = parser.parse(file)
+            if ledger.typ == StatementType.invalid:
+                continue
 
             yield ledger
 

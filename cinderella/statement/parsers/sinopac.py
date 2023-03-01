@@ -103,6 +103,3 @@ class Sinopac(StatementParser):
             txn.insert_comment(self.display_name, record[7])
 
         return ledger
-
-    def parse_receipt_statement(self, _) -> Ledger:
-        raise NotImplementedError(f"Receipt is not supported by {self.display_name}")
