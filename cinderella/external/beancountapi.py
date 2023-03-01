@@ -2,6 +2,7 @@ from __future__ import annotations
 import logging
 from typing import Union
 from pathlib import Path
+from datetime import datetime, time
 from beancount.core.flags import (
     FLAG_OKAY,
     FLAG_CONVERSIONS,
@@ -128,7 +129,9 @@ def convert_to_internal_transactions(
     result = []
 
     for bean_txn in transactions:
-        c_txn = InternalTransaction(bean_txn.date, bean_txn.narration)
+        c_txn = InternalTransaction(
+            datetime.combine(bean_txn.date, time()), bean_txn.narration
+        )
         for posting in bean_txn.postings:
             c_txn.create_and_append_posting(
                 posting.account, posting.units.number, posting.units.currency
