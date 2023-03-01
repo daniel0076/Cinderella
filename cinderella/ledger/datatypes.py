@@ -118,7 +118,6 @@ class Transaction:
     ):
         # merge/replace comments
         for key, value in source.meta.items():
-            print(key, value)
             self.insert_comment(key, value, comment_exists)
 
         if merge_postings:

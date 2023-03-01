@@ -48,7 +48,7 @@ class Cathay(StatementParser):
 
         for _, record in records.iterrows():
             indicator = record["卡號末四碼"]
-            if pd.isna(indicator) or not indicator.strip().isdigit():
+            if indicator or not indicator.strip().isdigit():
                 continue
 
             item_month, item_day = record[0].split("/", maxsplit=1)
@@ -79,7 +79,7 @@ class Cathay(StatementParser):
         return ledger
 
     def parse_bank_statement(self, records: pd.DataFrame) -> Ledger:
-        records = records.astype(str)
+        records = records.fillna("").astype(str)
         typ = StatementType.bank
         ledger = Ledger(self.source_name, typ)
 
@@ -97,16 +97,15 @@ class Cathay(StatementParser):
                 )
                 continue
 
-            remarks = record[7].lstrip() if not pd.isna(record[7]) else ""
+            remarks = record[7].lstrip() if record[7] else ""
             info = record[6].lstrip()
-            explanation = record[5]
 
             if remarks:
                 title = remarks
-                extra = f"{explanation}-{info}"
+                extra = info
             else:
                 title = info
-                extra = explanation
+                extra = ""
 
             currency = "TWD"
             account = self.statement_accounts[typ]
@@ -114,7 +113,11 @@ class Cathay(StatementParser):
             txn = ledger.create_and_append_txn(
                 datetime_, title, account, quantity, currency
             )
-            txn.insert_comment(self.display_name, extra)
+            explanation = record[5].lstrip()
+            if explanation:
+                txn.insert_comment(f"{self.display_name}-Desc.", explanation)
+            if extra:
+                txn.insert_comment(f"{self.display_name}-Info.", extra)
 
         return ledger
 

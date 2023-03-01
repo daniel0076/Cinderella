@@ -26,7 +26,7 @@ class CTBC(StatementParser):
         return df
 
     def parse_bank_statement(self, records: pd.DataFrame) -> Ledger:
-        records = records.astype(str)
+        records = records.fillna("").astype(str)
         typ = StatementType.bank
         ledger = Ledger(self.source_name, typ)
 
@@ -48,11 +48,11 @@ class CTBC(StatementParser):
 
             txn = ledger.create_and_append_txn(date, title, account, quantity, currency)
 
-            if not pd.isna(record["備註"]):
+            if record["備註"]:
                 txn.insert_comment(f"{self.display_name}-Remarks", record["備註"])
-            if not pd.isna(record["轉出入帳號"]):
+            if record["轉出入帳號"]:
                 txn.insert_comment(f"{self.display_name}-Acc.", record["轉出入帳號"])
-            if not pd.isna(record["註記"]):
+            if record["註記"]:
                 txn.insert_comment(f"{self.display_name}-Notes", record["註記"])
 
         return ledger

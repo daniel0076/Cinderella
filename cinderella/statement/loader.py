@@ -49,6 +49,7 @@ class StatementLoader:
             logger.debug(f"File: {file.as_posix()}, Parser: {parser.source_name}")
             ledger = parser.parse(file)
             if ledger.typ == StatementType.invalid:
+                logger.warning(f"Failed to load statement file: {file.as_posix()}")
                 continue
 
             yield ledger
