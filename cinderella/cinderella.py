@@ -79,10 +79,14 @@ class Cinderella:
         Beancount requires accounts to be declared in the bean files first.
         So we have to collect all the accounts used in Cinderella
         """
+        accounts = self._collect_accounts()  # collect accounts from config and parsers
+        # collect accounts from user input
+        for transaction in overwritten_ledger.transactions:
+            for posting in transaction.postings:
+                accounts.append(posting.account)
         accounts_beanfile = Path(
             self.settings.beancount_settings.output_beanfiles_folder, "account.bean"
         )
-        accounts = self._collect_accounts()
         beancountapi.write_accounts_to_beanfile(accounts, accounts_beanfile.as_posix())
 
         # output
