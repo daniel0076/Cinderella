@@ -62,7 +62,7 @@ def transform_postings(posting: InternalPosting) -> Posting:
     price = transform_amount(posting.price) if posting.price else None
     return Posting(
         posting.account,
-        transform_amount(posting.amount),
+        transform_amount(posting.amount) if posting.amount else None,
         None,  # cost
         price,
         None,  # flag

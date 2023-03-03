@@ -59,7 +59,7 @@ class Amount:
 @dataclass
 class Posting:
     account: str
-    amount: Amount
+    amount: Union[Amount, None]
     price: Union[Amount, None] = None
 
     @classmethod

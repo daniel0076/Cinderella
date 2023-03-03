@@ -1,6 +1,8 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 
+from cinderella.ledger.datatypes import Posting
+
 if TYPE_CHECKING:
     from cinderella.settings import CinderellaSettings
     from .datatypes import Ledger, Transaction
@@ -32,10 +34,14 @@ class TransactionClassifier:
             if not account:
                 account = self.default_expense_account
 
-            amount = transaction.postings[0].amount
-            transaction.create_and_append_posting(
-                account, -amount.quantity, amount.currency
-            )
+            # currency conversion if there is a price, add a posting with account only
+            if transaction.postings[0].price:
+                transaction.append_postings(Posting(account, None))
+            else:
+                amount = transaction.postings[0].amount
+                transaction.create_and_append_posting(
+                    account, -amount.quantity, amount.currency
+                )
 
     def _match_account(
         self, transaction: Transaction, pattern_mappings: list
