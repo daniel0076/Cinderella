@@ -48,7 +48,7 @@ class Cathay(StatementParser):
 
         for _, record in records.iterrows():
             indicator = record["卡號末四碼"]
-            if indicator or not indicator.strip().isdigit():
+            if not indicator or not indicator.strip().isdigit():
                 continue
 
             item_month, item_day = record[0].split("/", maxsplit=1)
