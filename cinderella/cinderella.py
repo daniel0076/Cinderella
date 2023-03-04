@@ -1,6 +1,7 @@
+import logging
 from pathlib import Path
 
-from cinderella.settings import CinderellaSettings
+from cinderella.settings import CinderellaSettings, LOG_NAME
 from cinderella.ledger import utils as ledger_util
 from cinderella.ledger.classifier import TransactionClassifier
 from cinderella.ledger.datatypes import Ledger, StatementType
@@ -13,6 +14,7 @@ class Cinderella:
         self.settings = settings
         self.statement_loader = StatementLoader()
         self.classifier = TransactionClassifier(settings)
+        self.logger = logging.getLogger(LOG_NAME)
 
     def _collect_accounts(self) -> list:
         accounts = []
@@ -58,7 +60,7 @@ class Cinderella:
             all_parsed_ledgers.extend(ledgers)
 
         ledger_util.dedup_by_title_and_amount(
-            [*all_parsed_ledgers, overwritten_ledger, ignored_ledger]
+            [overwritten_ledger, ignored_ledger, *all_parsed_ledgers]
         )
 
         # classify

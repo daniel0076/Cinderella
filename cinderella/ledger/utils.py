@@ -112,7 +112,8 @@ def dedup_by_title_and_amount(
     tolerance_days: int = 0,
 ):
     """
-    Remove duplicated Transaction in  rhs against lhs.
+    Remove duplicated Transaction the list from left to right
+    Items on the LHS has higher priority, duplicated items on the RHS are removed
     Transactions with identical title and amount in the given time period are deemed duplicated
 
         Returns:

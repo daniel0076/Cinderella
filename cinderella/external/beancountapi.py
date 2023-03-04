@@ -119,8 +119,9 @@ def load_beanfile_to_internal_transactions(
     for file in iterate_files(path):
         entries, _, _ = load_file(file.as_posix())
         transactions.extend(filter_txns(entries))
-
-    return convert_to_internal_transactions(transactions)
+    result = convert_to_internal_transactions(transactions)
+    logger.debug(f"Loaded {len(result)} transactions")
+    return result
 
 
 def convert_to_internal_transactions(
