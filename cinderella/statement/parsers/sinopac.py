@@ -47,7 +47,7 @@ class Sinopac(StatementParser):
             quantity = Decimal(record[4].replace(",", ""))
             currency = "TWD"
             account = self.statement_accounts[category]
-            ledger.create_and_append_txn(date, title, account, quantity, currency)
+            ledger.create_and_append_txn(date, title, account, -quantity, currency)
 
         return ledger
 

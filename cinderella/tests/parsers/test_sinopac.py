@@ -37,3 +37,25 @@ class TestSinopac:
 
         result = parser.parse_bank_statement(df)
         assert expected == result
+
+    def test_parse_creditcard_statement(self, parser: Sinopac):
+        df = pd.DataFrame(
+            {
+                "COL0": ["2023/01/01"],
+                "COL1": ["2023/01/01"],
+                "COL2": ["123"],
+                "COL3": ["Title"],
+                "COL4": ["100"],
+            }
+        )
+        expected = Ledger(parser.source_name, StatementType.creditcard)
+        expected.create_and_append_txn(
+            datetime(2023, 1, 1),
+            "Title",
+            parser.statement_accounts[StatementType.creditcard],
+            Decimal("-100"),
+            "TWD",
+        )
+
+        result = parser.parse_creditcard_statement(df)
+        assert expected == result
