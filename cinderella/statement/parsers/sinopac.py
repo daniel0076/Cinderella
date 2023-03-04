@@ -41,11 +41,15 @@ class Sinopac(StatementParser):
         category = StatementType.creditcard
         ledger = Ledger(self.source_name, StatementType.creditcard)
 
+        currency = "TWD"
+        currency_column = records.columns[4]
+        if "美元" in currency_column:
+            currency = "USD"
+
         for _, record in records.iterrows():
             date = datetime.strptime(record[0], "%Y/%m/%d")
-            title = record[3]
+            title = record[3].strip()
             quantity = Decimal(record[4].replace(",", ""))
-            currency = "TWD"
             account = self.statement_accounts[category]
             ledger.create_and_append_txn(date, title, account, -quantity, currency)
 
