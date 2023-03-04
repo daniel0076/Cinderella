@@ -82,7 +82,7 @@ class Sinopac(StatementParser):
                     )
                     continue
 
-                price = Amount(round(Decimal("1") / rate, 3), foreign_currency)
+                price = Amount(round(Decimal("1") / rate, 5), foreign_currency)
                 amount = Amount(quantity, currency)
 
                 posting = Posting(account, amount, price)
