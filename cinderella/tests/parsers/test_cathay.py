@@ -48,20 +48,20 @@ class TestCathay:
                 "COL2": [""],  # withdraw
                 "COL3": ["100"],  # deposit
                 "COL4": ["100"],  # balance
-                "COL5": ["Description"],  # description
-                "COL6": ["Info"],  # info
+                "COL5": ["Operation"],
+                "COL6": ["AccountNo"],
                 "COL7": ["Remarks"],  # remarks
             }
         )
         expected = Ledger(parser.source_name, StatementType.bank)
-        txn = Transaction(datetime(2023, 1, 1, 15, 10, 1), "Remarks")
+        txn = Transaction(
+            datetime(2023, 1, 1, 15, 10, 1), "Operation(AccountNo): Remarks"
+        )
         txn.create_and_append_posting(
             parser.statement_accounts[StatementType.bank],
             Decimal("100"),
             "TWD",
         )
-        txn.insert_comment(f"{parser.display_name}-Desc.", "Description")
-        txn.insert_comment(f"{parser.display_name}-Info.", "Info")
         expected.append_txn(txn)
 
         result = parser.parse_bank_statement(df)

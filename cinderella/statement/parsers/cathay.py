@@ -97,27 +97,20 @@ class Cathay(StatementParser):
                 )
                 continue
 
+            operation = record[5].lstrip()
+            account_number = record[6].lstrip()
             remarks = record[7].lstrip() if record[7] else ""
-            info = record[6].lstrip()
 
+            title = operation
+            if account_number:
+                title += f"({account_number})"
             if remarks:
-                title = remarks
-                extra = info
-            else:
-                title = info
-                extra = ""
+                title += f": {remarks}"
 
             currency = "TWD"
             account = self.statement_accounts[typ]
 
-            txn = ledger.create_and_append_txn(
-                datetime_, title, account, quantity, currency
-            )
-            explanation = record[5].lstrip()
-            if explanation:
-                txn.insert_comment(f"{self.display_name}-Desc.", explanation)
-            if extra:
-                txn.insert_comment(f"{self.display_name}-Info.", extra)
+            ledger.create_and_append_txn(datetime_, title, account, quantity, currency)
 
         return ledger
 
