@@ -34,10 +34,14 @@ class Cinderella:
             self.settings.statement_settings.ready_statement_folder
         )
 
-        # merge trans in receipt and card with same date and amount
+        """
+        merge trans in card and receipt(cash) with same date and amount
+        Note that records from cards should have higher precedence
+        """
+
         ledger_util.merge_same_date_amount(
-            ledgers_by_type[StatementType.receipt]
-            + ledgers_by_type[StatementType.creditcard],
+            ledgers_by_type[StatementType.creditcard]
+            + ledgers_by_type[StatementType.receipt],
             tolerance_days=3,
         )
 
