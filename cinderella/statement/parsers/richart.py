@@ -34,7 +34,8 @@ class Richart(StatementParser):
         typ = StatementType.bank
         ledger = Ledger(self.source_name, typ)
         for _, record in records.iterrows():
-            date = datetime.strptime(record["交易日期"], "%Y-%m-%d")
+            # 台新用帳務日期欄位做為當下，交易日期可能較晚
+            date = datetime.strptime(record[1], "%Y-%m-%d")
             title = record["備註"]
             quantity, currency = self._parse_price(record["金額"])
             account = self.statement_accounts[typ]

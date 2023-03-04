@@ -40,8 +40,8 @@ class TestRichart:
     def test_parse_bank_statement(self, richart_parser: Richart):
         df = pd.DataFrame(
             {
-                "交易日期": ["2021-01-31"],
                 "COL1": ["VAL1"],
+                "入帳日期": ["2021-01-31"],
                 "COL2": ["VAL2"],
                 "金額": ["-NT$100"],
                 "摘要": ["TEST"],
