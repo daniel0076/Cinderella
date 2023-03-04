@@ -46,13 +46,19 @@ class CTBC(StatementParser):
             currency = "TWD"
             account = self.statement_accounts[typ]
 
-            txn = ledger.create_and_append_txn(date, title, account, quantity, currency)
+            remarks = record["備註"]
+            account_no = record["轉出入帳號"]
 
-            if record["備註"]:
-                txn.insert_comment(f"{self.display_name}-Remarks", record["備註"])
-            if record["轉出入帳號"]:
-                txn.insert_comment(f"{self.display_name}-Acc.", record["轉出入帳號"])
+            if remarks and account_no:
+                title += f"({remarks} {account_no})"
+            elif remarks:
+                title += f"({remarks})"
+            elif account_no:
+                title += f"({account_no})"
+
             if record["註記"]:
-                txn.insert_comment(f"{self.display_name}-Notes", record["註記"])
+                title += f": {record['註記']}"
+
+            ledger.create_and_append_txn(date, title, account, quantity, currency)
 
         return ledger

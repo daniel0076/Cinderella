@@ -26,16 +26,13 @@ class TestCTBC:
             }
         )
         expected = Ledger(parser.source_name, StatementType.bank)
-        txn = expected.create_and_append_txn(
+        expected.create_and_append_txn(
             datetime(2023, 1, 1, 0, 0, 0),
-            "Test",
+            "Test(Remarks 123): Notes",
             parser.statement_accounts[StatementType.bank],
             Decimal("1000"),
             "TWD",
         )
-        txn.insert_comment(f"{parser.display_name}-Acc.", "123")
-        txn.insert_comment(f"{parser.display_name}-Remarks", "Remarks")
-        txn.insert_comment(f"{parser.display_name}-Notes", "Notes")
 
         result = parser.parse_bank_statement(df)
         assert expected == result
