@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 from datetime import datetime
 from decimal import Decimal
+from cinderella.statement.datatypes import StatementAttributes
 from cinderella.statement.parsers.sinopac import Sinopac
 from cinderella.ledger.datatypes import Ledger, StatementType
 
@@ -35,7 +36,7 @@ class TestSinopac:
         )
         txn.insert_comment(f"{parser.display_name}", "Notes")
 
-        result = parser.parse_bank_statement(df)
+        result = parser.parse_bank_statement(df, StatementAttributes(currency="TWD"))
         assert expected == result
 
     def test_parse_creditcard_statement(self, parser: Sinopac):

@@ -25,19 +25,31 @@ class Sinopac(StatementParser):
         supported_types = [StatementType.bank, StatementType.creditcard]
         super().__init__(supported_types)
 
-    def _read_csv(self, filepath: Path) -> pd.DataFrame:
-        if "bank" in filepath.as_posix():
+    def parse(self, path: Path) -> Ledger:
+        if StatementType.bank.name in path.as_posix():
             try:
-                df = pd.read_csv(filepath, encoding="big5", skiprows=2)
+                df = pd.read_csv(path, encoding="big5", skiprows=2)
             except UnicodeDecodeError:
-                df = pd.read_csv(filepath, skiprows=2)
-        else:
-            df = pd.read_csv(filepath)
+                df = pd.read_csv(path, skiprows=2)
 
-        df = df.replace({"\t": ""}, regex=True)
-        df = df.fillna("")
-        df = df.astype(str)
-        return df
+            currency = "TWD"
+            with open(path, "r") as f:
+                title = f.readline()
+            if "美金" in title:
+                currency = "USD"
+            elif "日元" in title:
+                currency = "JPY"
+
+            df = df.replace({"\t": ""}, regex=True).fillna("").astype(str)
+            return self.parse_bank_statement(df, StatementAttributes(currency=currency))
+
+        elif StatementType.creditcard.name in path.as_posix():
+            df = pd.read_csv(path)
+            df = df.replace({"\t": ""}, regex=True).fillna("").astype(str)
+            return self.parse_creditcard_statement(df)
+
+        self.logger.warning(f"No StatementType found for {path.as_posix()}, skipping")
+        return Ledger("Invalid", StatementType.invalid)
 
     def parse_creditcard_statement(
         self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
@@ -60,8 +72,10 @@ class Sinopac(StatementParser):
         return ledger
 
     def parse_bank_statement(
-        self, records: pd.DataFrame, attrs: Optional[StatementAttributes] = None
+        self, records: pd.DataFrame, attrs: StatementAttributes
     ) -> Ledger:
+        if not attrs.currency:
+            return Ledger("Invalid", StatementType.invalid)
         category = StatementType.bank
         ledger = Ledger(self.source_name, StatementType.bank)
 
@@ -75,41 +89,64 @@ class Sinopac(StatementParser):
             else:
                 self.logger.error(f"{self.display_name}: fail to parse {record}")
                 continue
-
-            currency = "TWD"
             account = self.statement_accounts[category]
+            account_currency = attrs.currency
 
-            # check currency exchange
             rate = Decimal(record[6]) if record[6] else None
-            if rate:
-                # xxxxxx(USD)
-                result = re.search(r"\(([A-Z]{3,})\)", record[7])
+            if not rate:
+                txn = ledger.create_and_append_txn(
+                    datetime_, title, account, quantity, account_currency
+                )
+                txn.insert_comment(self.display_name, record[7])
+                continue
+
+            # handle currency conversion
+            if attrs.currency == "TWD":
+                result = re.search(r"\(([A-Z]{3,})\)", record[7])  # xxxxxx(USD)
                 if result:
                     foreign_currency = result.group(1)
                 else:
-                    self.logger.error(
-                        f"{self.display_name}: fail to get currency {record}"
-                    )
+                    msg = f"{self.display_name}: fail to get currency {record}"
+                    self.logger.error(msg)
                     continue
-
-                price = Amount(round(Decimal("1") / rate, 5), foreign_currency)
-                amount = Amount(quantity, currency)
-
-                posting = Posting(account, amount, price)
-                txn = Transaction(
-                    datetime_,
-                    title,
-                    [posting],
-                    meta={},
-                    flag=TransactionFlag.CONVERSIONS,
+                postings = self._handle_bank_conversion_postings(
+                    account, account, quantity, rate, attrs.currency, foreign_currency
                 )
-                ledger.append_txn(txn)
-
             else:
-                txn = ledger.create_and_append_txn(
-                    datetime_, title, account, quantity, currency
+                postings = self._handle_bank_conversion_postings(
+                    account, account, quantity, rate, attrs.currency, "TWD"
                 )
 
-            txn.insert_comment(self.display_name, record[7])
+            txn = Transaction(
+                datetime_, title, postings, meta={}, flag=TransactionFlag.CONVERSIONS
+            )
+            ledger.append_txn(txn)
 
         return ledger
+
+    def _handle_bank_conversion_postings(
+        self,
+        local_account: str,
+        foreign_account: str,
+        quantity: Decimal,
+        rate: Decimal,
+        local_currency: str,
+        foreign_currency: str,
+    ) -> list[Posting]:
+        """
+        SinoPac specific logic in conversion, as the statement always give the rate in
+        TWD to foreign currency
+        """
+        price = Amount(rate, "TWD")
+        if local_currency == "TWD":
+            foreign_amount = Amount(round(-quantity / rate, 1), foreign_currency)
+            local_amount = Amount(quantity, local_currency)
+            foreign_posting = Posting(foreign_account, foreign_amount, price)
+            local_posting = Posting(local_account, local_amount)
+        else:  # local non TWD, can be USD, JPY. But foreign is always TWD
+            foreign_amount = Amount(round(-quantity * rate, 0), foreign_currency)
+            local_amount = Amount(quantity, local_currency)
+            foreign_posting = Posting(foreign_account, foreign_amount)
+            local_posting = Posting(local_account, local_amount, price)
+
+        return [foreign_posting, local_posting]
