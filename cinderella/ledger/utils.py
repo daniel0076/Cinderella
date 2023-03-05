@@ -21,16 +21,14 @@ def dedup(
     hash_function: Callable,
     tolerance_days: int = 0,
     ignore_same_source: bool = True,
+    require_reversed_postings: bool = False,
     merge_dup_txns: bool = False,
     merge_txn_postings: bool = False,
     specify_statement_types: list[StatementType] = [],
 ) -> None:
     """
-    Remove duplicated Transaction in N > 1 Ledgers with the hash function
+    Remove duplicated Transaction with the hash function
     """
-
-    if len(ledgers) < 2:
-        return
 
     @dataclass
     class DedupRecord:
@@ -59,6 +57,11 @@ def dedup(
                         continue
                     if ignore_same_source and ledger.source == dedup_record.source:
                         continue
+                    if (
+                        require_reversed_postings
+                        and curr_txn.postings[0] == dedup_record.txn.postings[0]
+                    ):
+                        continue
                     duplicated = True
                     dedup_record.found_dup = True
                     if merge_dup_txns:
@@ -86,6 +89,8 @@ def dedup_bank_transfer(
     ledgers: list[Ledger],
     tolerance_days: int = 0,
 ):
+    print("Deduping bank transfer and conversions...", end="")
+
     # same postings, with tolerance
     # different postings, same date
     def hash_function(transaction: Transaction, date_delta: int):
@@ -102,9 +107,11 @@ def dedup_bank_transfer(
         ledgers,
         hash_function,
         tolerance_days,
-        ignore_same_source=True,
+        ignore_same_source=False,
+        require_reversed_postings=True,
         specify_statement_types=[StatementType.bank],
     )
+    print("done")
 
 
 def dedup_by_title_and_amount(
