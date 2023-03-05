@@ -2,9 +2,11 @@ from pathlib import Path
 import pandas as pd
 from datetime import datetime
 from decimal import Decimal
+from typing import Optional
 import logging
 
 from cinderella.ledger.datatypes import Ledger, StatementType
+from cinderella.statement.datatypes import StatementAttributes
 from .base import StatementParser
 
 # Turn off logs from pdfminer used by camelot
@@ -25,12 +27,14 @@ class CTBC(StatementParser):
         )
         return df
 
-    def parse_bank_statement(self, records: pd.DataFrame) -> Ledger:
+    def parse_bank_statement(
+        self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
+    ) -> Ledger:
         records = records.fillna("").astype(str)
         typ = StatementType.bank
         ledger = Ledger(self.source_name, typ)
 
-        for _, record in records.iterrows():
+        for __, record in records.iterrows():
             date = datetime.strptime(record["日期"], "%Y/%m/%d")
             title = record["摘要"]
             if record["支出"]:  # spend

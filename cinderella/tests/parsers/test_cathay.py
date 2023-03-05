@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 from datetime import datetime
 from decimal import Decimal
+from cinderella.statement.datatypes import StatementAttributes
 from cinderella.statement.parsers.cathay import Cathay
 from cinderella.ledger.datatypes import Transaction, Ledger, StatementType
 
@@ -37,7 +38,9 @@ class TestCathay:
         )
         expected.append_txn(txn)
 
-        result = parser._parse_creditcard_statement(df, 2021, 1)
+        result = parser.parse_creditcard_statement(
+            df, StatementAttributes(year=2021, month=1)
+        )
         assert expected == result
 
     def test_parse_bank_statement(self, parser: Cathay):

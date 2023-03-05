@@ -1,9 +1,11 @@
 from pathlib import Path
+from typing import Optional
 import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 
 from cinderella.ledger.datatypes import Ledger, OnExistence, StatementType
+from cinderella.statement.datatypes import StatementAttributes
 from .base import StatementParser
 
 
@@ -26,13 +28,15 @@ class TaiwanPost(StatementParser):
         df = df.replace({"=": "", '"': ""}, regex=True)
         return df
 
-    def parse_bank_statement(self, records: pd.DataFrame) -> Ledger:
+    def parse_bank_statement(
+        self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
+    ) -> Ledger:
         records = records.fillna("").astype(str)
         typ = StatementType.bank
         ledger = Ledger(self.source_name, typ)
 
         prev_txn = None
-        for _, record in records.iterrows():
+        for __, record in records.iterrows():
             date_tw = record[0]
             date_to_ce = date_tw.replace(date_tw[0:3], str(int(date_tw[0:3]) + 1911))
             datetime_ = datetime.strptime(date_to_ce, "%Y/%m/%d %H:%M:%S")

@@ -2,9 +2,10 @@ from pathlib import Path
 import pandas as pd
 from datetime import datetime
 from decimal import Decimal
-from typing import Union
+from typing import Optional, Union
 
 from cinderella.ledger.datatypes import Ledger, StatementType, Transaction
+from cinderella.statement.datatypes import StatementAttributes
 from .base import StatementParser
 
 
@@ -23,13 +24,15 @@ class Invos(StatementParser):
         else:
             return Ledger(self.source_name, StatementType.invalid)
 
-    def parse_receipt_statement(self, records: pd.DataFrame) -> Ledger:
+    def parse_receipt_statement(
+        self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
+    ) -> Ledger:
         records = records.astype(str)
         ledger = Ledger(self.source_name, StatementType.receipt)
         prev_title, prev_datetime = "", datetime.now()
         prev_txn: Union[Transaction, None] = None
 
-        for _, record in records.iterrows():
+        for __, record in records.iterrows():
             date_tw = str(record[0])
             year = int(date_tw[0:-4]) + 1911
             date_str = str(year) + str(

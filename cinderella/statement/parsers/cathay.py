@@ -2,8 +2,10 @@ import pandas as pd
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
+from typing import Optional
 
 from cinderella.ledger.datatypes import Ledger, StatementType
+from cinderella.statement.datatypes import StatementAttributes
 from .base import StatementParser
 
 
@@ -31,7 +33,9 @@ class Cathay(StatementParser):
             df = pd.read_csv(
                 path, encoding="big5", skiprows=20, encoding_errors="replace"
             )
-            return self._parse_creditcard_statement(df, year, month)
+            return self.parse_creditcard_statement(
+                df, StatementAttributes(year=year, month=month)
+            )
 
         else:
             self.logger.warning(
@@ -39,9 +43,12 @@ class Cathay(StatementParser):
             )
             return Ledger("Invalid", StatementType.invalid)
 
-    def _parse_creditcard_statement(
-        self, records: pd.DataFrame, year: int, month: int
+    def parse_creditcard_statement(
+        self, records: pd.DataFrame, attrs: StatementAttributes
     ) -> Ledger:
+        if not (attrs.year and attrs.month):
+            return Ledger("Invalid", StatementType.invalid)
+
         records = records.astype(str)
         typ = StatementType.creditcard
         ledger = Ledger(self.source_name, typ)
@@ -55,14 +62,14 @@ class Cathay(StatementParser):
             item_month = int(item_month)
             item_day = int(item_day)
             # 處理可能有跨年份的問題，1月帳單可能有去年12月的帳
-            if month == 1 and item_month == 12:
+            if attrs.month == 1 and item_month == 12:
                 date = datetime(
-                    year=year - 1,
+                    year=attrs.year - 1,
                     month=item_month,
                     day=item_day,
                 )
             else:
-                date = datetime(year, item_month, item_day)
+                date = datetime(attrs.year, item_month, item_day)
 
             title = record["交易說明"].strip()
             currency = "TWD"
@@ -78,12 +85,14 @@ class Cathay(StatementParser):
 
         return ledger
 
-    def parse_bank_statement(self, records: pd.DataFrame) -> Ledger:
+    def parse_bank_statement(
+        self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
+    ) -> Ledger:
         records = records.fillna("").astype(str)
         typ = StatementType.bank
         ledger = Ledger(self.source_name, typ)
 
-        for _, record in records.iterrows():
+        for __, record in records.iterrows():
             datetime_ = datetime.strptime(record[0] + record[1], "%Y%m%d%H%M%S")
 
             if record[2].strip():  # 轉出
@@ -113,7 +122,3 @@ class Cathay(StatementParser):
             ledger.create_and_append_txn(datetime_, title, account, quantity, currency)
 
         return ledger
-
-    def parse_creditcard_statement(self, _) -> Ledger:
-        self.logger.warning(f"{self.display_name} has specialized creditcard parser")
-        return Ledger(self.source_name, StatementType.invalid)

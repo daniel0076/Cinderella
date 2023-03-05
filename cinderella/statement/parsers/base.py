@@ -2,11 +2,12 @@ import logging
 import pandas as pd
 from abc import ABC
 from pathlib import Path
+from typing import Optional
 
 from cinderella.settings import LOG_NAME
-from cinderella.ledger.datatypes import StatementType
+from cinderella.ledger.datatypes import StatementType, Ledger
+from cinderella.statement.datatypes import StatementAttributes
 from cinderella.external.beancountapi import make_statement_accounts
-from cinderella.ledger.datatypes import Ledger
 
 
 class StatementParser(ABC):
@@ -43,14 +44,20 @@ class StatementParser(ABC):
     def get_statement_accounts(self) -> dict:
         return self.statement_accounts
 
-    def parse_creditcard_statement(self, df: pd.DataFrame) -> Ledger:
+    def parse_creditcard_statement(
+        self, df: pd.DataFrame, attrs: Optional[StatementAttributes] = None
+    ) -> Ledger:
         self.logger.warning(f"CreditCard is not supported by {self.display_name}")
         return Ledger(self.source_name, StatementType.invalid)
 
-    def parse_bank_statement(self, df: pd.DataFrame) -> Ledger:
+    def parse_bank_statement(
+        self, df: pd.DataFrame, attrs: Optional[StatementAttributes] = None
+    ) -> Ledger:
         self.logger.warning(f"Bank is not supported by {self.display_name}")
         return Ledger(self.source_name, StatementType.invalid)
 
-    def parse_receipt_statement(self, df: pd.DataFrame) -> Ledger:
+    def parse_receipt_statement(
+        self, df: pd.DataFrame, attrs: Optional[StatementAttributes] = None
+    ) -> Ledger:
         self.logger.warning(f"Receipt is not supported by {self.display_name}")
         return Ledger(self.source_name, StatementType.invalid)

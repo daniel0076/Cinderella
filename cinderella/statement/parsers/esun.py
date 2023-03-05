@@ -1,7 +1,9 @@
+from typing import Optional
 import pandas as pd
 from decimal import Decimal
 
 from cinderella.ledger.datatypes import Ledger, StatementType
+from cinderella.statement.datatypes import StatementAttributes
 from .base import StatementParser
 
 
@@ -13,12 +15,14 @@ class ESun(StatementParser):
         supported_types = [StatementType.bank]
         super().__init__(supported_types)
 
-    def parse_bank_statement(self, records: pd.DataFrame) -> Ledger:
+    def parse_bank_statement(
+        self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
+    ) -> Ledger:
         records = records.fillna("")
         typ = StatementType.bank
         ledger = Ledger(self.source_name, typ)
 
-        for _, record in records.iterrows():
+        for __, record in records.iterrows():
             date = pd.to_datetime(record[0])
 
             if record[2]:

@@ -3,9 +3,10 @@ import pandas as pd
 import csv
 from datetime import datetime
 from decimal import Decimal
-from typing import Union
+from typing import Optional, Union
 
 from cinderella.ledger.datatypes import Ledger, StatementType, Transaction
+from cinderella.statement.datatypes import StatementAttributes
 from .base import StatementParser
 
 
@@ -26,12 +27,14 @@ class Einvoice(StatementParser):
         else:
             return Ledger(self.source_name, StatementType.invalid)
 
-    def parse_receipt_statement(self, records: pd.DataFrame) -> Ledger:
+    def parse_receipt_statement(
+        self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
+    ) -> Ledger:
         records = records.astype(str)
         ledger = Ledger(self.source_name, StatementType.receipt)
         prev_txn: Union[Transaction, None] = None
 
-        for _, record in records.iterrows():
+        for __, record in records.iterrows():
             if record[0] == "M":
                 datetime_ = datetime.strptime(record[3], "%Y%m%d")
                 title = record[5]

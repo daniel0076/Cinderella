@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Optional
 import pandas as pd
 from datetime import datetime
 from decimal import Decimal
@@ -12,6 +13,7 @@ from cinderella.ledger.datatypes import (
     Transaction,
     TransactionFlag,
 )
+from cinderella.statement.datatypes import StatementAttributes
 from .base import StatementParser
 
 
@@ -37,7 +39,9 @@ class Sinopac(StatementParser):
         df = df.astype(str)
         return df
 
-    def parse_creditcard_statement(self, records: pd.DataFrame) -> Ledger:
+    def parse_creditcard_statement(
+        self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
+    ) -> Ledger:
         category = StatementType.creditcard
         ledger = Ledger(self.source_name, StatementType.creditcard)
 
@@ -46,7 +50,7 @@ class Sinopac(StatementParser):
         if "美元" in currency_column:
             currency = "USD"
 
-        for _, record in records.iterrows():
+        for __, record in records.iterrows():
             date = datetime.strptime(record[0], "%Y/%m/%d")
             title = record[3].strip()
             quantity = Decimal(record[4].replace(",", ""))
@@ -55,7 +59,9 @@ class Sinopac(StatementParser):
 
         return ledger
 
-    def parse_bank_statement(self, records: pd.DataFrame) -> Ledger:
+    def parse_bank_statement(
+        self, records: pd.DataFrame, attrs: Optional[StatementAttributes] = None
+    ) -> Ledger:
         category = StatementType.bank
         ledger = Ledger(self.source_name, StatementType.bank)
 
