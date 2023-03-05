@@ -21,8 +21,15 @@ logger = logging.getLogger(LOG_NAME)
 class StatementLoader:
     def __init__(self):
         self.parsers: list[StatementParser] = []
+        parser_names = []
         for parser_cls in get_parsers():
             self.parsers.append(parser_cls())
+            parser_names.append(parser_cls.source_name)
+
+        # longer source_name has higher precedence
+        self.parsers = sorted(
+            self.parsers, key=lambda x: len(x.source_name), reverse=True
+        )
 
     def get_all_statement_accounts(self) -> list:
         accounts = []
