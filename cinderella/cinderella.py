@@ -38,7 +38,6 @@ class Cinderella:
         merge trans in card and receipt(cash) with same date and amount
         Note that records from cards should have higher precedence
         """
-
         ledger_util.merge_same_date_amount(
             ledgers_by_type[StatementType.creditcard]
             + ledgers_by_type[StatementType.receipt],

@@ -60,7 +60,7 @@ if __name__ == "__main__":
     statement_preprocessor = StatementPreprocessor(settings.statement_settings)
     statement_preprocessor.process()
 
-    print("Processing statements to transactions...", end="")
+    print("Processing statements to transactions...")
     cinderella = Cinderella(settings)
     cinderella.count_beans()
     print("done")
