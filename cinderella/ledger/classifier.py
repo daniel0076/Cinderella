@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Union
 
-from cinderella.ledger.datatypes import Posting
+from cinderella.ledger.datatypes import Posting, TransactionFlag
 
 if TYPE_CHECKING:
     from cinderella.settings import CinderellaSettings
@@ -15,6 +15,9 @@ class TransactionClassifier:
         default_account = settings.default_accounts
         self.default_expense_account = default_account.get("expenses", "Expenses:Other")
         self.default_income_account = default_account.get("income", "Income:Other")
+        self.conversion_diff_account = default_account.get(
+            "conversion_diff", "Income:PnL:ConversionDiffs"
+        )
 
         # load mappings
         self.general_map = self.settings.get_mapping("general")
@@ -27,6 +30,10 @@ class TransactionClassifier:
         ]  # former has higher priority
 
         for transaction in ledger.transactions:
+            if transaction.flag == TransactionFlag.CONVERSIONS:
+                transaction.postings.append(Posting(self.conversion_diff_account, None))
+                continue
+
             if len(transaction.postings) >= 2:
                 continue
 
@@ -39,9 +46,12 @@ class TransactionClassifier:
                 transaction.append_postings(Posting(account, None))
             else:
                 amount = transaction.postings[0].amount
-                transaction.create_and_append_posting(
-                    account, -amount.quantity, amount.currency
-                )
+                if amount:
+                    transaction.create_and_append_posting(
+                        account, -amount.quantity, amount.currency
+                    )
+                else:
+                    transaction.append_postings(Posting(account, None))
 
     def _match_account(
         self, transaction: Transaction, pattern_mappings: list

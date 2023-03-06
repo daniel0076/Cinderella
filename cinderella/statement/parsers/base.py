@@ -16,12 +16,13 @@ class StatementParser(ABC):
 
     def __init__(self, supported_types: list[StatementType] = []):
         assert supported_types != []
+        assert self.source_name != ""
+        assert self.display_name != ""
+
         self.logger = logging.getLogger(LOG_NAME)
         self.statement_accounts: dict[StatementType, str] = make_statement_accounts(
             supported_types, self.display_name
         )
-        assert self.source_name != ""
-        assert self.display_name != ""
 
     def parse(self, path: Path) -> Ledger:
         df = self._read_csv(path)
