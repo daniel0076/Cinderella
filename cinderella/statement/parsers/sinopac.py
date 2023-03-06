@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import Optional
 import pandas as pd
 from datetime import datetime
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 import re
 
 from cinderella.ledger.datatypes import (
@@ -32,9 +32,14 @@ class Sinopac(StatementParser):
             except UnicodeDecodeError:
                 df = pd.read_csv(path, skiprows=2)
 
+            try:
+                with open(path, "r") as f:
+                    title = f.readline()
+            except UnicodeDecodeError:
+                with open(path, "r", encoding="big5") as f:
+                    title = f.readline()
+
             currency = "TWD"
-            with open(path, "r") as f:
-                title = f.readline()
             if "美金" in title:
                 currency = "USD"
             elif "日元" in title:
@@ -139,12 +144,18 @@ class Sinopac(StatementParser):
         """
         price = Amount(rate, "TWD")
         if local_currency == "TWD":
-            foreign_amount = Amount(round(-quantity / rate, 1), foreign_currency)
+            foreign_amount = Amount(
+                (-quantity / rate).quantize(Decimal("0.1"), ROUND_HALF_UP),
+                foreign_currency,
+            )
             local_amount = Amount(quantity, local_currency)
             foreign_posting = Posting(foreign_account, foreign_amount, price)
             local_posting = Posting(local_account, local_amount)
         else:  # local non TWD, can be USD, JPY. But foreign is always TWD
-            foreign_amount = Amount(round(-quantity * rate, 0), foreign_currency)
+            foreign_amount = Amount(
+                (-quantity * rate).quantize(Decimal("0"), ROUND_HALF_UP),
+                foreign_currency,
+            )
             local_amount = Amount(quantity, local_currency)
             foreign_posting = Posting(foreign_account, foreign_amount)
             local_posting = Posting(local_account, local_amount, price)
