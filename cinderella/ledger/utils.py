@@ -1,4 +1,4 @@
-from typing import Dict, List, Callable, Optional
+from typing import Dict, List, Callable
 from collections import defaultdict
 from datetime import timedelta
 from dataclasses import dataclass
@@ -24,7 +24,7 @@ def dedup(
     merge_dup_txns: bool = False,
     merge_txn_postings: bool = False,
     specify_statement_types: list[StatementType] = [],
-    double_check_diff_hook: Callable[[Transaction, Transaction], bool] = (
+    custom_diff_check_hook: Callable[[Transaction, Transaction], bool] = (
         lambda _, __: False
     ),
 ) -> None:
@@ -59,7 +59,7 @@ def dedup(
                         continue
                     if ignore_same_source and ledger.source == dedup_record.source:
                         continue
-                    if double_check_diff_hook(dedup_record.txn, curr_txn):
+                    if custom_diff_check_hook(dedup_record.txn, curr_txn):
                         continue
 
                     duplicated = True
@@ -112,7 +112,7 @@ def dedup_bank_transfer(
         tolerance_days,
         ignore_same_source=False,
         specify_statement_types=[StatementType.bank],
-        double_check_diff_hook=same_first_posting_as_diff,
+        custom_diff_check_hook=same_first_posting_as_diff,
     )
     print("done")
 
