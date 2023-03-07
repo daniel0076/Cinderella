@@ -99,5 +99,6 @@ class Cinderella:
         path.unlink(missing_ok=True)
 
         for ledgers in ledgers_by_type.values():
-            for transaction in ledgers:
-                beancountapi.print_beans(transaction, path.as_posix())
+            for ledger in ledgers:
+                ledger.sorted()
+                beancountapi.print_beans(ledger, path.as_posix())

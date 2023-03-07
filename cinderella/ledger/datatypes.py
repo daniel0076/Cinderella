@@ -163,8 +163,8 @@ class Ledger:
         self.transactions.extend(other.transactions)
         return self
 
-    def sort(self):
-        pass
+    def sorted(self):
+        self.transactions = sorted(self.transactions, key=lambda x: x.datetime_)
 
     def create_and_append_txn(
         self, date, title, account, quantity, currency
