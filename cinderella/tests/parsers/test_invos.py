@@ -31,8 +31,10 @@ class TestInvos:
             Decimal("-100"),
             "TWD",
         )
-        txn.insert_comment(f"{parser.display_name}", "Item1 - 1.0*50")
-        txn.insert_comment(f"{parser.display_name}", "Item2 - 1.0*50")
+        txn.meta = {
+            f"{parser.display_name}(0)": "Item1 - 1.0*50",
+            f"{parser.display_name}(1)": "Item2 - 1.0*50",
+        }
 
         result = parser.parse_receipt_statement(df)
         assert expected == result

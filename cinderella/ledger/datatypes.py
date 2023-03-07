@@ -98,7 +98,7 @@ class Transaction:
             print(err)
 
     def insert_comment(
-        self, key: str, value: Any, comment_exists: OnExistence = OnExistence.REPLACE
+        self, key: str, value: Any, comment_exists: OnExistence = OnExistence.RENAME
     ):
         if self.meta.get(key, None):
             if comment_exists == OnExistence.SKIP:

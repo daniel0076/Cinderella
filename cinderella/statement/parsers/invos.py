@@ -59,7 +59,8 @@ class Invos(StatementParser):
                 prev_txn = txn
 
             txn.insert_comment(
-                self.display_name, f"{item_name} - {item_count}*{item_price}"
+                f"{self.display_name}({len(txn.meta)})",
+                f"{item_name} - {item_count}*{item_price}",
             )
 
         return ledger
