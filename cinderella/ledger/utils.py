@@ -1,7 +1,8 @@
-from typing import Dict, List, Callable, Optional
+from typing import Dict, List, Callable
 from collections import defaultdict
 from datetime import timedelta
 from dataclasses import dataclass
+import pylcs
 
 from .datatypes import StatementType, Transaction, Ledger, OnExistence
 
@@ -24,7 +25,7 @@ def dedup(
     merge_dup_txns: bool = False,
     merge_txn_postings: bool = False,
     specify_statement_types: list[StatementType] = [],
-    double_check_diff_hook: Callable[[Transaction, Transaction], bool] = (
+    custom_diff_check_hook: Callable[[Transaction, Transaction], bool] = (
         lambda _, __: False
     ),
 ) -> None:
@@ -55,13 +56,15 @@ def dedup(
             duplicated = False
             for key in tolerance_keys:
                 for dedup_record in dedup_map.get(key, []):
+                    # if we deemed it as diff, continue the loop
                     if dedup_record.found_dup:
                         continue
                     if ignore_same_source and ledger.source == dedup_record.source:
                         continue
-                    if double_check_diff_hook(dedup_record.txn, curr_txn):
+                    if custom_diff_check_hook(dedup_record.txn, curr_txn):
                         continue
 
+                    # if we reach here, the curr_txn is duplicated
                     duplicated = True
                     dedup_record.found_dup = True
                     if merge_dup_txns:
@@ -112,7 +115,7 @@ def dedup_bank_transfer(
         tolerance_days,
         ignore_same_source=False,
         specify_statement_types=[StatementType.bank],
-        double_check_diff_hook=same_first_posting_as_diff,
+        custom_diff_check_hook=same_first_posting_as_diff,
     )
     print("done")
 
@@ -156,4 +159,13 @@ def merge_same_date_amount(
             transaction.postings[0].amount,
         )
 
-    dedup(ledgers, hash_function, tolerance_days, merge_dup_txns=True)
+    def lcs_le_2_as_diff(lhs: Transaction, rhs: Transaction) -> bool:
+        return pylcs(lhs.title, rhs.title) < 2
+
+    dedup(
+        ledgers,
+        hash_function,
+        tolerance_days,
+        merge_dup_txns=True,
+        custom_diff_check_hook=lcs_le_2_as_diff,
+    )

@@ -13,6 +13,7 @@ openpyxl = "*"
 dacite = "*"
 lxml = "*"
 html5lib = "*"
+pylcs = "*"
 
 [dev-packages]
 flake8 = "*"
