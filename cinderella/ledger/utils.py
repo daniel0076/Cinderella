@@ -1,4 +1,4 @@
-from typing import Dict, List, Callable
+from typing import Dict, List, Callable, Optional
 from collections import defaultdict
 from datetime import timedelta
 from dataclasses import dataclass
@@ -21,10 +21,12 @@ def dedup(
     hash_function: Callable,
     tolerance_days: int = 0,
     ignore_same_source: bool = True,
-    require_reversed_postings: bool = False,
     merge_dup_txns: bool = False,
     merge_txn_postings: bool = False,
     specify_statement_types: list[StatementType] = [],
+    double_check_diff_hook: Callable[[Transaction, Transaction], bool] = (
+        lambda _, __: False
+    ),
 ) -> None:
     """
     Remove duplicated Transaction with the hash function
@@ -57,11 +59,9 @@ def dedup(
                         continue
                     if ignore_same_source and ledger.source == dedup_record.source:
                         continue
-                    if (
-                        require_reversed_postings
-                        and curr_txn.postings[0] == dedup_record.txn.postings[0]
-                    ):
+                    if double_check_diff_hook(dedup_record.txn, curr_txn):
                         continue
+
                     duplicated = True
                     dedup_record.found_dup = True
                     if merge_dup_txns:
@@ -103,13 +103,16 @@ def dedup_bank_transfer(
         )
         return result
 
+    def same_first_posting_as_diff(lhs: Transaction, rhs: Transaction) -> bool:
+        return lhs.postings[0] == rhs.postings[0]
+
     dedup(
         ledgers,
         hash_function,
         tolerance_days,
         ignore_same_source=False,
-        require_reversed_postings=True,
         specify_statement_types=[StatementType.bank],
+        double_check_diff_hook=same_first_posting_as_diff,
     )
     print("done")
 
