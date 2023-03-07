@@ -143,6 +143,38 @@ class TestSpecifiedTransactionProcessor:
         assert len(ledger1) == 1
         assert len(ledger2) == 0
 
+    def test_merge_same_date_amount_LCS_match(self, ledger_utils, sample_transaction):
+        ledger1 = Ledger("Source1", StatementType.custom)
+        ledger2 = Ledger("Source2", StatementType.custom)
+        txn1 = deepcopy(sample_transaction)
+        txn1.title = "ShouldHaveLCS>=2ToMatch"
+        ledger1.append_txn(txn1)
+
+        txn2 = deepcopy(sample_transaction)
+        txn2.title = "IDoHaveItAs4"
+        ledger2.append_txn(txn2)
+
+        ledger_utils.merge_same_date_amount([ledger1, ledger2])
+        assert len(ledger1) == 1
+        assert len(ledger2) == 0
+
+    def test_merge_same_date_amount_LCS_mismatch(
+        self, ledger_utils, sample_transaction
+    ):
+        ledger1 = Ledger("Source1", StatementType.custom)
+        ledger2 = Ledger("Source2", StatementType.custom)
+        txn1 = deepcopy(sample_transaction)
+        txn1.title = "ShouldHaveLCS>=2ToMatch"
+        ledger1.append_txn(txn1)
+
+        txn2 = deepcopy(sample_transaction)
+        txn2.title = "NoIDon't"
+        ledger2.append_txn(txn2)
+
+        ledger_utils.merge_same_date_amount([ledger1, ledger2])
+        assert len(ledger1) == 1
+        assert len(ledger2) == 1
+
 
 class TestUtilFunction:
     @pytest.mark.parametrize(

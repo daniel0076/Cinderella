@@ -160,7 +160,7 @@ def merge_same_date_amount(
         )
 
     def lcs_le_2_as_diff(lhs: Transaction, rhs: Transaction) -> bool:
-        return pylcs(lhs.title, rhs.title) < 2
+        return pylcs.lcs_string_length(lhs.title, rhs.title) < 2
 
     dedup(
         ledgers,
