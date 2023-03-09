@@ -66,3 +66,21 @@ class CTBC(StatementParser):
             ledger.create_and_append_txn(date, title, account, quantity, currency)
 
         return ledger
+
+    def parse_creditcard_statement(
+        self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
+    ) -> Ledger:
+        records = records.fillna("").astype(str)
+        typ = StatementType.creditcard
+        ledger = Ledger(self.source_name, typ)
+
+        for __, record in records.iterrows():
+            date = datetime.strptime(record["消費日"], "%Y/%m/%d")
+            title = record["摘要"].strip()
+            quantity = -Decimal(record["新臺幣金額"])
+
+            currency = "TWD"
+            account = self.statement_accounts[typ]
+            ledger.create_and_append_txn(date, title, account, quantity, currency)
+
+        return ledger

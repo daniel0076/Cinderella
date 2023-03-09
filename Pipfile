@@ -19,6 +19,7 @@ flake8 = "*"
 pytest = "*"
 black = "*"
 autopep8 = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3.10"
