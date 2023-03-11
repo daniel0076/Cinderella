@@ -155,11 +155,16 @@ def make_statement_accounts(statement_types: list[StatementType], display_name: 
     common_prefix = {
         StatementType.bank: "Assets:Bank:",
         StatementType.creditcard: "Liabilities:CreditCard:",
-        StatementType.receipt: "Assets:Cash:",
+        StatementType.receipt: "Assets:Cash",
     }
 
     result = {}
     for typ in statement_types:
+        # All receipts is deemed as using Cash by default
+        if typ == StatementType.receipt:
+            result[typ] = common_prefix[typ]
+            continue
+
         if not common_prefix.get(typ, None):
             continue
         result[typ] = common_prefix[typ] + display_name
