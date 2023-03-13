@@ -122,3 +122,47 @@ class Cathay(StatementParser):
             ledger.create_and_append_txn(datetime_, title, account, quantity, currency)
 
         return ledger
+
+
+class CathayUSD(StatementParser):
+    source_name = "cathayusd"
+    display_name = "Cathay"
+
+    def __init__(self):
+        supported_types = [StatementType.bank]
+        super().__init__(supported_types)
+
+    def _read_csv(self, path: Path) -> pd.DataFrame:
+        df = pd.read_csv(path.as_posix(), encoding="big5")
+        return df
+
+    def parse_bank_statement(
+        self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
+    ) -> Ledger:
+        records = records.fillna("").astype(str)
+        typ = StatementType.bank
+        ledger = Ledger(self.source_name, typ)
+
+        for __, record in records.iterrows():
+            datetime_ = datetime.strptime(
+                record[0].strip() + record[1].strip(), "%Y/%m/%d%H:%M:%S"
+            )
+
+            quantity = Decimal(record[3])
+            if record[2].strip() == "存入":  # 轉出
+                quantity = quantity
+            else:
+                quantity = -quantity
+
+            title = record[6].strip()
+            remarks = record[5].strip()
+
+            if remarks:
+                title += f": {remarks}"
+
+            currency = "USD"
+            account = self.statement_accounts[typ]
+
+            ledger.create_and_append_txn(datetime_, title, account, quantity, currency)
+
+        return ledger
