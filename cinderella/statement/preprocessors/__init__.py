@@ -6,6 +6,7 @@ from cinderella.settings import LOG_NAME, StatementSettings
 from .einvoice import Einvoice
 from .richart import Richart
 from .esun import ESun
+from .cryptocom import CryptoCom
 
 
 class StatementPreprocessor:
@@ -15,7 +16,7 @@ class StatementPreprocessor:
         self.logger.debug(f"Preprocessor settings:\n{settings}")
 
         # create processor objects according to config
-        preprocessor_cls = [Einvoice, Richart, ESun]
+        preprocessor_cls = [Einvoice, Richart, ESun, CryptoCom]
         self.preprocessors = {}
         for c in preprocessor_cls:
             self.preprocessors[c.source_name] = c(settings)

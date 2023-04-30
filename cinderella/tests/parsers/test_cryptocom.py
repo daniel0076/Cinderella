@@ -29,7 +29,9 @@ class TestCryptoCom:
         )
         expected = Ledger(parser.source_name, StatementType.creditcard)
         taiwan_tz = ZoneInfo("Asia/Taipei")
-        txn = Transaction(datetime(2021, 1, 31, 1, 23, 45).astimezone(taiwan_tz), "Title (-100.0 TWD)")
+        txn = Transaction(
+            datetime(2021, 1, 31, 1, 23, 45).astimezone(taiwan_tz), "Title (-100.0 TWD)"
+        )
         txn.create_and_append_posting(
             parser.statement_accounts[StatementType.creditcard],
             Decimal("-3"),

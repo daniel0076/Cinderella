@@ -43,6 +43,7 @@ class ProcessorBase(ABC):
 
         file_str = file.as_posix()
         for statement_type in self.process_functions.keys():
+            logger.debug(f"file: {file_str}")
             if statement_type.value not in file_str:
                 continue
 
