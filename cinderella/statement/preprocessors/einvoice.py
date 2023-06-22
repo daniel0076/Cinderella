@@ -73,7 +73,11 @@ class Einvoice(ProcessorBase):
                 continue
             existing_csv = directory / filename
             existing_df = pd.read_csv(
-                existing_csv, delimiter="|", skiprows=2, header=None
+                existing_csv,
+                delimiter="|",
+                skiprows=2,
+                header=None,
+                quoting=csv.QUOTE_NONE,
             )
             existing_title_df = existing_df[existing_df[0] == "M"]
             existing_receipt_id_df = existing_title_df[6]
