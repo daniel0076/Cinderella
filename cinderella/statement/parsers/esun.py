@@ -23,26 +23,26 @@ class ESun(StatementParser):
         ledger = Ledger(self.source_name, typ)
 
         for __, record in records.iterrows():
-            date = pd.to_datetime(record[0])
+            date = pd.to_datetime(record.iloc[0])
 
-            if record[2]:
-                quantity = Decimal(record[2])
+            if record.iloc[2]:
+                quantity = Decimal(record.iloc[2])
                 quantity *= -1
-            elif record[3]:
-                quantity = Decimal(record[3])
+            elif record.iloc[3]:
+                quantity = Decimal(record.iloc[3])
             else:
                 self.logger.error(
                     f"Can not parse {self.source_name} {typ.name} statement {record}"
                 )
                 continue
 
-            title = record[1]
+            title = record.iloc[1]
             currency = "TWD"
             account = self.statement_accounts[typ]
 
             txn = ledger.create_and_append_txn(date, title, account, quantity, currency)
 
-            if record[5]:
-                txn.insert_comment(self.display_name, record[5])
+            if record.iloc[5]:
+                txn.insert_comment(self.display_name, record.iloc[5])
 
         return ledger

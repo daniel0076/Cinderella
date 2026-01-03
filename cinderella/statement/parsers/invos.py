@@ -33,7 +33,7 @@ class Invos(StatementParser):
         prev_txn: Union[Transaction, None] = None
 
         for __, record in records.iterrows():
-            date_tw = str(record[0])
+            date_tw = str(record.iloc[0])
             year = int(date_tw[0:-4]) + 1911
             date_str = str(year) + str(
                 date_tw[::-1][0:4][::-1]

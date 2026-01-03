@@ -68,9 +68,9 @@ class Sinopac(StatementParser):
             currency = "USD"
 
         for __, record in records.iterrows():
-            date = datetime.strptime(record[0], "%Y/%m/%d")
-            title = record[3].strip()
-            quantity = Decimal(record[4].replace(",", ""))
+            date = datetime.strptime(record.iloc[0], "%Y/%m/%d")
+            title = record.iloc[3].strip()
+            quantity = Decimal(record.iloc[4].replace(",", ""))
             account = self.statement_accounts[category]
             ledger.create_and_append_txn(date, title, account, -quantity, currency)
 
@@ -85,29 +85,29 @@ class Sinopac(StatementParser):
         ledger = Ledger(self.source_name, StatementType.bank)
 
         for _, record in records.iterrows():
-            datetime_ = datetime.strptime(record[0].lstrip(), "%Y/%m/%d %H:%M")
-            title = record[2]
-            if record[3].strip() != "":  # expense
-                quantity = -Decimal(record[3])
-            elif record[4].strip() != "":  # income
-                quantity = Decimal(record[4])
+            datetime_ = datetime.strptime(record.iloc[0].lstrip(), "%Y/%m/%d %H:%M")
+            title = record.iloc[2]
+            if record.iloc[3].strip() != "":  # expense
+                quantity = -Decimal(record.iloc[3])
+            elif record.iloc[4].strip() != "":  # income
+                quantity = Decimal(record.iloc[4])
             else:
                 self.logger.error(f"{self.display_name}: fail to parse {record}")
                 continue
             account = self.statement_accounts[category]
             account_currency = attrs.currency
 
-            rate = Decimal(record[6]) if record[6] else None
+            rate = Decimal(record.iloc[6]) if record.iloc[6] else None
             if not rate:
                 txn = ledger.create_and_append_txn(
                     datetime_, title, account, quantity, account_currency
                 )
-                txn.insert_comment(self.display_name, record[7])
+                txn.insert_comment(self.display_name, record.iloc[7])
                 continue
 
             # handle currency conversion
             if attrs.currency == "TWD":
-                result = re.search(r"\(([A-Z]{3,})\)", record[7])  # xxxxxx(USD)
+                result = re.search(r"\(([A-Z]{3,})\)", record.iloc[7])  # xxxxxx(USD)
                 if result:
                     foreign_currency = result.group(1)
                 else:

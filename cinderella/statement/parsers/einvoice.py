@@ -35,10 +35,10 @@ class Einvoice(StatementParser):
         prev_txn: Union[Transaction, None] = None
 
         for __, record in records.iterrows():
-            if record[0] == "M":
-                datetime_ = datetime.strptime(record[3], "%Y%m%d")
-                title = record[5]
-                quantity = Decimal(record[7])
+            if record.iloc[0] == "M":
+                datetime_ = datetime.strptime(record.iloc[3], "%Y%m%d")
+                title = record.iloc[5]
+                quantity = Decimal(record.iloc[7])
                 currency = "TWD"
                 account = self.statement_accounts[StatementType.receipt]
 
@@ -48,10 +48,10 @@ class Einvoice(StatementParser):
                 ledger.append_txn(txn)
                 prev_txn = txn
 
-            elif record[0] == "D":  # details on per-item info
+            elif record.iloc[0] == "D":  # details on per-item info
                 # continue on last one
-                item_title = record[3]
-                item_price = record[2]
+                item_title = record.iloc[3]
+                item_price = record.iloc[2]
                 if prev_txn:
                     prev_txn.insert_comment(
                         self.display_name, f"{item_title} - {item_price}"

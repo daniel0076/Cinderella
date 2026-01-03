@@ -37,14 +37,14 @@ class TaiwanPost(StatementParser):
 
         prev_txn = None
         for __, record in records.iterrows():
-            date_tw = record[0]
+            date_tw = record.iloc[0]
             date_to_ce = date_tw.replace(date_tw[0:3], str(int(date_tw[0:3]) + 1911))
             datetime_ = datetime.strptime(date_to_ce, "%Y/%m/%d %H:%M:%S")
-            title = record[1]
-            if record[3]:
-                quantity = -Decimal(record[3])
-            elif record[4]:
-                quantity = Decimal(record[4])
+            title = record.iloc[1]
+            if record.iloc[3]:
+                quantity = -Decimal(record.iloc[3])
+            elif record.iloc[4]:
+                quantity = Decimal(record.iloc[4])
             else:
                 self.logger.error(
                     f"Can not parse {self.source_name} {typ.name} statement {record}"
@@ -64,12 +64,14 @@ class TaiwanPost(StatementParser):
                 )
 
             # comments
-            if record[6]:
+            if record.iloc[6]:
                 txn.insert_comment(
-                    f"{self.display_name}-Remarks", str(record[6]), OnExistence.CONCAT
+                    f"{self.display_name}-Remarks",
+                    str(record.iloc[6]),
+                    OnExistence.CONCAT,
                 )
-            if record[7]:
-                txn.insert_comment(f"{self.display_name}-Notes", str(record[7]))
+            if record.iloc[7]:
+                txn.insert_comment(f"{self.display_name}-Notes", str(record.iloc[7]))
 
             prev_txn = txn
 

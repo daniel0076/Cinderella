@@ -30,18 +30,18 @@ class CryptoCom(StatementParser):
         taiwan_tz = ZoneInfo("Asia/Taipei")
 
         for __, record in records.iterrows():
-            date = datetime.strptime(record[0], "%Y-%m-%d %H:%M:%S").astimezone(
+            date = datetime.strptime(record.iloc[0], "%Y-%m-%d %H:%M:%S").astimezone(
                 taiwan_tz
             )
-            title = record[1].strip()
+            title = record.iloc[1].strip()
 
-            if record[5] != "":
-                cost = f"({record[5]} {record[4]})"
+            if record.iloc[5] != "":
+                cost = f"({record.iloc[5]} {record.iloc[4]})"
             else:
-                cost = f"({record[3]} {record[2]})"
+                cost = f"({record.iloc[3]} {record.iloc[2]})"
             title += f" {cost}"
 
-            quantity = Decimal(record[8]).quantize(
+            quantity = Decimal(record.iloc[8]).quantize(
                 Decimal("0.01"), rounding=ROUND_HALF_UP
             )
             currency = "USD"

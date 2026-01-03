@@ -24,9 +24,9 @@ class Richart(StatementParser):
         ledger = Ledger(self.source_name, typ)
 
         for __, record in records.iterrows():
-            date = datetime.strptime(record[0], "%Y-%m-%d")
-            title = record[4]
-            quantity, currency = self._parse_price(record[3])
+            date = datetime.strptime(record.iloc[0], "%Y-%m-%d")
+            title = record.iloc[4]
+            quantity, currency = self._parse_price(record.iloc[3])
             account = self.statement_accounts[typ]
             ledger.create_and_append_txn(date, title, account, quantity, currency)
 
@@ -41,7 +41,7 @@ class Richart(StatementParser):
         ledger = Ledger(self.source_name, typ)
         for __, record in records.iterrows():
             # 台新用帳務日期欄位做為當下，交易日期可能較晚
-            date = datetime.strptime(record[1], "%Y-%m-%d")
+            date = datetime.strptime(record.iloc[1], "%Y-%m-%d")
             title = record["備註"]
             quantity, currency = self._parse_price(record["金額"])
             account = self.statement_accounts[typ]
