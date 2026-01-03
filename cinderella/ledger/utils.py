@@ -111,7 +111,7 @@ def dedup_bank_transfer(
         hash_function,
         tolerance_days,
         ignore_same_source=False,
-        specify_statement_types=[StatementType.bank],
+        specify_statement_types=[StatementType.checking],
         custom_diff_check_hook=same_first_posting_as_diff,
     )
     print("done")

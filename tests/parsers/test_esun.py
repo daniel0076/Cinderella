@@ -23,11 +23,11 @@ class TestESun:
                 "COL6": ["Remarks"],
             }
         )
-        expected = Ledger(parser.source_name, StatementType.bank)
+        expected = Ledger(parser.source_name, StatementType.checking)
         txn = expected.create_and_append_txn(
             datetime(2023, 1, 1, 1, 23, 45),
             "Test",
-            parser.statement_accounts[StatementType.bank],
+            parser.statement_accounts[StatementType.checking],
             Decimal("1000"),
             "TWD",
         )

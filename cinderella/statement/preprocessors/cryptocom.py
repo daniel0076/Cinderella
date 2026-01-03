@@ -34,5 +34,5 @@ class CryptoCom(ProcessorBase):
     def process_receipt(self, _, __) -> ProcessedResult:
         raise NotImplementedError
 
-    def process_bank(self, _, __) -> ProcessedResult:
+    def process_checking(self, _, __) -> ProcessedResult:
         raise NotImplementedError

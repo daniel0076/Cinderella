@@ -14,11 +14,11 @@ class Cathay(StatementParser):
     display_name = "Cathay"
 
     def __init__(self):
-        supported_types = [StatementType.bank, StatementType.creditcard]
+        supported_types = [StatementType.checking, StatementType.creditcard]
         super().__init__(supported_types)
 
     def parse(self, path: Path) -> Ledger:
-        if StatementType.bank.name in path.as_posix():
+        if StatementType.checking.name in path.as_posix():
             df = pd.read_csv(
                 path, encoding="big5", skiprows=1, encoding_errors="replace"
             )
@@ -89,7 +89,7 @@ class Cathay(StatementParser):
         self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
     ) -> Ledger:
         records = records.fillna("").astype(str)
-        typ = StatementType.bank
+        typ = StatementType.checking
         ledger = Ledger(self.source_name, typ)
 
         for __, record in records.iterrows():
@@ -131,7 +131,7 @@ class CathayUSD(StatementParser):
     display_name = "Cathay"
 
     def __init__(self):
-        supported_types = [StatementType.bank]
+        supported_types = [StatementType.checking]
         super().__init__(supported_types)
 
     def _read_csv(self, path: Path) -> pd.DataFrame:
@@ -142,7 +142,7 @@ class CathayUSD(StatementParser):
         self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
     ) -> Ledger:
         records = records.fillna("").astype(str)
-        typ = StatementType.bank
+        typ = StatementType.checking
         ledger = Ledger(self.source_name, typ)
 
         for __, record in records.iterrows():

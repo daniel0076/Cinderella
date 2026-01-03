@@ -26,7 +26,7 @@ def statement_dir(tmp_path, source_name):
         ],
     )
     # prepare
-    raw_statement_dir = tmp_path / "raw" / "bank" / source_name
+    raw_statement_dir = tmp_path / "raw" / source_name / "checking"
     raw_statement_dir.mkdir(parents=True)
     backup_statement_dir = tmp_path / "backup"
     backup_statement_dir.mkdir(parents=True)
@@ -49,7 +49,7 @@ def settings(statement_dir, source_name) -> StatementSettings:
         {
             source_name: [
                 RawStatementProcessSettings(
-                    StatementType.bank, "", AfterProcessedAction.move
+                    StatementType.checking, "", AfterProcessedAction.move
                 )
             ]
         },
@@ -62,42 +62,47 @@ class TestProcessorBase:
     # if __abstractmethod__ is non-empty, the class is considered abstract
     @patch.multiple(ProcessorBase, __abstractmethods__=set(), source_name="mock_source")
     @patch.object(ProcessorBase, "post_process")
-    @patch.object(ProcessorBase, "process_bank")
-    def test_process_success(self, process_bank, post_process, statement_dir, settings):
+    @patch.object(ProcessorBase, "process_checking")
+    def test_process_success(
+        self, process_checking, post_process, statement_dir, settings
+    ):
         # prepare
-        process_bank.return_value = ProcessedResult(True, "success")
+        process_checking.return_value = ProcessedResult(True, "success")
 
         # test
         mock_preprocessor = ProcessorBase(settings)
         result = mock_preprocessor.process(statement_dir.mock_statement)
+        print(result)
 
         # assert
-        assert result == process_bank.return_value
-        process_bank.assert_called_once_with(
+        assert result == process_checking.return_value
+        process_checking.assert_called_once_with(
             statement_dir.mock_statement,
-            mock_preprocessor.settings_by_type[StatementType.bank],
+            mock_preprocessor.settings_by_type[StatementType.checking],
         )
         post_process.assert_called_once_with(
             statement_dir.mock_statement,
-            mock_preprocessor.settings_by_type[StatementType.bank],
+            mock_preprocessor.settings_by_type[StatementType.checking],
         )
 
     @patch.multiple(ProcessorBase, __abstractmethods__=set(), source_name="mock_source")
     @patch.object(ProcessorBase, "post_process")
-    @patch.object(ProcessorBase, "process_bank")
-    def test_process_failed(self, process_bank, post_process, statement_dir, settings):
+    @patch.object(ProcessorBase, "process_checking")
+    def test_process_failed(
+        self, process_checking, post_process, statement_dir, settings
+    ):
         # prepare
-        process_bank.return_value = ProcessedResult(False, "failed")
+        process_checking.return_value = ProcessedResult(False, "failed")
 
         # test
         mock_preprocessor = ProcessorBase(settings)
         result = mock_preprocessor.process(statement_dir.mock_statement)
 
         # assert
-        assert result == process_bank.return_value
-        process_bank.assert_called_once_with(
+        assert result == process_checking.return_value
+        process_checking.assert_called_once_with(
             statement_dir.mock_statement,
-            mock_preprocessor.settings_by_type[StatementType.bank],
+            mock_preprocessor.settings_by_type[StatementType.checking],
         )
         post_process.assert_not_called()
 
@@ -113,7 +118,7 @@ class TestProcessorBase:
     def test_post_process(self, statement_dir, settings, source_name, operation):
         # test
         mock_preprocessor = ProcessorBase(settings)
-        statement_settings = mock_preprocessor.settings_by_type[StatementType.bank]
+        statement_settings = mock_preprocessor.settings_by_type[StatementType.checking]
         statement_settings.after_processed = operation
         mock_preprocessor.post_process(statement_dir.mock_statement, statement_settings)
 
@@ -127,7 +132,7 @@ class TestProcessorBase:
             # should be moved
             assert Path(
                 statement_dir.backup_statement_dir
-                / StatementType.bank.value
+                / StatementType.checking.value
                 / source_name
                 / statement_dir.mock_statement.name
             ).exists()

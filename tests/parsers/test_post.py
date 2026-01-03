@@ -25,10 +25,10 @@ class TestTaiwanPost:
                 "COL7": ["", "Notes"],  # remarks
             }
         )
-        expected = Ledger(parser.source_name, StatementType.bank)
+        expected = Ledger(parser.source_name, StatementType.checking)
         txn = Transaction(datetime(2021, 1, 1, 2, 34, 56), "Test")
         txn.create_and_append_posting(
-            parser.statement_accounts[StatementType.bank],
+            parser.statement_accounts[StatementType.checking],
             Decimal("-100"),
             "TWD",
         )

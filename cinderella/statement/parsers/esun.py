@@ -12,14 +12,14 @@ class ESun(StatementParser):
     display_name = "ESun"
 
     def __init__(self):
-        supported_types = [StatementType.bank]
+        supported_types = [StatementType.checking]
         super().__init__(supported_types)
 
     def parse_bank_statement(
         self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
     ) -> Ledger:
         records = records.fillna("").astype(str)
-        typ = StatementType.bank
+        typ = StatementType.checking
         ledger = Ledger(self.source_name, typ)
 
         for __, record in records.iterrows():

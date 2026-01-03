@@ -76,7 +76,7 @@ class Cinderella:
         this can only be done after classification
         """
         ledger_util.dedup_bank_transfer(
-            ledgers_by_type[StatementType.bank],
+            ledgers_by_type[StatementType.checking],
             tolerance_days=self.settings.ledger_processing_settings.transfer_matching_days,
         )
 

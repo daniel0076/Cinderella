@@ -13,7 +13,7 @@ class Richart(StatementParser):
     display_name = "Richart"
 
     def __init__(self):
-        supported_types = [StatementType.bank, StatementType.creditcard]
+        supported_types = [StatementType.checking, StatementType.creditcard]
         super().__init__(supported_types)
 
     def parse_creditcard_statement(
@@ -37,7 +37,7 @@ class Richart(StatementParser):
     ) -> Ledger:
         records = records.astype(str)
 
-        typ = StatementType.bank
+        typ = StatementType.checking
         ledger = Ledger(self.source_name, typ)
         for __, record in records.iterrows():
             # 台新用帳務日期欄位做為當下，交易日期可能較晚

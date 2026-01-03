@@ -15,16 +15,24 @@ class TestStatementLoader:
     def test_tailor_type_to_ledgers(self, statement_loader):
         # Prepare
         bank1_ledger1 = Ledger(
-            "bank1", StatementType.bank, [Transaction(datetime.now(), "bank1_ledger1")]
+            "bank1",
+            StatementType.checking,
+            [Transaction(datetime.now(), "bank1_ledger1")],
         )
         bank1_ledger2 = Ledger(
-            "bank1", StatementType.bank, [Transaction(datetime.now(), "bank1_ledger2")]
+            "bank1",
+            StatementType.checking,
+            [Transaction(datetime.now(), "bank1_ledger2")],
         )
         bank2_ledger1 = Ledger(
-            "bank2", StatementType.bank, [Transaction(datetime.now(), "bank2_ledger1")]
+            "bank2",
+            StatementType.checking,
+            [Transaction(datetime.now(), "bank2_ledger1")],
         )
         bank2_ledger2 = Ledger(
-            "bank2", StatementType.bank, [Transaction(datetime.now(), "bank2_ledger2")]
+            "bank2",
+            StatementType.checking,
+            [Transaction(datetime.now(), "bank2_ledger2")],
         )
 
         ledgers = [
@@ -39,7 +47,7 @@ class TestStatementLoader:
 
         # Assert
         assert dict(result) == {
-            StatementType.bank: [
+            StatementType.checking: [
                 bank1_ledger1 + bank1_ledger2,
                 bank2_ledger1 + bank2_ledger2,
             ]

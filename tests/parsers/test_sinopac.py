@@ -26,11 +26,11 @@ class TestSinopac:
                 "備註/資金用途": ["Notes"],
             }
         )
-        expected = Ledger(parser.source_name, StatementType.bank)
+        expected = Ledger(parser.source_name, StatementType.checking)
         txn = expected.create_and_append_txn(
             datetime(2023, 1, 1, 12, 34, 0),
             "Test",
-            parser.statement_accounts[StatementType.bank],
+            parser.statement_accounts[StatementType.checking],
             Decimal("1000"),
             "TWD",
         )

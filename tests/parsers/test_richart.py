@@ -51,10 +51,10 @@ class TestRichart:
                 "COL8": ["VAL8"],
             }
         )
-        expected = Ledger(richart_parser.source_name, StatementType.bank)
+        expected = Ledger(richart_parser.source_name, StatementType.checking)
         txn = Transaction(datetime(2021, 1, 31, 0, 0), "TEST")
         txn.create_and_append_posting(
-            richart_parser.statement_accounts[StatementType.bank],
+            richart_parser.statement_accounts[StatementType.checking],
             Decimal("-100"),
             "TWD",
         )

@@ -128,8 +128,8 @@ class TestSpecifiedTransactionProcessor:
         assert len(ledger2) == 0
 
     def test_dedup_by_account_and_postings_on_bank(self, ledger_utils):
-        ledger1 = Ledger("Source1", StatementType.bank)
-        ledger2 = Ledger("Source2", StatementType.bank)
+        ledger1 = Ledger("Source1", StatementType.checking)
+        ledger2 = Ledger("Source2", StatementType.checking)
         posting_from = Posting.create_simple("Asset:Bank1:Test", Decimal(-100), "TWD")
         posting_to = Posting.create_simple("Asset:Bank2:Test", Decimal(100), "TWD")
 

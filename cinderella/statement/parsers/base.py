@@ -26,7 +26,7 @@ class StatementParser(ABC):
 
     def parse(self, path: Path) -> Ledger:
         df = self._read_csv(path)
-        if StatementType.bank.value in path.as_posix():
+        if StatementType.checking.value in path.as_posix():
             return self.parse_bank_statement(df)
         elif StatementType.creditcard.value in path.as_posix():
             return self.parse_creditcard_statement(df)

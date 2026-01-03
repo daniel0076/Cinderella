@@ -153,7 +153,7 @@ def print_beans(ledger: Ledger, filepath: str = "", mode: str = "a"):
 
 def make_statement_accounts(statement_types: list[StatementType], display_name: str):
     common_prefix = {
-        StatementType.bank: "Assets:Bank:",
+        StatementType.checking: "Assets:Checking:",
         StatementType.creditcard: "Liabilities:CreditCard:",
         StatementType.receipt: "Assets:Cash",
     }

@@ -61,12 +61,12 @@ class TestCathay:
                 "COL7": ["Remarks"],  # remarks
             }
         )
-        expected = Ledger(cathay_parser.source_name, StatementType.bank)
+        expected = Ledger(cathay_parser.source_name, StatementType.checking)
         txn = Transaction(
             datetime(2023, 1, 1, 15, 10, 1), "Operation(AccountNo): Remarks"
         )
         txn.create_and_append_posting(
-            cathay_parser.statement_accounts[StatementType.bank],
+            cathay_parser.statement_accounts[StatementType.checking],
             Decimal("100"),
             "TWD",
         )
@@ -89,10 +89,10 @@ class TestCathayUSD:
                 "COL6": ["Operation"],
             }
         )
-        expected = Ledger(cathayusd_parser.source_name, StatementType.bank)
+        expected = Ledger(cathayusd_parser.source_name, StatementType.checking)
         txn = Transaction(datetime(2023, 1, 1, 15, 10, 1), "Operation: Remarks")
         txn.create_and_append_posting(
-            cathayusd_parser.statement_accounts[StatementType.bank],
+            cathayusd_parser.statement_accounts[StatementType.checking],
             Decimal("100"),
             "USD",
         )

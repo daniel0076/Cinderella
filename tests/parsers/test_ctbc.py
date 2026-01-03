@@ -25,11 +25,11 @@ class TestCTBC:
                 "註記": ["Notes"],
             }
         )
-        expected = Ledger(parser.source_name, StatementType.bank)
+        expected = Ledger(parser.source_name, StatementType.checking)
         expected.create_and_append_txn(
             datetime(2023, 1, 1, 0, 0, 0),
             "Test(Remarks 123): Notes",
-            parser.statement_accounts[StatementType.bank],
+            parser.statement_accounts[StatementType.checking],
             Decimal("1000"),
             "TWD",
         )

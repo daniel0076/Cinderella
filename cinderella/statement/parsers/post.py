@@ -14,7 +14,7 @@ class TaiwanPost(StatementParser):
     display_name = "TaiwanPost"
 
     def __init__(self):
-        supported_types = [StatementType.bank]
+        supported_types = [StatementType.checking]
         super().__init__(supported_types)
 
     def _read_csv(self, filepath: Path) -> pd.DataFrame:
@@ -32,7 +32,7 @@ class TaiwanPost(StatementParser):
         self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
     ) -> Ledger:
         records = records.fillna("").astype(str)
-        typ = StatementType.bank
+        typ = StatementType.checking
         ledger = Ledger(self.source_name, typ)
 
         prev_txn = None

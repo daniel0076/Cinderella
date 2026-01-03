@@ -22,11 +22,11 @@ class Sinopac(StatementParser):
     display_name = "SinoPac"
 
     def __init__(self):
-        supported_types = [StatementType.bank, StatementType.creditcard]
+        supported_types = [StatementType.checking, StatementType.creditcard]
         super().__init__(supported_types)
 
     def parse(self, path: Path) -> Ledger:
-        if StatementType.bank.name in path.as_posix():
+        if StatementType.checking.name in path.as_posix():
             try:
                 df = pd.read_csv(path, encoding="big5", skiprows=2)
             except UnicodeDecodeError:
@@ -81,8 +81,8 @@ class Sinopac(StatementParser):
     ) -> Ledger:
         if not attrs.currency:
             return Ledger("Invalid", StatementType.invalid)
-        category = StatementType.bank
-        ledger = Ledger(self.source_name, StatementType.bank)
+        category = StatementType.checking
+        ledger = Ledger(self.source_name, StatementType.checking)
 
         for _, record in records.iterrows():
             datetime_ = datetime.strptime(record.iloc[0].lstrip(), "%Y/%m/%d %H:%M")

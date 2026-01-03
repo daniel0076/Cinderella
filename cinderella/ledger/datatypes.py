@@ -12,7 +12,7 @@ class StatementType(Enum):
     invalid = "invalid"
     ignored = "ignored"
     custom = "custom"
-    bank = "bank"
+    checking = "checking"
     creditcard = "creditcard"
     receipt = "receipt"
     stock = "stock"

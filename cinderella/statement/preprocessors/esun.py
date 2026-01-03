@@ -22,7 +22,7 @@ class ESun(ProcessorBase):
             False, f"{file} not supported by {type(self).source_name}"
         )
 
-    def process_bank(
+    def process_checking(
         self, file: Path, settings: RawStatementProcessSettings
     ) -> ProcessedResult:
         # ensure the directory exists

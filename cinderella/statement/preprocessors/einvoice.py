@@ -96,7 +96,7 @@ class Einvoice(ProcessorBase):
             False, f"creditcard not supported by {type(self).source_name}"
         )
 
-    def process_bank(
+    def process_checking(
         self, file: Path, settings: RawStatementProcessSettings
     ) -> ProcessedResult:
         return ProcessedResult(False, f"bank not supported by {type(self).source_name}")

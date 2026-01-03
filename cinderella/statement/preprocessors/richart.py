@@ -21,9 +21,9 @@ class Richart(ProcessorBase):
         Overrides the default process
         """
         default_settings = RawStatementProcessSettings(
-            StatementType.bank, "", AfterProcessedAction.move
+            StatementType.checking, "", AfterProcessedAction.move
         )
-        settings = self.settings_by_type.get(StatementType.bank, None)
+        settings = self.settings_by_type.get(StatementType.checking, None)
         if not settings:
             settings = self.settings_by_type.get(
                 StatementType.creditcard, default_settings
@@ -39,7 +39,7 @@ class Richart(ProcessorBase):
                 creditcard_df = pd.read_excel(fp, sheet_name=0)
                 bank_df = pd.read_excel(fp, sheet_name=1)
 
-        bank_result = self._split_by_year_month(bank_df, StatementType.bank)
+        bank_result = self._split_by_year_month(bank_df, StatementType.checking)
         creditcard_result = self._split_by_year_month(
             creditcard_df, StatementType.creditcard
         )
@@ -66,7 +66,7 @@ class Richart(ProcessorBase):
     ) -> ProcessedResult:
         raise NotImplementedError
 
-    def process_bank(
+    def process_checking(
         self, file: Path, settings: RawStatementProcessSettings
     ) -> ProcessedResult:
         raise NotImplementedError

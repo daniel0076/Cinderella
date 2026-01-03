@@ -31,13 +31,13 @@ class ProcessorBase(ABC):
 
         self.process_functions = {
             StatementType.creditcard: self.process_creditcard,
-            StatementType.bank: self.process_bank,
+            StatementType.checking: self.process_checking,
             StatementType.receipt: self.process_receipt,
         }
 
     def process(self, file: Path) -> ProcessedResult:
         """
-        Process the file using a source processor based on the type hint from the file name
+        Process the file using a source processor based on the type hint from the file path
         """
         logger = logging.getLogger(LOG_NAME)
 
@@ -68,7 +68,7 @@ class ProcessorBase(ABC):
 
             return result
 
-        return ProcessedResult(False, f"No process function for {file}")
+        return ProcessedResult(False, f"No processor implementation for {file}")
 
     def post_process(self, file: Path, settings: RawStatementProcessSettings):
         """
@@ -98,7 +98,7 @@ class ProcessorBase(ABC):
         pass
 
     @abstractmethod
-    def process_bank(
+    def process_checking(
         cls, file: Path, settings: RawStatementProcessSettings
     ) -> ProcessedResult:
         pass
