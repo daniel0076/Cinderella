@@ -7,7 +7,7 @@ from dacite.core import from_dict
 from dacite.config import Config
 from enum import Enum
 from pprint import pformat
-import json
+import yaml
 
 
 LOG_NAME = "Cinderella"
@@ -18,7 +18,7 @@ class SettingsBase:
     @classmethod
     def from_file(cls, path: str):
         with open(path) as fp:
-            content = json.load(fp)
+            content = yaml.safe_load(fp)
         return cls.from_dict(content)
 
     @classmethod

@@ -49,13 +49,13 @@ class Cathay(StatementParser):
         if not (attrs.year and attrs.month):
             return Ledger("Invalid", StatementType.invalid)
 
-        records = records.astype(str)
+        records = records.fillna("").astype(str)
         typ = StatementType.creditcard
         ledger = Ledger(self.source_name, typ)
 
         for _, record in records.iterrows():
-            indicator = record["卡號末四碼"]
-            if not indicator or not indicator.strip().isdigit():
+            valid_indicator = record["卡號末四碼"]
+            if not valid_indicator or not valid_indicator.strip().isdigit():
                 continue
 
             item_month, item_day = record.iloc[0].split("/", maxsplit=1)
