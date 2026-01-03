@@ -107,7 +107,7 @@ def transform_ledger(ledger: Ledger) -> list[Transaction]:
 
 
 def load_beanfile_to_internal_transactions(
-    path: Union[Path, str]
+    path: Union[Path, str],
 ) -> list[InternalTransaction]:
     if isinstance(path, str):
         if not path:
