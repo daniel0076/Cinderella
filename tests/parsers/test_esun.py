@@ -12,7 +12,7 @@ def parser():
 
 
 class TestESun:
-    def test_parse_bank_statement(self, parser: ESun):
+    def test_parse_checking_statement(self, parser: ESun):
         df = pd.DataFrame(
             {
                 "COL1": ["2023-01-01 01:23:45"],
@@ -33,5 +33,5 @@ class TestESun:
         )
         txn.insert_comment(f"{parser.display_name}", "Remarks")
 
-        result = parser.parse_bank_statement(df)
+        result = parser.parse_checking_statement(df)
         assert expected == result

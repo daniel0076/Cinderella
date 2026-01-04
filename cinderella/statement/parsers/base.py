@@ -1,6 +1,6 @@
 import logging
 import pandas as pd
-from abc import ABC
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Optional
 
@@ -8,6 +8,8 @@ from cinderella.settings import LOG_NAME
 from cinderella.ledger.datatypes import StatementType, Ledger
 from cinderella.statement.datatypes import StatementAttributes
 from cinderella.external.beancountapi import make_statement_accounts
+from cinderella.statement.preprocessors.base import RawStatementProcessSettings
+from cinderella.statement.preprocessors.cryptocom import ProcessResult
 
 
 class StatementParser(ABC):
@@ -27,7 +29,7 @@ class StatementParser(ABC):
     def parse(self, path: Path) -> Ledger:
         df = self._read_csv(path)
         if StatementType.checking.value in path.as_posix():
-            return self.parse_bank_statement(df)
+            return self.parse_checking_statement(df)
         elif StatementType.creditcard.value in path.as_posix():
             return self.parse_creditcard_statement(df)
         elif StatementType.receipt.value in path.as_posix():
@@ -39,7 +41,7 @@ class StatementParser(ABC):
             return Ledger("Invalid", StatementType.invalid)
 
     def _read_csv(self, path: Path) -> pd.DataFrame:
-        df = pd.read_csv(path.as_posix())
+        df = pg.read_csv(path.as_posix())
         return df
 
     def get_statement_accounts(self) -> dict:
@@ -51,7 +53,7 @@ class StatementParser(ABC):
         self.logger.warning(f"CreditCard is not supported by {self.display_name}")
         return Ledger(self.source_name, StatementType.invalid)
 
-    def parse_bank_statement(
+    def parse_checking_statement(
         self, df: pd.DataFrame, attrs: Optional[StatementAttributes] = None
     ) -> Ledger:
         self.logger.warning(f"Bank is not supported by {self.display_name}")

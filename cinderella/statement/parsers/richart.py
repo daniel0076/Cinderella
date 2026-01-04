@@ -32,7 +32,7 @@ class Richart(StatementParser):
 
         return ledger
 
-    def parse_bank_statement(
+    def parse_checking_statement(
         self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
     ) -> Ledger:
         records = records.astype(str)

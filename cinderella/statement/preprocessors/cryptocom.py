@@ -5,15 +5,15 @@ from . import utils
 
 from cinderella.ledger.datatypes import StatementType
 from cinderella.settings import RawStatementProcessSettings
-from cinderella.statement.preprocessors.base import ProcessorBase, ProcessedResult
+from cinderella.statement.preprocessors.base import PreprocessorBase, ProcessResult
 
 
-class CryptoCom(ProcessorBase):
+class CryptoCom(PreprocessorBase):
     source_name = "cryptocom"
 
     def process_creditcard(
         self, file: Path, settings: RawStatementProcessSettings
-    ) -> ProcessedResult:
+    ) -> ProcessResult:
         # ensure the directory exists
         output_dir = Path(
             self.output_dir, StatementType.creditcard.value, type(self).source_name
@@ -29,10 +29,10 @@ class CryptoCom(ProcessorBase):
             if result_df is not None:
                 result_df.to_csv(output_file, index=False)
 
-        return ProcessedResult(True, "")  # Supress warning outside
+        return ProcessResult(True, "")  # Supress warning outside
 
-    def process_receipt(self, _, __) -> ProcessedResult:
+    def process_receipt(self, _, __) -> ProcessResult:
         raise NotImplementedError
 
-    def process_checking(self, _, __) -> ProcessedResult:
+    def process_checking(self, _, __) -> ProcessResult:
         raise NotImplementedError

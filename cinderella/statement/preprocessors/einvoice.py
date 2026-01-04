@@ -6,19 +6,19 @@ import csv
 from datetime import datetime
 from pathlib import Path
 
-from cinderella.statement.preprocessors.base import ProcessorBase, ProcessedResult
+from cinderella.statement.preprocessors.base import PreprocessorBase, ProcessResult
 from cinderella.ledger.datatypes import StatementType
 from cinderella.settings import RawStatementProcessSettings, LOG_NAME
 
 logger = logging.getLogger(LOG_NAME)
 
 
-class Einvoice(ProcessorBase):
+class Einvoice(PreprocessorBase):
     source_name = "einvoice"
 
     def process_receipt(
         self, file: Path, settings: RawStatementProcessSettings
-    ) -> ProcessedResult:
+    ) -> ProcessResult:
         # ensure the directory exists
         output_dir = Path(
             self.output_dir, StatementType.receipt.value, type(self).source_name
@@ -60,7 +60,7 @@ class Einvoice(ProcessorBase):
                 f"{file_output} exists, and might containts current file content, skipping"
             )
 
-        return ProcessedResult(True, "success")
+        return ProcessResult(True, "success")
 
     def _remove_duplicated_csv(self, directory: Path, receipt_id_df: pd.DataFrame):
         """
@@ -91,12 +91,12 @@ class Einvoice(ProcessorBase):
 
     def process_creditcard(
         self, file: Path, settings: RawStatementProcessSettings
-    ) -> ProcessedResult:
-        return ProcessedResult(
+    ) -> ProcessResult:
+        return ProcessResult(
             False, f"creditcard not supported by {type(self).source_name}"
         )
 
     def process_checking(
         self, file: Path, settings: RawStatementProcessSettings
-    ) -> ProcessedResult:
-        return ProcessedResult(False, f"bank not supported by {type(self).source_name}")
+    ) -> ProcessResult:
+        return ProcessResult(False, f"bank not supported by {type(self).source_name}")

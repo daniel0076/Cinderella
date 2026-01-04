@@ -22,7 +22,7 @@ class Cathay(StatementParser):
             df = pd.read_csv(
                 path, encoding="big5", skiprows=1, encoding_errors="replace"
             )
-            return self.parse_bank_statement(df)
+            return self.parse_checking_statement(df)
 
         elif StatementType.creditcard.name in path.as_posix():
             # No year info in creditcard statement
@@ -85,7 +85,7 @@ class Cathay(StatementParser):
 
         return ledger
 
-    def parse_bank_statement(
+    def parse_checking_statement(
         self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
     ) -> Ledger:
         records = records.fillna("").astype(str)
@@ -138,7 +138,7 @@ class CathayUSD(StatementParser):
         df = pd.read_csv(path.as_posix(), encoding="big5")
         return df
 
-    def parse_bank_statement(
+    def parse_checking_statement(
         self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
     ) -> Ledger:
         records = records.fillna("").astype(str)

@@ -48,7 +48,7 @@ class TestCathay:
         )
         assert expected == result
 
-    def test_parse_bank_statement(self, cathay_parser: Cathay):
+    def test_parse_checking_statement(self, cathay_parser: Cathay):
         df = pd.DataFrame(
             {
                 "COL0": ["20230101"],  # date
@@ -72,12 +72,12 @@ class TestCathay:
         )
         expected.append_txn(txn)
 
-        result = cathay_parser.parse_bank_statement(df)
+        result = cathay_parser.parse_checking_statement(df)
         assert expected == result
 
 
 class TestCathayUSD:
-    def test_parse_bank_statement(self, cathayusd_parser: CathayUSD):
+    def test_parse_checking_statement(self, cathayusd_parser: CathayUSD):
         df = pd.DataFrame(
             {
                 "COL0": ["2023/01/01"],  # date
@@ -98,5 +98,5 @@ class TestCathayUSD:
         )
         expected.append_txn(txn)
 
-        result = cathayusd_parser.parse_bank_statement(df)
+        result = cathayusd_parser.parse_checking_statement(df)
         assert expected == result

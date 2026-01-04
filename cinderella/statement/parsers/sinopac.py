@@ -46,7 +46,9 @@ class Sinopac(StatementParser):
                 currency = "JPY"
 
             df = df.replace({"\t": ""}, regex=True).fillna("").astype(str)
-            return self.parse_bank_statement(df, StatementAttributes(currency=currency))
+            return self.parse_checking_statement(
+                df, StatementAttributes(currency=currency)
+            )
 
         elif StatementType.creditcard.name in path.as_posix():
             df = pd.read_csv(path)
@@ -76,7 +78,7 @@ class Sinopac(StatementParser):
 
         return ledger
 
-    def parse_bank_statement(
+    def parse_checking_statement(
         self, records: pd.DataFrame, attrs: StatementAttributes
     ) -> Ledger:
         if not attrs.currency:

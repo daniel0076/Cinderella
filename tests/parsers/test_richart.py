@@ -37,7 +37,7 @@ class TestRichart:
         result = richart_parser.parse_creditcard_statement(df)
         assert expected == result
 
-    def test_parse_bank_statement(self, richart_parser: Richart):
+    def test_parse_checking_statement(self, richart_parser: Richart):
         df = pd.DataFrame(
             {
                 "COL1": ["VAL1"],
@@ -61,5 +61,5 @@ class TestRichart:
         txn.insert_comment(richart_parser.display_name, "TEST")
         expected.append_txn(txn)
 
-        result = richart_parser.parse_bank_statement(df)
+        result = richart_parser.parse_checking_statement(df)
         assert expected == result

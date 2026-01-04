@@ -27,7 +27,7 @@ class CTBC(StatementParser):
         )
         return df
 
-    def parse_bank_statement(
+    def parse_checking_statement(
         self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
     ) -> Ledger:
         records = records.fillna("").astype(str)

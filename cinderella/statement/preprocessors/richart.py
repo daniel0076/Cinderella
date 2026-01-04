@@ -4,7 +4,7 @@ import logging
 import zipfile
 from pathlib import Path
 
-from cinderella.statement.preprocessors.base import ProcessorBase, ProcessedResult
+from cinderella.statement.preprocessors.base import PreprocessorBase, ProcessResult
 from cinderella.statement.datatypes import AfterProcessedAction
 from cinderella.ledger.datatypes import StatementType
 from cinderella.settings import LOG_NAME, RawStatementProcessSettings
@@ -12,10 +12,10 @@ from cinderella.settings import LOG_NAME, RawStatementProcessSettings
 logger = logging.getLogger(LOG_NAME)
 
 
-class Richart(ProcessorBase):
+class Richart(PreprocessorBase):
     source_name = "richart"
 
-    def process(self, file: Path) -> ProcessedResult:
+    def process(self, file: Path) -> ProcessResult:
         """
         Richart has bank and creditcard in the same file
         Overrides the default process
@@ -30,7 +30,7 @@ class Richart(ProcessorBase):
             )
 
         if not zipfile.is_zipfile(file):
-            return ProcessedResult(False, f"{file} is not a valid zip file")
+            return ProcessResult(False, f"{file} is not a valid zip file")
 
         with zipfile.ZipFile(file) as zipfp:
             filename = zipfp.namelist()[0]  # only contains one file
@@ -46,7 +46,7 @@ class Richart(ProcessorBase):
 
         if bank_result.success and creditcard_result.success:
             self.post_process(file, settings)
-            return ProcessedResult(True, "")  # Supress warning outside
+            return ProcessResult(True, "")  # Supress warning outside
 
         if not bank_result.success:
             logger.error(bank_result.message)
@@ -54,26 +54,26 @@ class Richart(ProcessorBase):
             logger.error(creditcard_result.message)
 
         # Supress warning outside
-        return ProcessedResult(False, f"{self.source_name} preprocess failed")
+        return ProcessResult(False, f"{self.source_name} preprocess failed")
 
     def process_receipt(
         self, file: Path, settings: RawStatementProcessSettings
-    ) -> ProcessedResult:
+    ) -> ProcessResult:
         raise NotImplementedError
 
     def process_creditcard(
         self, file: Path, settings: RawStatementProcessSettings
-    ) -> ProcessedResult:
+    ) -> ProcessResult:
         raise NotImplementedError
 
     def process_checking(
         self, file: Path, settings: RawStatementProcessSettings
-    ) -> ProcessedResult:
+    ) -> ProcessResult:
         raise NotImplementedError
 
     def _split_by_year_month(
         self, df: pd.DataFrame, statement_type: StatementType
-    ) -> ProcessedResult:
+    ) -> ProcessResult:
         # ensure the directory exists
         output_dir = Path(self.output_dir, statement_type.value, type(self).source_name)
         os.makedirs(output_dir, exist_ok=True)
@@ -100,7 +100,7 @@ class Richart(ProcessorBase):
                 print(f"preprocessor[{self.source_name}]: output to {output_file}")
                 result_df.to_csv(output_file, index=False)
 
-        return ProcessedResult(True, "")
+        return ProcessResult(True, "")
 
     def _should_replace(self, target: Path, result_df: pd.DataFrame):
         existing_df = pd.read_csv(target)

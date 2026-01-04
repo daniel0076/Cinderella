@@ -3,28 +3,24 @@ import pandas as pd
 import logging
 from pathlib import Path
 
-from cinderella.statement.preprocessors.base import ProcessorBase, ProcessedResult
+from cinderella.statement.preprocessors.base import PreprocessorBase, ProcessResult
 from cinderella.settings import LOG_NAME, RawStatementProcessSettings
 
 logger = logging.getLogger(LOG_NAME)
 
 
-class ESun(ProcessorBase):
+class ESun(PreprocessorBase):
     source_name = "esun"
 
-    def process_receipt(self, file: Path, _) -> ProcessedResult:
-        return ProcessedResult(
-            False, f"{file} not supported by {type(self).source_name}"
-        )
+    def process_receipt(self, file: Path, _) -> ProcessResult:
+        return ProcessResult(False, f"{file} not supported by {type(self).source_name}")
 
-    def process_creditcard(self, file: Path, _) -> ProcessedResult:
-        return ProcessedResult(
-            False, f"{file} not supported by {type(self).source_name}"
-        )
+    def process_creditcard(self, file: Path, _) -> ProcessResult:
+        return ProcessResult(False, f"{file} not supported by {type(self).source_name}")
 
     def process_checking(
         self, file: Path, settings: RawStatementProcessSettings
-    ) -> ProcessedResult:
+    ) -> ProcessResult:
         # ensure the directory exists
         output_dir = Path(
             self.output_dir, settings.statement_type.value, type(self).source_name
@@ -56,7 +52,7 @@ class ESun(ProcessorBase):
                 print(f"output {output_file}")
                 result_df.to_csv(output_file, index=False)
 
-        return ProcessedResult(True, "")
+        return ProcessResult(True, "")
 
     def _should_replace(self, target: Path, result_df: pd.DataFrame):
         existing_df = pd.read_csv(target)

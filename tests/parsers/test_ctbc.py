@@ -12,7 +12,7 @@ def parser():
 
 
 class TestCTBC:
-    def test_parse_bank_statement(self, parser: CTBC):
+    def test_parse_checking_statement(self, parser: CTBC):
         df = pd.DataFrame(
             {
                 "日期": ["2023/01/01"],
@@ -34,7 +34,7 @@ class TestCTBC:
             "TWD",
         )
 
-        result = parser.parse_bank_statement(df)
+        result = parser.parse_checking_statement(df)
         assert expected == result
 
     def test_parse_creditcard_statement(self, parser: CTBC):

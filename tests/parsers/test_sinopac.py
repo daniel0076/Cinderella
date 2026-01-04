@@ -13,7 +13,7 @@ def parser():
 
 
 class TestSinopac:
-    def test_parse_bank_statement(self, parser: Sinopac):
+    def test_parse_checking_statement(self, parser: Sinopac):
         df = pd.DataFrame(
             {
                 "交易日": ["2023/01/01 12:34"],
@@ -36,7 +36,9 @@ class TestSinopac:
         )
         txn.insert_comment(f"{parser.display_name}", "Notes")
 
-        result = parser.parse_bank_statement(df, StatementAttributes(currency="TWD"))
+        result = parser.parse_checking_statement(
+            df, StatementAttributes(currency="TWD")
+        )
         assert expected == result
 
     def test_parse_creditcard_statement(self, parser: Sinopac):

@@ -11,13 +11,13 @@ from cinderella.settings import LOG_NAME
 
 
 @dataclass
-class ProcessedResult:
+class ProcessResult:
     success: bool = False
     message: str = ""
 
 
-class ProcessorBase(ABC):
-    source_name = "ProcessorBase"
+class PreprocessorBase(ABC):
+    source_name = "PreprocessorBase"
 
     def __init__(self, settings: StatementSettings):
         self.output_dir = settings.ready_statement_folder
@@ -35,7 +35,7 @@ class ProcessorBase(ABC):
             StatementType.receipt: self.process_receipt,
         }
 
-    def process(self, file: Path) -> ProcessedResult:
+    def process(self, file: Path) -> ProcessResult:
         """
         Process the file using a source processor based on the type hint from the file path
         """
@@ -59,7 +59,7 @@ class ProcessorBase(ABC):
                     statement_type, "", AfterProcessedAction.move
                 )
 
-            result: ProcessedResult = self.process_functions[statement_type](
+            result: ProcessResult = self.process_functions[statement_type](
                 file, process_settings
             )
             if result.success:
@@ -68,7 +68,7 @@ class ProcessorBase(ABC):
 
             return result
 
-        return ProcessedResult(False, f"No processor implementation for {file}")
+        return ProcessResult(False, f"No processor implementation for {file}")
 
     def post_process(self, file: Path, settings: RawStatementProcessSettings):
         """
@@ -94,17 +94,17 @@ class ProcessorBase(ABC):
     @abstractmethod
     def process_creditcard(
         cls, file: Path, settings: RawStatementProcessSettings
-    ) -> ProcessedResult:
+    ) -> ProcessResult:
         pass
 
     @abstractmethod
     def process_checking(
         cls, file: Path, settings: RawStatementProcessSettings
-    ) -> ProcessedResult:
+    ) -> ProcessResult:
         pass
 
     @abstractmethod
     def process_receipt(
         cls, file: Path, settings: RawStatementProcessSettings
-    ) -> ProcessedResult:
+    ) -> ProcessResult:
         pass

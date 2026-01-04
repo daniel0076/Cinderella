@@ -12,7 +12,7 @@ def parser():
 
 
 class TestTaiwanPost:
-    def test_parse_bank_statement(self, parser: TaiwanPost):
+    def test_parse_checking_statement(self, parser: TaiwanPost):
         df = pd.DataFrame(
             {
                 "COL0": ["110/01/01 02:34:56", "110/01/01 02:34:56"],  # datetime
@@ -36,5 +36,5 @@ class TestTaiwanPost:
         txn.insert_comment(f"{parser.display_name}-Notes", "Notes")
         expected.append_txn(txn)
 
-        result = parser.parse_bank_statement(df)
+        result = parser.parse_checking_statement(df)
         assert expected == result

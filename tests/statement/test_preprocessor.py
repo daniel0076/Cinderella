@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from unittest.mock import patch
 
-from cinderella.statement.preprocessors.base import ProcessorBase, ProcessedResult
+from cinderella.statement.preprocessors.base import PreprocessorBase, ProcessResult
 from cinderella.statement.datatypes import AfterProcessedAction
 from cinderella.ledger.datatypes import StatementType
 from cinderella.settings import StatementSettings, RawStatementProcessSettings
@@ -60,17 +60,19 @@ def settings(statement_dir, source_name) -> StatementSettings:
 
 class TestProcessorBase:
     # if __abstractmethod__ is non-empty, the class is considered abstract
-    @patch.multiple(ProcessorBase, __abstractmethods__=set(), source_name="mock_source")
-    @patch.object(ProcessorBase, "post_process")
-    @patch.object(ProcessorBase, "process_checking")
+    @patch.multiple(
+        PreprocessorBase, __abstractmethods__=set(), source_name="mock_source"
+    )
+    @patch.object(PreprocessorBase, "post_process")
+    @patch.object(PreprocessorBase, "process_checking")
     def test_process_success(
         self, process_checking, post_process, statement_dir, settings
     ):
         # prepare
-        process_checking.return_value = ProcessedResult(True, "success")
+        process_checking.return_value = ProcessResult(True, "success")
 
         # test
-        mock_preprocessor = ProcessorBase(settings)
+        mock_preprocessor = PreprocessorBase(settings)
         result = mock_preprocessor.process(statement_dir.mock_statement)
         print(result)
 
@@ -85,17 +87,19 @@ class TestProcessorBase:
             mock_preprocessor.settings_by_type[StatementType.checking],
         )
 
-    @patch.multiple(ProcessorBase, __abstractmethods__=set(), source_name="mock_source")
-    @patch.object(ProcessorBase, "post_process")
-    @patch.object(ProcessorBase, "process_checking")
+    @patch.multiple(
+        PreprocessorBase, __abstractmethods__=set(), source_name="mock_source"
+    )
+    @patch.object(PreprocessorBase, "post_process")
+    @patch.object(PreprocessorBase, "process_checking")
     def test_process_failed(
         self, process_checking, post_process, statement_dir, settings
     ):
         # prepare
-        process_checking.return_value = ProcessedResult(False, "failed")
+        process_checking.return_value = ProcessResult(False, "failed")
 
         # test
-        mock_preprocessor = ProcessorBase(settings)
+        mock_preprocessor = PreprocessorBase(settings)
         result = mock_preprocessor.process(statement_dir.mock_statement)
 
         # assert
@@ -114,10 +118,12 @@ class TestProcessorBase:
             AfterProcessedAction.move,
         ],
     )
-    @patch.multiple(ProcessorBase, __abstractmethods__=set(), source_name="mock_source")
+    @patch.multiple(
+        PreprocessorBase, __abstractmethods__=set(), source_name="mock_source"
+    )
     def test_post_process(self, statement_dir, settings, source_name, operation):
         # test
-        mock_preprocessor = ProcessorBase(settings)
+        mock_preprocessor = PreprocessorBase(settings)
         statement_settings = mock_preprocessor.settings_by_type[StatementType.checking]
         statement_settings.after_processed = operation
         mock_preprocessor.post_process(statement_dir.mock_statement, statement_settings)
