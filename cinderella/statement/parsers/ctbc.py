@@ -16,10 +16,10 @@ logging.getLogger("pdfminer").setLevel(logging.ERROR)
 class CTBC(StatementParser):
     source_name = "ctbc"
     display_name = "CTBC"
+    supported_statement_types = [StatementType.checking, StatementType.creditcard]
 
     def __init__(self):
-        supported_types = [StatementType.checking, StatementType.creditcard]
-        super().__init__(supported_types)
+        super().__init__()
 
     def _read_csv(self, filepath: Path) -> pd.DataFrame:
         df = pd.read_csv(

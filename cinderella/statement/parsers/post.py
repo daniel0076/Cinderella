@@ -12,10 +12,10 @@ from .base import StatementParser
 class TaiwanPost(StatementParser):
     source_name = "post"
     display_name = "TaiwanPost"
+    supported_statement_types = [StatementType.checking]
 
     def __init__(self):
-        supported_types = [StatementType.checking]
-        super().__init__(supported_types)
+        super().__init__()
 
     def _read_csv(self, filepath: Path) -> pd.DataFrame:
         df = pd.read_csv(

@@ -1,14 +1,15 @@
 import pytest
 from unittest.mock import patch
 from datetime import datetime
+from cinderella.settings import StatementSettings
 from cinderella.statement.loader import StatementLoader
 from cinderella.ledger.datatypes import Ledger, Transaction, StatementType
 
 
 @pytest.fixture
 def statement_loader():
-    with patch("cinderella.statement.loader.get_parsers", return_value=[]):
-        yield StatementLoader()
+    with patch("cinderella.statement.loader.registry.get_parsers", return_value=[]):
+        yield StatementLoader(StatementSettings("", "", "", {}))
 
 
 class TestStatementLoader:

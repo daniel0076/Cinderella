@@ -12,10 +12,10 @@ from .base import StatementParser
 class Invos(StatementParser):
     source_name = "invos"
     display_name = "Invos"
+    supported_statement_types = [StatementType.receipt]
 
     def __init__(self):
-        supported_types = [StatementType.receipt]
-        super().__init__(supported_types)
+        super().__init__()
 
     def parse(self, filepath: Path):
         if "invos" in filepath.as_posix() and "csv" in filepath.name:

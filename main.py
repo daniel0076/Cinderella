@@ -4,7 +4,6 @@ import logging
 
 from cinderella.cinderella import Cinderella
 from cinderella.settings import CinderellaSettings, LOG_NAME
-from cinderella.statement.preprocessors import StatementPreprocessor
 
 PROJECT_ROOT = os.path.dirname(__file__)
 CURRENT_DIR = os.getcwd()
@@ -48,17 +47,12 @@ if __name__ == "__main__":
     logger.debug(f"Configurations details:\n{settings}")
     print("Configurations: ")
     print(
-        f"Preprocessing statements from: {settings.statement_settings.raw_statement_folder}"
+        f"Preprocessing statements from: {settings.statement_file_settings.input_statement_folder}"
     )
     print(
-        f"Reading statements from: {settings.statement_settings.ready_statement_folder}"
+        f"Reading statements from: {settings.statement_file_settings.preprocessed_statement_folder}"
     )
     print(f"Output beanfiles to: {settings.beancount_settings.output_beanfiles_folder}")
-
-    # create statement preprocessor
-    print("Preprocessing raw statements")
-    statement_preprocessor = StatementPreprocessor(settings.statement_settings)
-    statement_preprocessor.process()
 
     print("Processing statements to transactions...")
     cinderella = Cinderella(settings)

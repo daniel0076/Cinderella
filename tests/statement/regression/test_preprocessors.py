@@ -1,18 +1,19 @@
 import filecmp
 import pytest
 from pathlib import Path
-from cinderella.statement.preprocessors.richart import Richart as RichartPreprocessor
-from cinderella.statement.preprocessors.esun import ESun as ESunPreprocessor
-from cinderella.statement.preprocessors.einvoice import Einvoice as EinvoicePreprocessor
-from cinderella.statement.datatypes import AfterProcessedAction
+from cinderella.statement.parsers.base import StatementParser
+from cinderella.statement.parsers.richart import Richart
+from cinderella.statement.parsers.esun import ESun
+from cinderella.statement.parsers.einvoice import Einvoice
+from cinderella.statement.datatypes import AfterPreprocessAction
 from cinderella.ledger.datatypes import StatementType
-from cinderella.settings import StatementSettings, RawStatementProcessSettings
+from cinderella.settings import StatementSettings, PreprocessSettings
 
 
 @pytest.fixture
-def get_data():
-    def file_path(source_name: str, direction: str, filename: str):
-        return Path(__file__).parent / "data" / source_name / direction / filename
+def get_statement_path():
+    def file_path(source_name: str, statement_type: str, filename: str):
+        return Path(__file__).parent / "data" / source_name / statement_type / filename
 
     return file_path
 
@@ -22,17 +23,17 @@ def gen_settings(tmp_path):
     def gen_settings_impl(
         source_name: str, password: str, statement_type: StatementType
     ):
-        ready_dir = tmp_path / "ready"
+        proprocessed_statements_dir = tmp_path / "preprocessed_statements"
         settings = StatementSettings(
             "",
-            ready_dir.as_posix(),
+            proprocessed_statements_dir.as_posix(),
             "",
             {
-                source_name: [
-                    RawStatementProcessSettings(
-                        statement_type, password, AfterProcessedAction.keep
+                source_name: {
+                    statement_type: PreprocessSettings(
+                        statement_type, password, AfterPreprocessAction.keep
                     )
-                ]
+                }
             },
         )
         return settings
@@ -40,54 +41,41 @@ def gen_settings(tmp_path):
     return gen_settings_impl
 
 
-class TestPreProcessor:
+class TestPreProcess:
     @pytest.mark.parametrize(
-        "source_name, statement_type, target_cls, test_file, password, result_file, expected_file",
+        "statement_type, target_cls, test_file, password, result_file, expected_file",
         [
             (
-                "einvoice",
                 StatementType.receipt,
-                EinvoicePreprocessor,
+                Einvoice,
                 "test_receipt.csv",
                 "",
                 "202210.csv",
                 "receipt_expected.csv",
             ),
             (
-                "esun",
                 StatementType.checking,
-                ESunPreprocessor,
+                ESun,
                 "test_checking.html",
                 "",
                 "202210.csv",
                 "bank_expected.csv",
             ),
             (
-                "richart",
                 StatementType.checking,
-                RichartPreprocessor,
+                Richart,
                 "test_bank_creditcard.zip",
                 "password",
                 "202210.csv",
                 "bank_expected.csv",
             ),
-            (
-                "richart",
-                StatementType.creditcard,
-                RichartPreprocessor,
-                "test_bank_creditcard.zip",
-                "password",
-                "202210.csv",
-                "creditcard_expected.csv",
-            ),
         ],
-        ids=["einvoice-receipt", "esun-bank", "richart-bank", "richart-creditcard"],
+        ids=["einvoice-receipt", "esun-bank", "richart-bank"],
     )
-    def test_process(
+    def test_preprocess_by_statement_type(
         self,
-        get_data,
+        get_statement_path,
         gen_settings,
-        source_name,
         statement_type,
         target_cls,
         test_file,
@@ -95,17 +83,38 @@ class TestPreProcessor:
         result_file,
         expected_file,
     ):
-        settings = gen_settings(source_name, password, statement_type)
-        preprocessor = target_cls(settings)
-        result = preprocessor.process(get_data(source_name, "input", test_file))
+        source_name = target_cls.source_name
+        parser: StatementParser = target_cls()
+        settings: StatementSettings = gen_settings(
+            source_name, password, statement_type
+        )
+        output_dir = Path(
+            settings.preprocessed_statement_folder, source_name, statement_type.value
+        )
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        if statement_type == StatementType.creditcard:
+            func = parser.preprocess_creditcard_statement
+        elif statement_type == StatementType.checking:
+            func = parser.preprocess_checking_statement
+        elif statement_type == StatementType.receipt:
+            func = parser.preprocess_receipt_statement
+        else:
+            assert False, "Unsupported statement type"
+
+        result = func(
+            get_statement_path(source_name, statement_type.value, test_file),
+            output_dir,
+            settings.preprocess_settings[source_name][statement_type],
+        )
 
         result_path = Path(
-            settings.ready_statement_folder,
-            statement_type.value,
+            settings.preprocessed_statement_folder,
             source_name,
+            statement_type.value,
             result_file,
         )
-        expected_path = get_data(source_name, "output", expected_file)
+        expected_path = get_statement_path(source_name, "expected", expected_file)
 
         assert result.success
         assert result_path.exists()

@@ -1,8 +1,8 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from cinderella.statement.datatypes import AfterProcessedAction
+from cinderella.statement.datatypes import AfterPreprocessAction
 from cinderella.ledger.datatypes import StatementType
-from typing import Dict
+from typing import Dict, Optional
 from dacite.core import from_dict
 from dacite.config import Config
 from enum import Enum
@@ -37,18 +37,20 @@ class SettingsBase:
 
 
 @dataclass
-class RawStatementProcessSettings(SettingsBase):
+class PreprocessSettings(SettingsBase):
     statement_type: StatementType
     password: str
-    after_processed: AfterProcessedAction
+    after_processed: AfterPreprocessAction
+    archive_folder: str = "./archive"
 
 
 @dataclass
 class StatementSettings(SettingsBase):
-    raw_statement_folder: str
-    ready_statement_folder: str
-    backup_statement_folder: str
-    raw_statement_processing: dict[str, list[RawStatementProcessSettings]] = field(
+    input_statement_folder: str
+    preprocessed_statement_folder: str
+    archive_statement_folder: str
+    # sorce_name -> statement_type -> PreprocessSettings
+    preprocess_settings: dict[str, dict[StatementType, PreprocessSettings]] = field(
         default_factory=dict
     )
 
@@ -67,7 +69,7 @@ class LedgerProcessingSettings(SettingsBase):
 
 @dataclass
 class CinderellaSettings(SettingsBase):
-    statement_settings: StatementSettings
+    statement_file_settings: StatementSettings
     beancount_settings: BeancountSettings
     ledger_processing_settings: LedgerProcessingSettings
     mappings: Dict[str, Dict[str, list[str]]]

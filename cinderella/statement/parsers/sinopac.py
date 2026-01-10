@@ -20,10 +20,10 @@ from .base import StatementParser
 class Sinopac(StatementParser):
     source_name = "sinopac"
     display_name = "SinoPac"
+    supported_statement_types = [StatementType.checking, StatementType.creditcard]
 
     def __init__(self):
-        supported_types = [StatementType.checking, StatementType.creditcard]
-        super().__init__(supported_types)
+        super().__init__()
 
     def parse(self, path: Path) -> Ledger:
         if StatementType.checking.name in path.as_posix():

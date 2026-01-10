@@ -1,12 +1,17 @@
 from __future__ import annotations  # required for TYPE_CHECKING
 import logging
-from typing import Iterator, Union, Iterable
+from typing import Dict, Iterator, Union, Iterable
 from copy import deepcopy
 from collections import defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
-from .parsers import get_parsers
-from cinderella.settings import LOG_NAME
+
+from anyio.streams import file
+from fontTools.feaLib.ast import Statement
+
+from cinderella.statement.datatypes import ExecutionResult
+from cinderella.statement.parsers import registry
+from cinderella.settings import LOG_NAME, StatementSettings
 from cinderella.utils import iterate_files
 from cinderella.ledger.datatypes import StatementType
 
@@ -19,26 +24,18 @@ logger = logging.getLogger(LOG_NAME)
 
 
 class StatementLoader:
-    def __init__(self):
-        self.parsers: list[StatementParser] = []
-        parser_names = []
-        for parser_cls in get_parsers():
-            self.parsers.append(parser_cls())
-            parser_names.append(parser_cls.source_name)
-
-        # longer source_name has higher precedence
-        self.parsers = sorted(
-            self.parsers, key=lambda x: len(x.source_name), reverse=True
-        )
+    def __init__(self, statement_settings: StatementSettings):
+        self.parsers: Dict[str, StatementParser] = registry.get_parsers()
+        self.statement_settings = statement_settings
 
     def get_all_statement_accounts(self) -> list:
         accounts = []
-        for parser in self.parsers:
+        for parser in self.parsers.values():
             accounts += parser.get_statement_accounts().values()
         return accounts
 
     def _find_parser(self, path: str) -> Union[StatementParser, None]:
-        for parser in self.parsers:
+        for parser in self.parsers.values():
             if parser.source_name in path:
                 return parser
         return None
@@ -94,3 +91,28 @@ class StatementLoader:
 
         ledgers = self._load_file_to_ledgers(path)
         return self._tailor_type_to_ledgers(ledgers)
+
+    def preprocess_statements(self) -> ExecutionResult:
+        # delegate each source folder to each parser
+        for parser in self.parsers.values():
+            input_dir = (
+                Path(self.statement_settings.input_statement_folder)
+                / parser.source_name
+            )
+            if not input_dir.exists() or not input_dir.is_dir():
+                continue
+
+            output_dir = Path(self.statement_settings.preprocessed_statement_folder)
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+            result = parser.preprocess(
+                input_dir,
+                output_dir,
+                self.statement_settings.preprocess_settings.get(parser.source_name),
+            )
+            if result.success:
+                logger.info(
+                    f"Preprocess for {parser.display_name} completed successfully."
+                )
+
+        return ExecutionResult(True)

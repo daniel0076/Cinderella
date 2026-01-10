@@ -12,10 +12,10 @@ from .base import StatementParser
 class Cathay(StatementParser):
     source_name = "cathay"
     display_name = "Cathay"
+    supported_statement_types = [StatementType.checking, StatementType.creditcard]
 
     def __init__(self):
-        supported_types = [StatementType.checking, StatementType.creditcard]
-        super().__init__(supported_types)
+        super().__init__()
 
     def parse(self, path: Path) -> Ledger:
         if StatementType.checking.name in path.as_posix():
@@ -44,7 +44,7 @@ class Cathay(StatementParser):
             return Ledger("Invalid", StatementType.invalid)
 
     def parse_creditcard_statement(
-        self, records: pd.DataFrame, attrs: StatementAttributes
+        self, records: pd.DataFrame, attrs: Optional[StatementAttributes] = None
     ) -> Ledger:
         if not (attrs.year and attrs.month):
             return Ledger("Invalid", StatementType.invalid)
@@ -86,7 +86,7 @@ class Cathay(StatementParser):
         return ledger
 
     def parse_checking_statement(
-        self, records: pd.DataFrame, _: Optional[StatementAttributes] = None
+        self, records: pd.DataFrame, attrs: Optional[StatementAttributes] = None
     ) -> Ledger:
         records = records.fillna("").astype(str)
         typ = StatementType.checking
@@ -129,10 +129,10 @@ class Cathay(StatementParser):
 class CathayUSD(StatementParser):
     source_name = "cathayusd"
     display_name = "Cathay"
+    supported_statement_types = [StatementType.checking]
 
     def __init__(self):
-        supported_types = [StatementType.checking]
-        super().__init__(supported_types)
+        super().__init__()
 
     def _read_csv(self, path: Path) -> pd.DataFrame:
         df = pd.read_csv(path.as_posix(), encoding="big5")
