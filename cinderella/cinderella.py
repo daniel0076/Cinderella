@@ -1,8 +1,6 @@
 import logging
 from pathlib import Path
 
-from pandas.tests.resample.test_resampler_grouper import test_groupby_resample_kind
-
 from cinderella.settings import CinderellaSettings, LOG_NAME
 from cinderella.ledger import utils as ledger_util
 from cinderella.ledger.classifier import TransactionClassifier
@@ -14,7 +12,7 @@ from cinderella.external import beancountapi
 class Cinderella:
     def __init__(self, settings: CinderellaSettings):
         self.settings = settings
-        self.statement_loader = StatementLoader(settings.statement_file_settings)
+        self.statement_loader = StatementLoader(settings.statement_settings)
         self.classifier = TransactionClassifier(settings)
         self.logger = logging.getLogger(LOG_NAME)
 
@@ -31,15 +29,9 @@ class Cinderella:
         return accounts
 
     def count_beans(self):
-        # preprocess statements
-        result = self.statement_loader.preprocess_statements()
-        if not result.success:
-            self.logger.error(f"Preprocess statements failed: {result.message}")
-            return
-
         # load all the ledgers by statment type
         ledgers_by_type = self.statement_loader.load(
-            self.settings.statement_file_settings.preprocessed_statement_folder
+            self.settings.statement_settings.preprocessed_statement_folder
         )
 
         """
@@ -104,7 +96,7 @@ class Cinderella:
             / "result.bean"
         )
         # remove existing files
-        path.unlink(missing_ok=test_groupby_resample_kind)
+        path.unlink(missing_ok=True)
 
         for ledgers in ledgers_by_type.values():
             for ledger in ledgers:

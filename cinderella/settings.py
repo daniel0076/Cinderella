@@ -69,7 +69,7 @@ class LedgerProcessingSettings(SettingsBase):
 
 @dataclass
 class CinderellaSettings(SettingsBase):
-    statement_file_settings: StatementSettings
+    statement_settings: StatementSettings
     beancount_settings: BeancountSettings
     ledger_processing_settings: LedgerProcessingSettings
     mappings: Dict[str, Dict[str, list[str]]]

@@ -47,10 +47,10 @@ if __name__ == "__main__":
     logger.debug(f"Configurations details:\n{settings}")
     print("Configurations: ")
     print(
-        f"Preprocessing statements from: {settings.statement_file_settings.input_statement_folder}"
+        f"Preprocessing statements from: {settings.statement_settings.input_statement_folder}"
     )
     print(
-        f"Reading statements from: {settings.statement_file_settings.preprocessed_statement_folder}"
+        f"Reading statements from: {settings.statement_settings.preprocessed_statement_folder}"
     )
     print(f"Output beanfiles to: {settings.beancount_settings.output_beanfiles_folder}")
 

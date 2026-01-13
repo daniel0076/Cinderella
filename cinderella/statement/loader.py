@@ -34,29 +34,47 @@ class StatementLoader:
             accounts += parser.get_statement_accounts().values()
         return accounts
 
-    def _find_parser(self, path: str) -> Union[StatementParser, None]:
-        for parser in self.parsers.values():
-            if parser.source_name in path:
-                return parser
-        return None
-
-    def _load_file_to_ledgers(self, path: Path) -> Iterator[Ledger]:
+    def _process_and_load_ledgers(self, path: Path) -> Iterator[Ledger]:
         logger.debug("Loading statement files")
-        for file in iterate_files(path):
-            logger.debug(f"Current file: {file.as_posix()}")
-            parser = self._find_parser(file.as_posix())
-
-            if not parser:
-                logger.debug(f"No parser found for file: {file.as_posix()}")
+        # First, preprocess all sources
+        for parser in self.parsers.values():
+            input_dir = (
+                Path(self.statement_settings.input_statement_folder)
+                / parser.source_name
+            )
+            if not input_dir.exists() or not input_dir.is_dir():
                 continue
 
-            logger.debug(f"File: {file.as_posix()}, Parser: {parser.source_name}")
-            ledger = parser.parse(file)
-            if ledger.typ == StatementType.invalid:
-                logger.warning(f"Failed to load statement file: {file.as_posix()}")
-                continue
+            output_dir = path
+            output_dir.mkdir(parents=True, exist_ok=True)
 
-            yield ledger
+            result = parser.preprocess(
+                input_dir,
+                output_dir,
+                self.statement_settings.preprocess_settings.get(parser.source_name),
+            )
+            if result.success:
+                logger.info(
+                    f"Preprocess for {parser.display_name} completed successfully."
+                )
+            else:
+                logger.error(
+                    f"Preprocess for {parser.display_name} in {input_dir} failed: {result.message}"
+                )
+
+        # Then, parse all sources
+        for parser in self.parsers.values():
+            source_output_dir = path / parser.source_name
+            if not source_output_dir.exists():
+                continue
+            for file in iterate_files(source_output_dir):
+                logger.debug(f"File: {file.as_posix()}, Parser: {parser.source_name}")
+                ledger = parser.parse(file)
+                if ledger.typ == StatementType.invalid:
+                    logger.warning(f"Failed to load statement file: {file.as_posix()}")
+                    continue
+
+                yield ledger
 
     def _tailor_type_to_ledgers(
         self, ledgers: Iterable[Ledger]
@@ -89,30 +107,5 @@ class StatementLoader:
         if isinstance(path, str):
             path = Path(path)
 
-        ledgers = self._load_file_to_ledgers(path)
+        ledgers = self._process_and_load_ledgers(path)
         return self._tailor_type_to_ledgers(ledgers)
-
-    def preprocess_statements(self) -> ExecutionResult:
-        # delegate each source folder to each parser
-        for parser in self.parsers.values():
-            input_dir = (
-                Path(self.statement_settings.input_statement_folder)
-                / parser.source_name
-            )
-            if not input_dir.exists() or not input_dir.is_dir():
-                continue
-
-            output_dir = Path(self.statement_settings.preprocessed_statement_folder)
-            output_dir.mkdir(parents=True, exist_ok=True)
-
-            result = parser.preprocess(
-                input_dir,
-                output_dir,
-                self.statement_settings.preprocess_settings.get(parser.source_name),
-            )
-            if result.success:
-                logger.info(
-                    f"Preprocess for {parser.display_name} completed successfully."
-                )
-
-        return ExecutionResult(True)
