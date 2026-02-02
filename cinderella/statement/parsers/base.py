@@ -1,3 +1,4 @@
+from html import parser
 import logging
 import os
 import pandas as pd
@@ -6,7 +7,7 @@ from pathlib import Path
 from typing import Optional
 
 from cinderella.ledger.classifier import Union
-from cinderella.settings import LOG_NAME, AfterPreprocessAction, PreprocessSettings
+from cinderella.settings import LOG_NAME, PreprocessSettings, StatementSettings
 from cinderella.ledger.datatypes import StatementType, Ledger
 from cinderella.statement.datatypes import (
     ExecutionResult,
@@ -107,13 +108,12 @@ class StatementParser(ABC):
         self,
         input_statement_dir: Path,
         output_statement_dir: Path,
-        all_preprocess_settings: Optional[dict[StatementType, PreprocessSettings]],
+        statement_settings: StatementSettings,
     ) -> Union[ExecutionResult[PreprocessResult], ExecutionResult[str]]:
+        parser_preprocess_settings = statement_settings.preprocess_settings.get(
+            self.source_name
+        )
         for supported_type in self.supported_statement_types:
-            preprocess_settings = None
-            if all_preprocess_settings:
-                preprocess_settings = all_preprocess_settings.get(supported_type)
-
             if supported_type == StatementType.checking:
                 func = self.preprocess_checking_statement
             elif supported_type == StatementType.creditcard:
@@ -129,10 +129,17 @@ class StatementParser(ABC):
             for input_statement in input_statement_dir.iterdir():
                 if not input_statement.is_file():
                     continue
+
+                # Get preprocess settings for this statement type
+                if parser_preprocess_settings is not None:
+                    typed_setting = parser_preprocess_settings.get(supported_type)
+                else:
+                    typed_setting = None
+
                 result = func(
                     input_statement,
                     output_statement_dir / supported_type.value,
-                    preprocess_settings,
+                    typed_setting,
                 )
                 if result.success:
                     self.logger.info(
@@ -141,7 +148,7 @@ class StatementParser(ABC):
                     processed_files = result.message
                     assert isinstance(processed_files, list)
                     self.after_preprocess(
-                        input_statement_dir, processed_files, preprocess_settings
+                        input_statement_dir, processed_files, statement_settings
                     )
                 else:
                     self.logger.error(
@@ -178,29 +185,18 @@ class StatementParser(ABC):
         self,
         source_dir: Path,
         files: list[Path],
-        settings: Optional[PreprocessSettings],
+        settings: StatementSettings,
     ):
         """
         post process operations, like moving the files
         """
+
         for file in files:
             if not file.exists():
                 return
-            after_preprocessed_action = None
-            if settings is not None:
-                after_preprocessed_action = settings.after_processed
-            else:
-                return
 
-            if after_preprocessed_action == AfterPreprocessAction.move:
-                dst_directory = Path(source_dir) / settings.archive_folder
-                os.makedirs(dst_directory, exist_ok=True)
+            dst_directory = Path(source_dir) / settings.archive_statement_folder
+            os.makedirs(dst_directory, exist_ok=True)
 
-                dst = dst_directory / file.name
-                os.rename(file, dst)
-            elif after_preprocessed_action == AfterPreprocessAction.delete:
-                os.remove(file)
-            else:
-                raise ValueError(
-                    f"Unknown after_preprocessed_action: {after_preprocessed_action}"
-                )
+            dst = dst_directory / file.name
+            os.rename(file, dst)

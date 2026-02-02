@@ -48,11 +48,7 @@ class StatementLoader:
             output_dir = path
             output_dir.mkdir(parents=True, exist_ok=True)
 
-            result = parser.preprocess(
-                input_dir,
-                output_dir,
-                self.statement_settings.preprocess_settings.get(parser.source_name),
-            )
+            result = parser.preprocess(input_dir, output_dir, self.statement_settings)
             if result.success:
                 logger.info(
                     f"Preprocess for {parser.display_name} completed successfully."

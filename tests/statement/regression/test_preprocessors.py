@@ -5,7 +5,6 @@ from cinderella.statement.parsers.base import StatementParser
 from cinderella.statement.parsers.richart import Richart
 from cinderella.statement.parsers.esun import ESun
 from cinderella.statement.parsers.einvoice import Einvoice
-from cinderella.statement.datatypes import AfterPreprocessAction
 from cinderella.ledger.datatypes import StatementType
 from cinderella.settings import StatementSettings, PreprocessSettings
 
@@ -30,9 +29,7 @@ def gen_settings(tmp_path):
             "",
             {
                 source_name: {
-                    statement_type: PreprocessSettings(
-                        statement_type, password, AfterPreprocessAction.keep
-                    )
+                    statement_type: PreprocessSettings(statement_type, password)
                 }
             },
         )

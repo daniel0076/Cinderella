@@ -29,12 +29,6 @@ class ExecutionResult(Generic[MessageT]):
     message: Optional[MessageT] = None
 
 
-class AfterPreprocessAction(Enum):
-    keep = "keep"
-    move = "move"
-    delete = "delete"
-
-
 @dataclass
 class StatementAttributes:
     """

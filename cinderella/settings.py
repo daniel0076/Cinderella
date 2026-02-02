@@ -1,6 +1,5 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from cinderella.statement.datatypes import AfterPreprocessAction
 from cinderella.ledger.datatypes import StatementType
 from typing import Dict, Optional
 from dacite.core import from_dict
@@ -40,8 +39,6 @@ class SettingsBase:
 class PreprocessSettings(SettingsBase):
     statement_type: StatementType
     password: str
-    after_processed: AfterPreprocessAction
-    archive_folder: str = "./archive"
 
 
 @dataclass
