@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from anyio.streams import file
 from fontTools.feaLib.ast import Statement
 
+from cinderella import statement
 from cinderella.statement.datatypes import ExecutionResult
 from cinderella.statement.parsers import registry
 from cinderella.settings import LOG_NAME, StatementSettings
@@ -45,25 +46,26 @@ class StatementLoader:
             if not input_dir.exists() or not input_dir.is_dir():
                 continue
 
-            output_dir = path
+            output_dir = (
+                Path(self.statement_settings.preprocessed_statement_folder)
+                / parser.source_name
+            )
             output_dir.mkdir(parents=True, exist_ok=True)
 
             result = parser.preprocess(input_dir, output_dir, self.statement_settings)
             if result.success:
-                logger.info(
-                    f"Preprocess for {parser.display_name} completed successfully."
-                )
+                logger.info(f"Preprocess {parser.display_name} completed.")
             else:
                 logger.error(
-                    f"Preprocess for {parser.display_name} in {input_dir} failed: {result.message}"
+                    f"Preprocess {parser.display_name} in {input_dir} failed: {result.message}"
                 )
 
         # Then, parse all sources
         for parser in self.parsers.values():
-            source_output_dir = path / parser.source_name
-            if not source_output_dir.exists():
+            source_dir = path / parser.source_name
+            if not source_dir.exists():
                 continue
-            for file in iterate_files(source_output_dir):
+            for file in iterate_files(source_dir):
                 logger.debug(f"File: {file.as_posix()}, Parser: {parser.source_name}")
                 ledger = parser.parse(file)
                 if ledger.typ == StatementType.invalid:

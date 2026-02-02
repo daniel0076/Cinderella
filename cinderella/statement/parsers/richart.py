@@ -10,7 +10,6 @@ from cinderella.ledger.datatypes import Ledger, StatementType
 from cinderella.settings import PreprocessSettings
 from cinderella.statement.datatypes import (
     ExecutionResult,
-    PreprocessResult,
     StatementAttributes,
 )
 from .base import StatementParser
@@ -82,7 +81,7 @@ class Richart(StatementParser):
         input_statement: Path,
         output_dir: Path,
         preprocess_settings: PreprocessSettings | None,
-    ) -> ExecutionResult[PreprocessResult]:
+    ) -> ExecutionResult:
         return self._preprocess_common(input_statement, output_dir, preprocess_settings)
 
     def _preprocess_common(
